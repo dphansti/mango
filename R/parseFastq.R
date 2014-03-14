@@ -15,18 +15,19 @@
 #' fastqs = c("/Users/dougphanstiel/Dropbox/data/NH.K562_RAD21_K562_std_2.1_1.fastq.gz","/Users/dougphanstiel/Dropbox/data/NH.K562_RAD21_K562_std_2.1_2.fastq.gz")
 #' parseFastq(fastqsin=fastqs,minlegnth = 15,maxlength = 25,keepempty=FALSE,linesatatime = 10000,linkers = c("GTTGGATAAG","GTTGGAATGT"))
 #' 
-fastqs = c("/Volumes/HD3/projects/newmango/data/NH.K562_RAD21_K562_std_2.1_1.head.fastq",
-           "/Volumes/HD3/projects/newmango/data/NH.K562_RAD21_K562_std_2.1_2.head.fastq")
+#fastqs = c("/Volumes/HD3/projects/newmango/data/NH.K562_RAD21_K562_std_2.1_1.head.fastq",
+#           "/Volumes/HD3/projects/newmango/data/NH.K562_RAD21_K562_std_2.1_2.head.fastq")
 
-outdir = NULL
-outname="mango"
-fastqsin = fastqs
-fastqsout = NULL
-linkers = c("GTTGGATAAG","GTTGGAATGT")
-minlength = 15
-maxlength = 25
-keepempty=FALSE
-linesatatime = 1000
+
+# outdir = NULL
+# outname="mango"
+# fastqsin = fastqs
+# fastqsout = NULL
+# linkers = c("GTTGGATAAG","GTTGGAATGT")
+# minlength = 15
+# maxlength = 25
+# keepempty=FALSE
+# linesatatime = 1000
 
 parseFastq <- function(fastqsin,outdir=NULL,outname="mango",
                        linkers = c("GTTGGATAAGATATCGC","GTTGGAATGTATATCGC"),

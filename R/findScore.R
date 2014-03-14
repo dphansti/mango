@@ -61,6 +61,9 @@ findScore <- function(fastq,nlines =10000)
     }
   }  
   
+  # close connection
+  close(con)
+  
   # return the score
   return (scoretype)
 }
