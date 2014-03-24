@@ -7,4 +7,6 @@ Author: Douglas H Phanstiel <dphansti@stanford.edu>
 Maintainer: Douglas H Phanstiel <dphansti@stanford.edu>
 Description: ChIA-PET data analysis software
 License: GPL (>= 2)
-Depends: zoo
+Depends: zoo,logspline
+LinkingTo: Rcpp
+Imports: Rcpp
