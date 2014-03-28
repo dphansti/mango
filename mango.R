@@ -5,6 +5,8 @@
 
 bowtiepath = "/Users/dougphanstiel/Tools/bowtie-1.0.0/bowtie"
 bowtieref  = "/Users/dougphanstiel/Tools/bowtie-1.0.0/indexes/hg19"
+#macs2path = 
+
 fastqs = c("data/NH.K562_RAD21_K562_std_2.1_1.head.fastq",
            "data/NH.K562_RAD21_K562_std_2.1_2.head.fastq")
 expname = "NH.K562_RAD21_K562_std_2.1.head"
@@ -45,26 +47,12 @@ keepempty=FALSE
 #   keepempty=FALSE
 # }
 
+##################################### initialization #####################################
 
-
-
-##################################### load libraries #####################################
-
-Sys.time()
-
-library('logspline')
 library('mango')
-library('Rcpp')
-sourceCpp("~/Dropbox/mangoRpackage/mango/src/mangoC.cpp",verbose=FALSE)
-
-
-##################################### set var #####################################
-
+print ("Starting mango ChIA PET analysis tool")
+Sys.time()
 set.seed(1)
-
-##################################### input var #####################################
-
-
 
 ##################################### parse fastqs #####################################
 
@@ -144,7 +132,7 @@ dev.off()
 
 #callpeaks()
 
-#macs2path
+
 
 
 

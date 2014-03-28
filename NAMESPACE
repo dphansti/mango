@@ -1,3 +1,3 @@
 exportPattern("^[[:alpha:]]+")
-useDynLib(mypackage)
+useDynLib("mango")
 importFrom(Rcpp, sourceCpp)
