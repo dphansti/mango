@@ -3,14 +3,14 @@
 
 ##################################### paths to externals #####################################
 
-bowtiepath = "/Users/dougphanstiel/Tools/bowtie-1.0.0/bowtie"
-bowtieref  = "/Users/dougphanstiel/Tools/bowtie-1.0.0/indexes/hg19"
+bowtiepath = "/home/aboyle/bowtie-1.0.1/bowtie"
+bowtieref  = "/home/aboyle/bowtie-1.0.1/indexes/hg19"
 #macs2path = 
 
 fastqs = c("data/NH.K562_RAD21_K562_std_2.1_1.head.fastq",
            "data/NH.K562_RAD21_K562_std_2.1_2.head.fastq")
 expname = "NH.K562_RAD21_K562_std_2.1.head"
-outdir   = "/Users/dougphanstiel/Desktop/mango2014test/"
+outdir   = "/home/aboyle/mango2014test/"
 outname  = paste(outdir,expname,sep="")
 linkers = c("GTTGGATAAG","GTTGGAATGT")
 minlength = 15
@@ -87,8 +87,7 @@ buildBedpe(sam1 =sam1, sam2 = sam2, bedpefile = bedpefile);
 
 # sort bedpe (look into the C++ library STXXL to avoid using unix sort command)
 print ("sorting bedpe")
-command = paste("cat",bedpefile, " | sort > ",bedpefilesort)
-system (command)
+external_sort(bedpefile, bedpefilesort)
 
 # filter duplicates
 print ("removing PCR duplicates")

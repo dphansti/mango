@@ -1,6 +1,7 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
+
 // Below is a simple example of exporting a C++ function to R. You can
 // source this function into an R session using the Rcpp::sourceCpp 
 // function (or via the Source button on the editor toolbar)
@@ -13,6 +14,7 @@ using namespace Rcpp;
 #include <sstream>
 #include <bitset>
 #include <map>
+#include "mergesort.h"
 using namespace std;
 
 // Define a function that joins vectors of strings
@@ -51,12 +53,12 @@ std::string parseFastq(std::string fastq1, std::string fastq2,std::string basena
 {
 
    // arguments
-    ifstream file1(fastq1);
-    ifstream file2(fastq2);
-    ofstream same1 ( basename + "_1.same.fastq");
-    ofstream same2 ( basename + "_2.same.fastq");
-    ofstream chim1 ( basename + "_1.chim.fastq");
-    ofstream chim2 ( basename + "_2.chim.fastq");
+    ifstream file1(fastq1.c_str());
+    ifstream file2(fastq2.c_str());
+    ofstream same1 ( (basename + "_1.same.fastq").c_str() );
+    ofstream same2 ( (basename + "_2.same.fastq").c_str() );
+    ofstream chim1 ( (basename + "_1.chim.fastq").c_str() );
+    ofstream chim2 ( (basename + "_2.chim.fastq").c_str() );
     
     // define variables
     std::string fqline1;
@@ -260,9 +262,9 @@ void buildBedpe(std::string sam1, std::string sam2,std::string bedpefile)
 {
     
     // arguments
-    ifstream file1(sam1);
-    ifstream file2(sam2);
-    ofstream bedpefilestream ( bedpefile);
+    ifstream file1(sam1.c_str());
+    ifstream file2(sam2.c_str());
+    ofstream bedpefilestream ( bedpefile.c_str() );
 
     // define variables
     std::string line1;
@@ -366,8 +368,8 @@ void buildBedpe(std::string sam1, std::string sam2,std::string bedpefile)
 void removeDupBedpe(std::string infile,std::string outfile)
 {
     // arguments
-    ifstream file1(infile);
-    ofstream bedpefilestream (outfile);
+    ifstream file1(infile.c_str());
+    ofstream bedpefilestream (outfile.c_str());
     
     // read in file line by line store currentline and last line
     std::string lastline;
@@ -421,7 +423,7 @@ std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase)
     std::vector<std::string> outputvector;
     
     // streams
-    ifstream file1(bedpein);
+    ifstream file1(bedpein.c_str());
     std::map<std::string, std::ofstream*> readoutput;
     std::map<std::string, std::ofstream*> petsoutput;
     
@@ -457,13 +459,13 @@ std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase)
         if ( (readoutput.find(chrom1) == readoutput.end()) & (chrom1 != "*" )  ) {
             
             std::string outname = outnamebase + "." + chrom1 + ".bed";
-            readoutput[chrom1] = new std::ofstream(outname);
+            readoutput[chrom1] = new std::ofstream(outname.c_str());
         }
         std::string chrom2 = currEall[3];
         if ( (readoutput.find(chrom2) == readoutput.end()) & (chrom2 != "*" ) ) {
             
             std::string outname = outnamebase + "." + chrom2 + ".bed";
-            readoutput[chrom2] = new std::ofstream(outname);
+            readoutput[chrom2] = new std::ofstream(outname.c_str());
         }
 
         // print reads
@@ -486,7 +488,7 @@ std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase)
         if ( petsoutput.find(chrom1) == petsoutput.end() ) {
             
             std::string outname = outnamebase + "." + chrom1 + ".bedpe";
-            petsoutput[chrom1] = new std::ofstream(outname);
+            petsoutput[chrom1] = new std::ofstream(outname.c_str());
             outputvector.push_back(outnamebase + "." + chrom1);
             
         }
@@ -495,18 +497,24 @@ std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase)
     }
     
     // Close all of the files
-    for(auto& pair : readoutput) {
-        delete pair.second;
-        pair.second = 0;
-    }
+    //for(auto& pair : readoutput) {
+    //    delete pair.second;
+    //    pair.second = 0;
+    //}
     // Close all of the files
-    for(auto& pair : petsoutput) {
-        delete pair.second;
-        pair.second = 0;
-    }
+    //for(auto& pair : petsoutput) {
+    //    delete pair.second;
+    //    pair.second = 0;
+    //}
     return outputvector;
 }
 
+// Define a function that joins vectors of strings
+// [[Rcpp::export]]
+std::string external_sort( std::string inputfile, std::string outputfile ){
+    mergesort<string> test(inputfile, outputfile);
+    return 0;
+}
 
 
 
