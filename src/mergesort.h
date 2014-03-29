@@ -137,9 +137,11 @@ template<class T> deque<T> mergesort<T>::sort(deque<T> &right){
 //merges two sorted deques together and returns the sorted deque
 template<class T> deque<T> mergesort<T>::merge(deque<T> &left, deque<T> &right){
 	deque<T> result;
-
+  int counter = 0;
+  
+  //cout << "Left size: " << left.size() << " Right: " << right.size() << "\n";
 	//merge the left and right deque by pulling of the lesser value of the front two values
-	while(left.size() > 0 || right.size() > 0){
+	while((left.size() > 0 || right.size() > 0) && (counter < maxDequeSize || maxDequeSize == 0)){
 		if (left.size() > 0 && right.size() > 0){
 			if (compareFront(left.front(), right.front())){
 				result.push_back(left.front());
@@ -149,16 +151,14 @@ template<class T> deque<T> mergesort<T>::merge(deque<T> &left, deque<T> &right){
 				result.push_back(right.front());
 				right.pop_front();
 			}
-		}
-
-		else if(left.size() > 0){
+		} else if(left.size() > 0){
 			result.push_back(left.front());
 			left.pop_front();
-		}
-		else if(right.size() > 0){
+		}	else if(right.size() > 0){
 			result.push_back(right.front());
 			right.pop_front();
 		}
+    counter++;
 	}
 
 	return result;
@@ -218,7 +218,7 @@ template<class T> bool mergesort<T>::readFile(ifstream &file, deque<T> &data){
 	T temp;
 
 	if(maxDequeSize > 0){
-		for(int i = 0; i < maxDequeSize && getline(file, temp); i++){
+		for(int i = data.size(); i < maxDequeSize && getline(file, temp); i++){
 			data.push_back(temp);
 		}
 	}
@@ -254,6 +254,7 @@ template<class T> void mergesort<T>::printFile(string fileName, deque<T> &data, 
 	}
 
 	outputFile.close();
+  return;
 }
 
 ////////////////
@@ -267,6 +268,7 @@ template<class T> void mergesort<T>::mergeFiles(int numFiles){
 	int i, k, max;
 	deque<T> data1;
 	deque<T> data2;
+  deque<T> dataOUT;
 	bool fileGood1, fileGood2;
 
 	i = 0;	//i is the counter for the input file names
@@ -289,16 +291,12 @@ template<class T> void mergesort<T>::mergeFiles(int numFiles){
 		fileGood1 = true;
 		fileGood2 = true;
 		while(fileGood1 || fileGood2){
-			if(data1.size() == 0) 
-				fileGood1 = readFile(inFile1, data1);
-			if(data2.size() == 0)
-				fileGood2 = readFile(inFile2, data2);
+      //Needs to merge only up to first maxDequeSize datapoints with dequeuing - refill on empty
+			fileGood1 = readFile(inFile1, data1);
+			fileGood2 = readFile(inFile2, data2);
 
-			data1 = merge(data1, data2);
-			
-			printFile("temp", data1, true);
-
-			data1.clear();
+			dataOUT = merge(data1, data2);
+			printFile("temp", dataOUT, true);
 		}
 
 		//close and delete the unneeded files
@@ -325,6 +323,7 @@ template<class T> void mergesort<T>::mergeFiles(int numFiles){
 	}
 
 	cout << endl;
+  return;
 }
 
 ////////////////

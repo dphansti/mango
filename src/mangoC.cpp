@@ -511,9 +511,9 @@ std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase)
 
 // Define a function that joins vectors of strings
 // [[Rcpp::export]]
-std::string external_sort( std::string inputfile, std::string outputfile ){
-    mergesort<string> test(inputfile, outputfile);
-    return 0;
+void external_sort( std::string inputfile, std::string outputfile ){
+    mergesort<string> test(inputfile, outputfile, 1000000);
+    return;
 }
 
 

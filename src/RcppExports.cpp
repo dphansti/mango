@@ -104,18 +104,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // external_sort
-std::string external_sort(std::string inputfile, std::string outputfile);
+void external_sort(std::string inputfile, std::string outputfile);
 RcppExport SEXP mango_external_sort(SEXP inputfileSEXP, SEXP outputfileSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
         Rcpp::traits::input_parameter< std::string >::type inputfile(inputfileSEXP );
         Rcpp::traits::input_parameter< std::string >::type outputfile(outputfileSEXP );
-        std::string __result = external_sort(inputfile, outputfile);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
+        external_sort(inputfile, outputfile);
     }
-    UNPROTECT(1);
-    return __sexp_result;
+    return R_NilValue;
 END_RCPP
 }

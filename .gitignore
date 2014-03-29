@@ -1,3 +1,6 @@
 .Rproj.user
 .Rhistory
 .RData
+src/RcppExports.o
+src/mango.so
+src/mangoC.o
