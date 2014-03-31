@@ -27,6 +27,7 @@ private:
 	void mergeFiles(int numFiles);
   string NumberToString(T Number);
   bool compareFront(string left, string right);
+  bool is_number(const string& s);
 
 	int maxDequeSize;
 };
@@ -329,82 +330,52 @@ template<class T> void mergesort<T>::mergeFiles(int numFiles){
 ////////////////
 //compareFront()//
 ////////////////
-//sorts by columns for BEDPE format - this is really ugly
+//sorts by columns by type instead of just strings
 template<class T> bool mergesort<T>::compareFront(string left, string right) {
-  string LchrA, LchrB, Lname, RchrA, RchrB, Rname;
-  int LstartA, LendA, LstartB, LendB, RstartA, RendA, RstartB, RendB;
+  string stringLeft, stringRight;
+  int intLeft, intRight;
   
   size_t pos = 0;
   std::string delimiter = "\t";
   
-  //Parse left string
-  pos = left.find(delimiter);
-  LchrA = left.substr(0,pos);
-  left.erase(0, pos + delimiter.length());
-  pos = right.find(delimiter);
-  RchrA = right.substr(0,pos);
-  right.erase(0, pos + delimiter.length());
-  if(LchrA == RchrA) { // If the same chromosome
+  while(left.size() > 0 && right.size() > 0) { //Loop until we either find a difference or run out of data
+    //Get left string
     pos = left.find(delimiter);
-    LstartA = atoi(left.substr(0,pos).c_str());
+    stringLeft = left.substr(0,pos);
     left.erase(0, pos + delimiter.length());
+    //Get right string
     pos = right.find(delimiter);
-    RstartA = atoi(right.substr(0,pos).c_str());
+    stringRight = right.substr(0,pos);
     right.erase(0, pos + delimiter.length());
-    if(LstartA == RstartA) { // If the same first column (numeric)
-      pos = left.find(delimiter);
-      LendA = atoi(left.substr(0,pos).c_str());
-      left.erase(0, pos + delimiter.length());
-      pos = right.find(delimiter);
-      RendA = atoi(right.substr(0,pos).c_str());
-      right.erase(0, pos + delimiter.length());
-      if(LendA == RendA) { // If the same second numberic column
-        pos = left.find(delimiter);
-        LchrB = left.substr(0,pos);
-        left.erase(0, pos + delimiter.length());
-        pos = right.find(delimiter);
-        RchrB = right.substr(0,pos);
-        right.erase(0, pos + delimiter.length());
-        if(LchrB == RchrB) {
-          pos = left.find(delimiter);
-          LstartB = atoi(left.substr(0,pos).c_str());
-          left.erase(0, pos + delimiter.length());
-          pos = right.find(delimiter);
-          RstartB = atoi(right.substr(0,pos).c_str());
-          right.erase(0, pos + delimiter.length());
-          if(LstartB == RstartB) {
-            pos = left.find(delimiter);
-            LendB = atoi(left.substr(0,pos).c_str());
-            left.erase(0, pos + delimiter.length());
-            pos = right.find(delimiter);
-            RendB = atoi(right.substr(0,pos).c_str());
-            right.erase(0, pos + delimiter.length());
-            if(LendB == RendB) {
-              pos = left.find(delimiter);
-              Lname = left.substr(0,pos);
-              pos = right.find(delimiter);
-              Rname = right.substr(0,pos);
-              return Lname < Rname;
-            } else {
-              return LendB < RendB;
-            }
-          } else {
-            return LstartB < RstartB;
-          }
-        } else {
-          return LchrB < RchrB;
-        }
+    
+    //Check if number
+    if(is_number(stringLeft) && is_number(stringRight)) {
+      //convert to ints and use this
+      intLeft = atoi(stringLeft.c_str());
+      intRight = atoi(stringRight.c_str());
+      if(intLeft == intRight) {
+        continue; // Same so check next field
       } else {
-        return LendA < RendA;
+        return intLeft < intRight;
       }
-    } else {
-      return LstartA < RstartA;
+    } else { //Just comparing strings
+      if(stringLeft == stringRight) {
+        continue; // Same so check next field
+      } else {
+        return stringLeft < stringRight;
+      }
     }
-  } else {
-    return LchrA < RchrA;
   }
-  
+
+  //Everything was the same AFAIK
   return left < right;
+}
+
+template<class T> bool mergesort<T>::is_number(const std::string& s)
+{
+    std::string::const_iterator it = s.begin();
+    while (it != s.end() && std::isdigit(*it)) ++it;
+    return !s.empty() && it == s.end();
 }
 
 #endif
