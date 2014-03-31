@@ -333,7 +333,7 @@ template<class T> void mergesort<T>::mergeFiles(int numFiles){
 //sorts by columns by type instead of just strings
 template<class T> bool mergesort<T>::compareFront(string left, string right) {
   string stringLeft, stringRight;
-  int intLeft, intRight;
+  double numLeft, numRight;
   
   size_t pos = 0;
   std::string delimiter = "\t";
@@ -350,13 +350,13 @@ template<class T> bool mergesort<T>::compareFront(string left, string right) {
     
     //Check if number
     if(is_number(stringLeft) && is_number(stringRight)) {
-      //convert to ints and use this
-      intLeft = atoi(stringLeft.c_str());
-      intRight = atoi(stringRight.c_str());
-      if(intLeft == intRight) {
+      //convert to doubles and use this
+      numLeft = atof(stringLeft.c_str());
+      numRight = atof(stringRight.c_str());
+      if(numLeft == numRight) {
         continue; // Same so check next field
       } else {
-        return intLeft < intRight;
+        return numLeft < numRight;
       }
     } else { //Just comparing strings
       if(stringLeft == stringRight) {
@@ -373,9 +373,9 @@ template<class T> bool mergesort<T>::compareFront(string left, string right) {
 
 template<class T> bool mergesort<T>::is_number(const std::string& s)
 {
-    std::string::const_iterator it = s.begin();
-    while (it != s.end() && std::isdigit(*it)) ++it;
-    return !s.empty() && it == s.end();
+  std::istringstream ss(s);
+  double d;
+  return (ss >> d) && (ss >> std::ws).eof();
 }
 
 #endif
