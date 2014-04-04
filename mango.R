@@ -1,51 +1,47 @@
 # runs mango chia pet analysis pipeline
-#location = "work"
+usr = "doug"
 
 ##################################### paths to externals #####################################
 
-bowtiepath = "/home/aboyle/bowtie-1.0.1/bowtie"
-bowtieref  = "/home/aboyle/bowtie-1.0.1/indexes/hg19"
-#macs2path = 
+#! Need to figure out how to get R to use the same environment as bash (i.e. same PATH)
 
 fastqs = c("data/NH.K562_RAD21_K562_std_2.1_1.head.fastq",
            "data/NH.K562_RAD21_K562_std_2.1_2.head.fastq")
+
+if (usr == "alan")
+{
+  bowtiepath = "/home/aboyle/bowtie-1.0.1/bowtie"
+  bowtieref  = "/home/aboyle/bowtie-1.0.1/indexes/hg19"
+  outdir   = "/home/aboyle/mango2014test/"
+}
+
+if (usr == "doug")
+{
+  bowtiepath = "/Users/dougphanstiel/Tools/bowtie-1.0.0/bowtie"
+  bowtieref  = "/Users/dougphanstiel/Tools/bowtie-1.0.0/indexes/hg19"
+  outdir     = "/Users/dougphanstiel/Desktop/mango2014test/"
+  bigfastqs = c(paste(outdir,"NH.K562_RAD21_K562_std_2.1_1.fastq",sep=""),
+                paste(outdir,"NH.K562_RAD21_K562_std_2.1_2.fastq",sep=""))
+  #fastqs = bigfastqs
+}
+
+if (usr == "aster")
+{
+  bowtiepath = "/Users/dougphanstiel/tools/bowtie-0.12.7/bowtie"
+  bowtieref  = "/Users/dougphanstiel/tools/bowtie-0.12.7/indexes/hg19"
+  outdir   = "/Volumes/HD3/projects/newmango/data/"
+  bigfastqs = fastqs = c("/Volumes/HD3/projects/newmango/data/NH.K562_RAD21_K562_std_2.1_1.fastq",
+                         "/Volumes/HD3/projects/newmango/data/NH.K562_RAD21_K562_std_2.1_2.fastq")
+  #fastqs = bigfastqs
+}
+
+
 expname = "NH.K562_RAD21_K562_std_2.1.head"
-outdir   = "/home/aboyle/mango2014test/"
 outname  = paste(outdir,expname,sep="")
 linkers = c("GTTGGATAAG","GTTGGAATGT")
 minlength = 15
 maxlength = 25
 keepempty=FALSE
-
-# if (location == "home")
-# {
-#   bowtiepath = "/Users/dougphanstiel/Tools/bowtie-1.0.0/bowtie"
-#   bowtieref  = "/Users/dougphanstiel/Tools/bowtie-1.0.0/indexes/hg19"
-#   fastqs = c("/Users/dougphanstiel/Desktop/mango2014test/NH.K562_RAD21_K562_std_2.1_1.fastq",
-#              "/Users/dougphanstiel/Desktop/mango2014test/NH.K562_RAD21_K562_std_2.1_2.fastq")
-#   expname = "NH.K562_RAD21_K562_std_2.1"
-#   outdir   = "/Users/dougphanstiel/Desktop/mango2014test/"
-#   outname  = paste(outdir,expname,sep="")
-#   linkers = c("GTTGGATAAG","GTTGGAATGT")
-#   minlength = 15
-#   maxlength = 25
-#   keepempty=FALSE
-# }
-# if (location == "work")
-# {
-#   bowtiepath = "/Users/dougphanstiel/tools/bowtie-0.12.7/bowtie"
-#   bowtieref  = "/Users/dougphanstiel/tools/bowtie-0.12.7/indexes/hg19"
-#   macs2path = "/Users/dougphanstiel/tools/macs2/bin/macs2"
-#   fastqs = c("/Volumes/HD3/projects/newmango/data/NH.K562_RAD21_K562_std_2.1_1.head.fastq",
-#              "/Volumes/HD3/projects/newmango/data/NH.K562_RAD21_K562_std_2.1_2.head.fastq")
-#   expname = "NH.K562_RAD21_K562_std_2.1"
-#   outdir   = "/Volumes/HD3/projects/newmango/data/"
-#   outname  = paste(outdir,expname,sep="")
-#   linkers = c("GTTGGATAAG","GTTGGAATGT")
-#   minlength = 15
-#   maxlength = 25
-#   keepempty=FALSE
-# }
 
 ##################################### initialization #####################################
 
