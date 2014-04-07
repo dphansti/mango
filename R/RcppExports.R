@@ -29,3 +29,7 @@ buildTagAlign <- function(bedpefile, TagAlignfile) {
     invisible(.Call('mango_buildTagAlign', PACKAGE = 'mango', bedpefile, TagAlignfile))
 }
 
+external_sort <- function(inputfile, outputfile) {
+    invisible(.Call('mango_external_sort', PACKAGE = 'mango', inputfile, outputfile))
+}
+

@@ -576,6 +576,7 @@ void buildTagAlign(std::string bedpefile, std::string TagAlignfile) {
 }
 
 // Define a function to do an external sort
+// [[Rcpp::export]]
 void external_sort( std::string inputfile, std::string outputfile ){
     externalMergesort <string> externalMergeSorter(inputfile, outputfile, 1000000);
     return;

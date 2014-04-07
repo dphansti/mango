@@ -84,9 +84,9 @@ buildBedpe(sam1 =sam1, sam2 = sam2, bedpefile = bedpefile);
 
 # sort bedpe (look into the C++ library STXXL to avoid using unix sort command)
 print ("sorting bedpe")
-#external_sort(bedpefile, bedpefilesort)
+external_sort(bedpefile, bedpefilesort)
 # old school sort until external_sortis working on osx
-system(paste ("cat ",bedpefile," | sort -k1,1 -k2,2g > ",bedpefilesort ,sep=""   ))
+#system(paste ("cat ",bedpefile," | sort -k1,1 -k2,2g > ",bedpefilesort ,sep=""   ))
 
 
 # filter duplicates
