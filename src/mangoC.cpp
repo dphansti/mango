@@ -14,7 +14,7 @@ using namespace Rcpp;
 #include <sstream>
 #include <bitset>
 #include <map>
-#include "mergesort.h"
+//#include "mergesort.h"
 using namespace std;
 
 // Define a function that joins vectors of strings
@@ -509,12 +509,79 @@ std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase)
     return outputvector;
 }
 
-// Define a function that joins vectors of strings
 // [[Rcpp::export]]
-void external_sort( std::string inputfile, std::string outputfile ){
-    mergesort<string> test(inputfile, outputfile, 1000000);
-    return;
+void buildTagAlign(std::string bedpefile, std::string TagAlignfile) {
+    // establish streams
+    ifstream infile (bedpefile.c_str());
+    ofstream outfile ( TagAlignfile.c_str() );
+
+   int i = 0;
+   std::string line;
+   while (getline(infile, line))
+    {
+        // increment counters
+        i++;
+        
+        // split line by tab
+         std::vector<std::string> e = string_split(line,"\t");
+        
+        // reverse strands
+        std::string newstrand1 = "-";
+        if (e[8] == "-")
+        {
+          newstrand1 = "+";
+        }
+        e[8] = newstrand1;
+        
+        std::string newstrand2 = "-";
+        if (e[9] == "-")
+        {
+          newstrand2 = "+";
+        }
+        e[9] = newstrand2;
+        
+        // print to output
+        if (e[0] != "*")
+        {
+          std::vector<std::string> outputvector;
+          outputvector.push_back(e[0]);
+          outputvector.push_back(e[1]);
+          outputvector.push_back(e[2]);
+          outputvector.push_back(e[6]);
+          outputvector.push_back(".");
+          outputvector.push_back(e[8]);
+          std::string outputstring = vector_join(outputvector,"\t");
+          outfile << outputstring;
+          outfile << "\n";
+        }
+        
+        if (e[3] != "*")
+        {
+          std::vector<std::string> outputvector2;
+          outputvector2.push_back(e[3]);
+          outputvector2.push_back(e[4]);
+          outputvector2.push_back(e[5]);
+          outputvector2.push_back(e[6]);
+          outputvector2.push_back(".");
+          outputvector2.push_back(e[9]);
+          std::string outputstring2 = vector_join(outputvector2,"\t");
+          outfile << outputstring2;
+          outfile << "\n";
+        }
+    }
+    
+    // close streams
+    infile.close();
+    outfile.close();
 }
+
+
+//// Define a function that joins vectors of strings
+//// [[Rcpp::export]]
+//void external_sort( std::string inputfile, std::string outputfile ){
+//    mergesort<std::string> test(inputfile, outputfile, 1000000);
+//    return;
+//}
 
 
 

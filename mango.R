@@ -19,6 +19,7 @@ if (usr == "doug")
 {
   bowtiepath = "/Users/dougphanstiel/Tools/bowtie-1.0.0/bowtie"
   bowtieref  = "/Users/dougphanstiel/Tools/bowtie-1.0.0/indexes/hg19"
+  macs2path  = "/usr/local/bin/macs2"
   outdir     = "/Users/dougphanstiel/Desktop/mango2014test/"
   bigfastqs = c(paste(outdir,"NH.K562_RAD21_K562_std_2.1_1.fastq",sep=""),
                 paste(outdir,"NH.K562_RAD21_K562_std_2.1_2.fastq",sep=""))
@@ -83,7 +84,10 @@ buildBedpe(sam1 =sam1, sam2 = sam2, bedpefile = bedpefile);
 
 # sort bedpe (look into the C++ library STXXL to avoid using unix sort command)
 print ("sorting bedpe")
-external_sort(bedpefile, bedpefilesort)
+#external_sort(bedpefile, bedpefilesort)
+# old school sort until external_sortis working on osx
+system(paste ("cat ",bedpefile," | sort -k1,1 -k2,2g > ",bedpefilesort ,sep=""   ))
+
 
 # filter duplicates
 print ("removing PCR duplicates")
@@ -125,9 +129,50 @@ dev.off()
 
 ##################################### call peaks #####################################
 
-#callpeaks()
+tagAlignfile  = paste(outname,".tagAlign",sep="")
+peaksfile     = outname
+
+# reverse strands for peak calling
+buildTagAlign(bedpefilesortrmdup ,tagAlignfile )
+
+# call peaks
+callpeaks(macs2path,tagAlignfile,peaksfile,pvalue=.00001)
+
+# Define a function that calls peaks using macs2
+callpeaks <- function(macs2path,tagAlignfile,peaksfile,pvalue=.00001)
+{
+  command = paste([macs2path," callpeak -t ",tagAlignfile," -f BED -n ",peaksfile," -p ",pvalue,sep=" ")
+  
+  
+}
 
 
+# call peaks using MACS2
+if peakcaller == "MACS2":
+  command = "".join([peakcallerpath," callpeak -t ",readsfile," -f BED -n ",peaksfile," --nomodel --shiftsize ",shiftsize," -p ",pvalue  ])
+if verbose == "T":
+  print command
+os.system(command)
+
+# now make a calledpeaks.bed FileType
+raw_peak_file = peaksfile + "_peaks.narrowPeak"		
+f = open(raw_peak_file,'r')
+o = open(peaksfile,'w')
+
+# this just changes the name of the peaks (from something long into a unique integer)
+for l in f:
+  e = l.strip().split("\t")
+e[3] = e[3].split("_")[len(e[3].split("_"))-1]
+print >>o, "\t".join(e)
+f.close()
+o.close()
+
+# remove extra peak files
+for tmppeakfile in [peaksfile + "_peaks.narrowPeak",
+                    peaksfile + "_peaks.bed",
+                    peaksfile + "_peaks.xls",
+                    peaksfile + "_summits.bed"]:	
+  os.remove(tmppeakfile)
 
 
 
