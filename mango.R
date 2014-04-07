@@ -135,45 +135,45 @@ peaksfile     = outname
 # reverse strands for peak calling
 buildTagAlign(bedpefilesortrmdup ,tagAlignfile )
 
-# call peaks
-callpeaks(macs2path,tagAlignfile,peaksfile,pvalue=.00001)
-
-# Define a function that calls peaks using macs2
-callpeaks <- function(macs2path,tagAlignfile,peaksfile,pvalue=.00001)
-{
-  command = paste([macs2path," callpeak -t ",tagAlignfile," -f BED -n ",peaksfile," -p ",pvalue,sep=" ")
-  
-  
-}
-
-
-# call peaks using MACS2
-if peakcaller == "MACS2":
-  command = "".join([peakcallerpath," callpeak -t ",readsfile," -f BED -n ",peaksfile," --nomodel --shiftsize ",shiftsize," -p ",pvalue  ])
-if verbose == "T":
-  print command
-os.system(command)
-
-# now make a calledpeaks.bed FileType
-raw_peak_file = peaksfile + "_peaks.narrowPeak"		
-f = open(raw_peak_file,'r')
-o = open(peaksfile,'w')
-
-# this just changes the name of the peaks (from something long into a unique integer)
-for l in f:
-  e = l.strip().split("\t")
-e[3] = e[3].split("_")[len(e[3].split("_"))-1]
-print >>o, "\t".join(e)
-f.close()
-o.close()
-
-# remove extra peak files
-for tmppeakfile in [peaksfile + "_peaks.narrowPeak",
-                    peaksfile + "_peaks.bed",
-                    peaksfile + "_peaks.xls",
-                    peaksfile + "_summits.bed"]:	
-  os.remove(tmppeakfile)
-
+# # call peaks
+# callpeaks(macs2path,tagAlignfile,peaksfile,pvalue=.00001)
+# 
+# # Define a function that calls peaks using macs2
+# callpeaks <- function(macs2path,tagAlignfile,peaksfile,pvalue=.00001)
+# {
+#   command = paste([macs2path," callpeak -t ",tagAlignfile," -f BED -n ",peaksfile," -p ",pvalue,sep=" ")
+#   
+#   
+# }
+# 
+# 
+# # call peaks using MACS2
+# if peakcaller == "MACS2":
+#   command = "".join([peakcallerpath," callpeak -t ",readsfile," -f BED -n ",peaksfile," --nomodel --shiftsize ",shiftsize," -p ",pvalue  ])
+# if verbose == "T":
+#   print command
+# os.system(command)
+# 
+# # now make a calledpeaks.bed FileType
+# raw_peak_file = peaksfile + "_peaks.narrowPeak"		
+# f = open(raw_peak_file,'r')
+# o = open(peaksfile,'w')
+# 
+# # this just changes the name of the peaks (from something long into a unique integer)
+# for l in f:
+#   e = l.strip().split("\t")
+# e[3] = e[3].split("_")[len(e[3].split("_"))-1]
+# print >>o, "\t".join(e)
+# f.close()
+# o.close()
+# 
+# # remove extra peak files
+# for tmppeakfile in [peaksfile + "_peaks.narrowPeak",
+#                     peaksfile + "_peaks.bed",
+#                     peaksfile + "_peaks.xls",
+#                     peaksfile + "_summits.bed"]:	
+#   os.remove(tmppeakfile)
+# 
 
 
 ##################################### group pairs #####################################

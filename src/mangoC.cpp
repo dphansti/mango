@@ -14,7 +14,7 @@ using namespace Rcpp;
 #include <sstream>
 #include <bitset>
 #include <map>
-//#include "mergesort.h"
+#include "mergesort.h"
 using namespace std;
 
 // Define a function that joins vectors of strings
@@ -510,7 +510,6 @@ std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase)
 }
 
 // [[Rcpp::export]]
-<<<<<<< HEAD
 void buildTagAlign(std::string bedpefile, std::string TagAlignfile) {
     // establish streams
     ifstream infile (bedpefile.c_str());
@@ -574,20 +573,15 @@ void buildTagAlign(std::string bedpefile, std::string TagAlignfile) {
     // close streams
     infile.close();
     outfile.close();
-=======
+}
+
+// Define a function to do an external sort
 void external_sort( std::string inputfile, std::string outputfile ){
     externalMergesort <string> externalMergeSorter(inputfile, outputfile, 1000000);
     return;
->>>>>>> d8080ed7ae1c1ab1d5be35e8d5fa6967fb703ee4
+
 }
 
-
-//// Define a function that joins vectors of strings
-//// [[Rcpp::export]]
-//void external_sort( std::string inputfile, std::string outputfile ){
-//    mergesort<std::string> test(inputfile, outputfile, 1000000);
-//    return;
-//}
 
 
 

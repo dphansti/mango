@@ -103,15 +103,15 @@ BEGIN_RCPP
     return __sexp_result;
 END_RCPP
 }
-// external_sort
-void external_sort(std::string inputfile, std::string outputfile);
-RcppExport SEXP mango_external_sort(SEXP inputfileSEXP, SEXP outputfileSEXP) {
+// buildTagAlign
+void buildTagAlign(std::string bedpefile, std::string TagAlignfile);
+RcppExport SEXP mango_buildTagAlign(SEXP bedpefileSEXP, SEXP TagAlignfileSEXP) {
 BEGIN_RCPP
     {
         Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< std::string >::type inputfile(inputfileSEXP );
-        Rcpp::traits::input_parameter< std::string >::type outputfile(outputfileSEXP );
-        external_sort(inputfile, outputfile);
+        Rcpp::traits::input_parameter< std::string >::type bedpefile(bedpefileSEXP );
+        Rcpp::traits::input_parameter< std::string >::type TagAlignfile(TagAlignfileSEXP );
+        buildTagAlign(bedpefile, TagAlignfile);
     }
     return R_NilValue;
 END_RCPP
