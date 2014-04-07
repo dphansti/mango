@@ -14,5 +14,4 @@ LaTeX: pdfLaTeX
 
 BuildType: Package
 PackageInstallArgs: --no-multiarch --with-keep.source
-PackageBuildBinaryArgs: -std=c++11
 PackageRoxygenize: rd

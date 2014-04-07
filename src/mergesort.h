@@ -11,12 +11,12 @@ using namespace std;
 
 #define SSTR( x ) dynamic_cast< std::ostringstream & >( \
         ( std::ostringstream() << std::dec << x ) ).str()
-        
+
 //class template declaration
-template<class T> class mergesort{
+template<class T> class externalMergesort{
 public:
-	mergesort(string inFileName, string outFileName);
-	mergesort(string inFileName, string outFileName, int maxDequeSize);
+	externalMergesort(string inFileName, string outFileName);
+	externalMergesort(string inFileName, string outFileName, int maxDequeSize);
 
 private:
 	deque<T> sort(deque<T> &data);
@@ -42,7 +42,7 @@ private:
 
 //mergesort(inFileName, outFileName)
 //takes a filename and a maximum number of deque items to have in memory at one time
-template<class T> mergesort<T>::mergesort(string inFileName, string outFileName){
+template<class T> externalMergesort<T>::externalMergesort(string inFileName, string outFileName){
 	ifstream inputFile;
 
 	this->maxDequeSize = 0;
@@ -71,7 +71,7 @@ template<class T> mergesort<T>::mergesort(string inFileName, string outFileName)
 
 //mergesort(inFileName, outFileName, maxDequeSize)
 //takes a filename and a maximum number of deque items to have in memory at one time
-template<class T> mergesort<T>::mergesort(string inFileName, string outFileName, int maxDequeSize){
+template<class T> externalMergesort<T>::externalMergesort(string inFileName, string outFileName, int maxDequeSize){
 	int numFiles;
 	ifstream inputFile;
 
@@ -105,7 +105,7 @@ template<class T> mergesort<T>::mergesort(string inFileName, string outFileName,
 //////////
 //performs mergesort algorithm
 //the original deque is destroyed, the sorted deque is returned be the function
-template<class T> deque<T> mergesort<T>::sort(deque<T> &right){
+template<class T> deque<T> externalMergesort<T>::sort(deque<T> &right){
 	int size = right.size();
 
 	if (size <= 1){
@@ -136,7 +136,7 @@ template<class T> deque<T> mergesort<T>::sort(deque<T> &right){
 //merge()//
 ///////////
 //merges two sorted deques together and returns the sorted deque
-template<class T> deque<T> mergesort<T>::merge(deque<T> &left, deque<T> &right){
+template<class T> deque<T> externalMergesort<T>::merge(deque<T> &left, deque<T> &right){
 	deque<T> result;
   int counter = 0;
   
@@ -169,7 +169,7 @@ template<class T> deque<T> mergesort<T>::merge(deque<T> &left, deque<T> &right){
 //readInputFile()//
 ///////////////////
 //readInputFile reads from the input file and writes an output file for each deque
-template<class T> int mergesort<T>::readInputFile(ifstream &inputFile){
+template<class T> int externalMergesort<T>::readInputFile(ifstream &inputFile){
 	deque<T> data;
 	T temp;
 	int fileCount = 0;
@@ -215,7 +215,7 @@ template<class T> int mergesort<T>::readInputFile(ifstream &inputFile){
 //readFile()//
 //////////////
 //reads an ifstream file and stores the data in a deque. returns a bool indicating if the file has not reached EOF
-template<class T> bool mergesort<T>::readFile(ifstream &file, deque<T> &data){
+template<class T> bool externalMergesort<T>::readFile(ifstream &file, deque<T> &data){
 	T temp;
 
 	if(maxDequeSize > 0){
@@ -238,7 +238,7 @@ template<class T> bool mergesort<T>::readFile(ifstream &file, deque<T> &data){
 ///////////////
 //opens a file with the specified filename and prints the contents of the deque to it. 
 //if append is true, the data will be appended to the file, else it will be overwritten
-template<class T> void mergesort<T>::printFile(string fileName, deque<T> &data, bool append){
+template<class T> void externalMergesort<T>::printFile(string fileName, deque<T> &data, bool append){
 
 	ofstream outputFile;
 	
@@ -262,7 +262,7 @@ template<class T> void mergesort<T>::printFile(string fileName, deque<T> &data, 
 //mergeFiles()//
 ////////////////
 //merges the sortfiles until there is one file left
-template<class T> void mergesort<T>::mergeFiles(int numFiles){
+template<class T> void externalMergesort<T>::mergeFiles(int numFiles){
 	ifstream inFile1, inFile2;
 	ofstream outFile;
 	string fileName1, fileName2;
@@ -331,7 +331,7 @@ template<class T> void mergesort<T>::mergeFiles(int numFiles){
 //compareFront()//
 ////////////////
 //sorts by columns by type instead of just strings
-template<class T> bool mergesort<T>::compareFront(string left, string right) {
+template<class T> bool externalMergesort<T>::compareFront(string left, string right) {
   string stringLeft, stringRight;
   double numLeft, numRight;
   
@@ -371,7 +371,7 @@ template<class T> bool mergesort<T>::compareFront(string left, string right) {
   return left < right;
 }
 
-template<class T> bool mergesort<T>::is_number(const std::string& s)
+template<class T> bool externalMergesort<T>::is_number(const std::string& s)
 {
   std::istringstream ss(s);
   double d;

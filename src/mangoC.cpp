@@ -21,7 +21,7 @@ using namespace std;
 // [[Rcpp::export]]
 std::string vector_join( const std::vector<std::string>& v, const std::string& token ){
     ostringstream result;
-    for (typename std::vector<std::string>::const_iterator i = v.begin(); i != v.end(); i++){
+    for (std::vector<std::string>::const_iterator i = v.begin(); i != v.end(); i++){
         if (i != v.begin()) result << token;
         result << *i;
     }
@@ -512,7 +512,7 @@ std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase)
 // Define a function that joins vectors of strings
 // [[Rcpp::export]]
 void external_sort( std::string inputfile, std::string outputfile ){
-    mergesort<string> test(inputfile, outputfile, 1000000);
+    externalMergesort <string> externalMergeSorter(inputfile, outputfile, 1000000);
     return;
 }
 
