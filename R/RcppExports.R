@@ -25,7 +25,7 @@ splitBedpe <- function(bedpein, outnamebase) {
     .Call('mango_splitBedpe', PACKAGE = 'mango', bedpein, outnamebase)
 }
 
-external_sort <- function(inputfile, outputfile) {
-    invisible(.Call('mango_external_sort', PACKAGE = 'mango', inputfile, outputfile))
+buildTagAlign <- function(bedpefile, TagAlignfile) {
+    invisible(.Call('mango_buildTagAlign', PACKAGE = 'mango', bedpefile, TagAlignfile))
 }
 

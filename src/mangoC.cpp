@@ -21,7 +21,7 @@ using namespace std;
 // [[Rcpp::export]]
 std::string vector_join( const std::vector<std::string>& v, const std::string& token ){
     ostringstream result;
-    for (typename std::vector<std::string>::const_iterator i = v.begin(); i != v.end(); i++){
+    for (std::vector<std::string>::const_iterator i = v.begin(); i != v.end(); i++){
         if (i != v.begin()) result << token;
         result << *i;
     }
@@ -510,6 +510,7 @@ std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase)
 }
 
 // [[Rcpp::export]]
+<<<<<<< HEAD
 void buildTagAlign(std::string bedpefile, std::string TagAlignfile) {
     // establish streams
     ifstream infile (bedpefile.c_str());
@@ -573,6 +574,11 @@ void buildTagAlign(std::string bedpefile, std::string TagAlignfile) {
     // close streams
     infile.close();
     outfile.close();
+=======
+void external_sort( std::string inputfile, std::string outputfile ){
+    externalMergesort <string> externalMergeSorter(inputfile, outputfile, 1000000);
+    return;
+>>>>>>> d8080ed7ae1c1ab1d5be35e8d5fa6967fb703ee4
 }
 
 
