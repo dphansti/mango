@@ -19,6 +19,7 @@ if (usr == "doug")
 {
   bowtiepath = "/Users/dougphanstiel/Tools/bowtie-1.0.0/bowtie"
   bowtieref  = "/Users/dougphanstiel/Tools/bowtie-1.0.0/indexes/hg19"
+  bedtoolspath = "/Users/dougphanstiel/Tools/bedtools-2.17.0/bin/bedtools"
   macs2path  = "/usr/local/bin/macs2"
   outdir     = "/Users/dougphanstiel/Desktop/mango2014test/"
   bigfastqs = c(paste(outdir,"NH.K562_RAD21_K562_std_2.1_1.fastq",sep=""),
@@ -82,12 +83,11 @@ bedpefilesortrmdup = paste(outname ,".sort.rmdup.bedpe",sep="")
 print ("building bedpe")
 buildBedpe(sam1 =sam1, sam2 = sam2, bedpefile = bedpefile);
 
-# sort bedpe (look into the C++ library STXXL to avoid using unix sort command)
+# sort bedpe
 print ("sorting bedpe")
 external_sort(bedpefile, bedpefilesort)
 # old school sort until external_sortis working on osx
 #system(paste ("cat ",bedpefile," | sort -k1,1 -k2,2g > ",bedpefilesort ,sep=""   ))
-
 
 # filter duplicates
 print ("removing PCR duplicates")
@@ -107,23 +107,39 @@ par(mfrow=c(3,3))
 
 rwrpetsfile  = paste(outname,".rwr.bedpe",sep="")
 obspetsfile  = paste(outname,".obs.bedpe",sep="")
+rwrreadsfile  = paste(outname,".rwr.bed",sep="")
+obsreadsfile  = paste(outname,".obs.bed",sep="")
 if (file.exists(rwrpetsfile)) file.remove(rwrpetsfile)
 if (file.exists(obspetsfile)) file.remove(obspetsfile)
+if (file.exists(rwrreadsfile)) file.remove(rwrreadsfile)
+if (file.exists(obsreadsfile)) file.remove(obsreadsfile)
 
 # split into reads
+firstsample = TRUE
+counter = 0
 for (f in filestorewire)
 {
+
+  print (f)
   readsfile   = paste(f,".bed",sep="")
   petsfile  = paste(f,".bedpe",sep="")
-  densities   = rewire(readsfile,petsfile,obspetsfile,rwrpetsfile)
+  densities   = rewire(readsfile,petsfile,obspetsfile,rwrpetsfile,obsreadsfile,rwrreadsfile,counter=counter)
   
+  # keep track of read numbers
+  counter = densities[[4]]
+  
+  # remove files for individual chromosomes
+  if (file.exists(readsfile)) file.remove(readsfile)
+  if (file.exists(petsfile)) file.remove(petsfile)
+  
+  # plot the distributions
   par(ann=F)
   plot(densities[[1]],col='red',xaxt='n')
   axis(side=1,at=seq(1,8,by=1),labels = 10^seq(1,8,by=1),las=2)
   points(densities[[2]],col='black',type='l')
   mtext("distance",side=1,line=3.5,font=2)
   mtext(paste("Chromosome", densities[[3]]),side=3,line=1,font=1.0,cex=2)
-  legend("topright",inset = .05,legend=c("observed","rewired"),col=c("red","black"),pch=15) 
+  legend("topright",inset = .05,legend=c("observed","rewired"),col=c("red","black"),pch=15)
 }
 dev.off()
 
@@ -135,51 +151,34 @@ peaksfile     = outname
 # reverse strands for peak calling
 buildTagAlign(bedpefilesortrmdup ,tagAlignfile )
 
-# # call peaks
-# callpeaks(macs2path,tagAlignfile,peaksfile,pvalue=.00001)
-# 
-# # Define a function that calls peaks using macs2
-# callpeaks <- function(macs2path,tagAlignfile,peaksfile,pvalue=.00001)
-# {
-#   command = paste([macs2path," callpeak -t ",tagAlignfile," -f BED -n ",peaksfile," -p ",pvalue,sep=" ")
-#   
-#   
-# }
-# 
-# 
-# # call peaks using MACS2
-# if peakcaller == "MACS2":
-#   command = "".join([peakcallerpath," callpeak -t ",readsfile," -f BED -n ",peaksfile," --nomodel --shiftsize ",shiftsize," -p ",pvalue  ])
-# if verbose == "T":
-#   print command
-# os.system(command)
-# 
-# # now make a calledpeaks.bed FileType
-# raw_peak_file = peaksfile + "_peaks.narrowPeak"		
-# f = open(raw_peak_file,'r')
-# o = open(peaksfile,'w')
-# 
-# # this just changes the name of the peaks (from something long into a unique integer)
-# for l in f:
-#   e = l.strip().split("\t")
-# e[3] = e[3].split("_")[len(e[3].split("_"))-1]
-# print >>o, "\t".join(e)
-# f.close()
-# o.close()
-# 
-# # remove extra peak files
-# for tmppeakfile in [peaksfile + "_peaks.narrowPeak",
-#                     peaksfile + "_peaks.bed",
-#                     peaksfile + "_peaks.xls",
-#                     peaksfile + "_summits.bed"]:	
-#   os.remove(tmppeakfile)
-# 
-
+# call peaks
+callpeaks(macs2path,tagAlignfile,peaksfile,pvalue=.00001)
 
 ##################################### group pairs #####################################
 
+# split reads by chromosome
 
 
+
+# do intersect bed to associate reads with peaks
+for (datatype in c("obs","rwr"))
+{
+  readsfile    = paste(outname,".", datatype , ".bed",sep="")
+  overlapfile  = paste(outname,".", datatype , ".bedNpeak",sep="")
+  
+  command = paste(bedtoolspath , " intersect -wo -a " ,readsfile ,
+                  " -b ", peaksfile, "_peaks.narrowPeak > ",overlapfile,sep="")
+  system(command)
+}
+
+# count reads and peaks
+for (datatype in c("obs","rwr"))
+{
+  overlapfile   = paste(outname,".", datatype , ".bedNpeak",sep="")
+  petpairsfile = paste(outname,".", datatype , ".bedpe",sep="")
+  peakpairsfile = paste(outname,".", datatype , ".pairs.bedpe",sep="")
+  findPairs(overlapfile,petpairsfile,peakpairsfile)
+}
 
 
 ##################################### call pairs #####################################

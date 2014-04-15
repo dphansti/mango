@@ -416,10 +416,59 @@ void removeDupBedpe(std::string infile,std::string outfile)
     }
 }
 
+
+//// Define a function that puts pairs together
+//void findPairs(std::string overlapfile, std::string petpairsfile,std::string peakpairsfile)
+//{
+//  
+//}
+//
+//// Define a function that puts pairs together
+//// [[Rcpp::export]]
+//void findPairs(std::string overlapfile, std::string petpairsfile,std::string peakpairsfile)
+//{
+//  // streams
+//  ifstream input(overlapfile.c_str());
+//
+//  std::string curchrom = NULL;
+//  std::string line;
+//  std::map<std::string, std::string> readpeaks;
+//  
+//  // read in file line by line store currentline and last line
+//    while (getline(overlapfile, line))
+//    {
+//        // split lines
+//        std::vector<std::string> currEall = string_split(line,"\t");
+//        
+//        // if you come to a new chromosome
+//        if (curchrom != e[0])
+//        {
+//          // clear the dictionary
+//          readpeaks.clear();
+//          
+//          // as long as it is not the first line
+//          if (curchrom != NULL)
+//          {
+//            // go through pet file and count pairs
+//            
+//            
+//            
+//          }
+//        }
+//        
+//        
+//        
+//    }
+//  
+//  
+//}
+
+
 // Define a function splits bedpe file into reads and PETs by chromosome
 // [[Rcpp::export]]
 std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase)
 {
+    // keep track of output files
     std::vector<std::string> outputvector;
     
     // streams
@@ -496,21 +545,22 @@ std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase)
         *petsoutput[chrom1] << "\n";
     }
     
-    // Close all of the files
-    //for(auto& pair : readoutput) {
-    //    delete pair.second;
-    //    pair.second = 0;
-    //}
-    // Close all of the files
-    //for(auto& pair : petsoutput) {
-    //    delete pair.second;
-    //    pair.second = 0;
-    //}
+    // close reads files
+    for (std::map<std::string, std::ofstream*>::iterator i = readoutput.begin() ; i != readoutput.end() ; i ++ ) {
+      i->second->close();
+    }
+    
+    // close bedpe files
+    for (std::map<std::string, std::ofstream*>::iterator i = petsoutput.begin() ; i != petsoutput.end() ; i ++ ) {
+      i->second->close();
+    }    
+
     return outputvector;
 }
 
 // [[Rcpp::export]]
 void buildTagAlign(std::string bedpefile, std::string TagAlignfile) {
+    
     // establish streams
     ifstream infile (bedpefile.c_str());
     ofstream outfile ( TagAlignfile.c_str() );

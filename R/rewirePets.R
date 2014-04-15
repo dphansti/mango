@@ -1,5 +1,5 @@
 
-rewire <- function(readsfile,petsfile,obspetsfile,rwrpetsfile,reps = 10)
+rewire <- function(readsfile,petsfile,obspetsfile,rwrpetsfile,obsreadsfile,rwrreadsfile,reps = 10,counter=0)
 {
   bedpe     = read.table(petsfile,header=FALSE,sep="\t")
   # remove interchroms
@@ -84,8 +84,21 @@ rewire <- function(readsfile,petsfile,obspetsfile,rwrpetsfile,reps = 10)
   densities[[3]] = chromosome
   print(paste("Chromosome", chromosome))
 
+  randpair.sort.uniq[,7] = paste("rwr",( 1:nrow(randpair.sort.uniq) + counter),sep="_")
+  bedpe[,7]              = paste("obs",( 1:nrow(bedpe              ) + counter),sep="_")
+  
+  # write to new bedpe files
   write.table(randpair.sort.uniq[,1:10],file=rwrpetsfile,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,append=TRUE)
   write.table(bedpe[,1:10],file=obspetsfile,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,append=TRUE)
+  
+  # write to new bed files
+  write.table(randpair.sort.uniq[,c(1,2,3,7,8,9)],file=rwrreadsfile,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,append=TRUE)
+  write.table(randpair.sort.uniq[,c(4,5,6,7,8,10)],file=rwrreadsfile,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,append=TRUE)
+  
+  write.table(bedpe[,c(1,2,3,7,8,9)],file=obsreadsfile,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,append=TRUE)
+  write.table(bedpe[,c(4,5,6,7,8,10)],file=obsreadsfile,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,append=TRUE)
+  
+  densities[[4]] = nrow(bedpe) + counter
   
   return (densities)
 }
