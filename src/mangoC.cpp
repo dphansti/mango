@@ -417,6 +417,10 @@ void removeDupBedpe(std::string infile,std::string outfile)
 }
 
 
+
+
+
+
 //// Define a function that puts pairs together
 //void findPairs(std::string overlapfile, std::string petpairsfile,std::string peakpairsfile)
 //{
@@ -464,9 +468,52 @@ void removeDupBedpe(std::string infile,std::string outfile)
 //}
 
 
+
+// Define a function splits bed file by chromosome
+// [[Rcpp::export]]
+std::vector<std::string> splitBedbyChrom(std::string bedfile,std::string outnamebase)
+{
+    
+    // streams
+    ifstream file1 (bedfile.c_str());
+    std::map<std::string, std::ofstream*> readoutput;
+    
+    std::string line;
+    // read in file line by line store currentline and last line
+    while (getline(file1, line))
+    {
+        // split lines
+        std::vector<std::string> currEall = string_split(line,"\t");
+        
+        // add output string to dcit if neccesary
+        std::string chrom = currEall[0];
+        if ( (readoutput.find(chrom) == readoutput.end()) & (chrom != "*" )  ) {
+            std::string outname = outnamebase + "." + chrom  + ".bed";
+            readoutput[chrom] = new std::ofstream(outname.c_str());
+        }
+  
+        // print reads
+        if (chrom != "*")
+        {
+            *readoutput[chrom] << line;
+        }
+    }
+    
+    
+    // close reads files
+    std::vector<std::string> chromosomes;
+    for (std::map<std::string, std::ofstream*>::iterator i = readoutput.begin() ; i != readoutput.end() ; i ++ ) {
+      i->second->close();
+      chromosomes.push_back(i->first);
+    }
+    
+    return (chromosomes);
+}
+
+
 // Define a function splits bedpe file into reads and PETs by chromosome
 // [[Rcpp::export]]
-std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase)
+std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase, bool printreads = true , bool printpets = true)
 {
     // keep track of output files
     std::vector<std::string> outputvector;
@@ -503,30 +550,35 @@ std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase)
         std::string read1 = vector_join(read1vec,"\t");
         std::string read2 = vector_join(read2vec,"\t");
         
-        // print reads
+        // get chromosome of each read
         std::string chrom1 = currEall[0];
-        if ( (readoutput.find(chrom1) == readoutput.end()) & (chrom1 != "*" )  ) {
-            
-            std::string outname = outnamebase + "." + chrom1 + ".bed";
-            readoutput[chrom1] = new std::ofstream(outname.c_str());
-        }
         std::string chrom2 = currEall[3];
-        if ( (readoutput.find(chrom2) == readoutput.end()) & (chrom2 != "*" ) ) {
-            
-            std::string outname = outnamebase + "." + chrom2 + ".bed";
-            readoutput[chrom2] = new std::ofstream(outname.c_str());
-        }
+        
+        if (printreads == true)
+        {
+          // print reads
+          
+          if ( (readoutput.find(chrom1) == readoutput.end()) & (chrom1 != "*" )  ) {  
+              std::string outname = outnamebase + "." + chrom1 + ".bed";
+              readoutput[chrom1] = new std::ofstream(outname.c_str());
+          }
+          
+          if ( (readoutput.find(chrom2) == readoutput.end()) & (chrom2 != "*" ) ) {
+              std::string outname = outnamebase + "." + chrom2 + ".bed";
+              readoutput[chrom2] = new std::ofstream(outname.c_str());
+          }
 
-        // print reads
-        if (chrom1 != "*")
-        {
-            *readoutput[chrom1] << read1;
-            *readoutput[chrom1] << "\n";
-        }
-        if (chrom2 != "*")
-        {
-            *readoutput[chrom2] << read2;
-            *readoutput[chrom2] << "\n";
+          // print reads
+          if (chrom1 != "*")
+          {
+              *readoutput[chrom1] << read1;
+              *readoutput[chrom1] << "\n";
+          }
+          if (chrom2 != "*")
+          {
+              *readoutput[chrom2] << read2;
+              *readoutput[chrom2] << "\n";
+          }
         }
         
         if ((chrom1 == "*") | (chrom2 == "*"))
@@ -538,7 +590,7 @@ std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase)
             
             std::string outname = outnamebase + "." + chrom1 + ".bedpe";
             petsoutput[chrom1] = new std::ofstream(outname.c_str());
-            outputvector.push_back(outnamebase + "." + chrom1);
+            outputvector.push_back( chrom1);
             
         }
         *petsoutput[chrom1] << line;

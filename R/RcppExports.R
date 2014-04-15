@@ -21,8 +21,12 @@ removeDupBedpe <- function(infile, outfile) {
     invisible(.Call('mango_removeDupBedpe', PACKAGE = 'mango', infile, outfile))
 }
 
-splitBedpe <- function(bedpein, outnamebase) {
-    .Call('mango_splitBedpe', PACKAGE = 'mango', bedpein, outnamebase)
+splitBedbyChrom <- function(bedfile, outnamebase) {
+    .Call('mango_splitBedbyChrom', PACKAGE = 'mango', bedfile, outnamebase)
+}
+
+splitBedpe <- function(bedpein, outnamebase, printreads = TRUE, printpets = TRUE) {
+    .Call('mango_splitBedpe', PACKAGE = 'mango', bedpein, outnamebase, printreads, printpets)
 }
 
 buildTagAlign <- function(bedpefile, TagAlignfile) {

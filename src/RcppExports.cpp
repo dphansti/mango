@@ -87,16 +87,34 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// splitBedbyChrom
+std::vector<std::string> splitBedbyChrom(std::string bedfile, std::string outnamebase);
+RcppExport SEXP mango_splitBedbyChrom(SEXP bedfileSEXP, SEXP outnamebaseSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< std::string >::type bedfile(bedfileSEXP );
+        Rcpp::traits::input_parameter< std::string >::type outnamebase(outnamebaseSEXP );
+        std::vector<std::string> __result = splitBedbyChrom(bedfile, outnamebase);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
 // splitBedpe
-std::vector<std::string> splitBedpe(std::string bedpein, std::string outnamebase);
-RcppExport SEXP mango_splitBedpe(SEXP bedpeinSEXP, SEXP outnamebaseSEXP) {
+std::vector<std::string> splitBedpe(std::string bedpein, std::string outnamebase, bool printreads = true, bool printpets = true);
+RcppExport SEXP mango_splitBedpe(SEXP bedpeinSEXP, SEXP outnamebaseSEXP, SEXP printreadsSEXP, SEXP printpetsSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
         Rcpp::traits::input_parameter< std::string >::type bedpein(bedpeinSEXP );
         Rcpp::traits::input_parameter< std::string >::type outnamebase(outnamebaseSEXP );
-        std::vector<std::string> __result = splitBedpe(bedpein, outnamebase);
+        Rcpp::traits::input_parameter< bool >::type printreads(printreadsSEXP );
+        Rcpp::traits::input_parameter< bool >::type printpets(printpetsSEXP );
+        std::vector<std::string> __result = splitBedpe(bedpein, outnamebase, printreads, printpets);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);

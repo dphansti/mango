@@ -107,8 +107,8 @@ par(mfrow=c(3,3))
 
 rwrpetsfile  = paste(outname,".rwr.bedpe",sep="")
 obspetsfile  = paste(outname,".obs.bedpe",sep="")
-rwrreadsfile  = paste(outname,".rwr.bed",sep="")
-obsreadsfile  = paste(outname,".obs.bed",sep="")
+rwrreadsfile = paste(outname,".rwr.bed",sep="")
+obsreadsfile = paste(outname,".obs.bed",sep="")
 if (file.exists(rwrpetsfile)) file.remove(rwrpetsfile)
 if (file.exists(obspetsfile)) file.remove(obspetsfile)
 if (file.exists(rwrreadsfile)) file.remove(rwrreadsfile)
@@ -122,7 +122,7 @@ for (f in filestorewire)
 
   print (f)
   readsfile   = paste(f,".bed",sep="")
-  petsfile  = paste(f,".bedpe",sep="")
+  petsfile    = paste(f,".bedpe",sep="")
   densities   = rewire(readsfile,petsfile,obspetsfile,rwrpetsfile,obsreadsfile,rwrreadsfile,counter=counter)
   
   # keep track of read numbers
@@ -156,9 +156,17 @@ callpeaks(macs2path,tagAlignfile,peaksfile,pvalue=.00001)
 
 ##################################### group pairs #####################################
 
+# files to split
+rwrreadsfile  = paste(outname,".rwr.bed",sep="")
+obsreadsfile  = paste(outname,".obs.bed",sep="")
+rwrpetsfile   = paste(outname,".rwr.bedpe",sep="")
+obspetsfile   = paste(outname,".obs.bedpe",sep="")
+
 # split reads by chromosome
-
-
+rwrreadschroms = splitBedbyChrom(rwrreadsfile,paste(outname, ".rwr",sep="")) 
+obsreadschroms = splitBedbyChrom(obsreadsfile,paste(outname, ".obs",sep="")) 
+rwrpetschroms  = splitBedpe(rwrpetsfile,paste(outname,".rwr",sep=""),printreads=FALSE) 
+obspetschroms  = splitBedpe(obspetsfile,paste(outname,".rwr",sep=""),printreads=FALSE)
 
 # do intersect bed to associate reads with peaks
 for (datatype in c("obs","rwr"))
