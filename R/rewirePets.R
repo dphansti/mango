@@ -87,17 +87,31 @@ rewire <- function(readsfile,petsfile,obspetsfile,rwrpetsfile,obsreadsfile,rwrre
   randpair.sort.uniq[,7] = paste("rwr",( 1:nrow(randpair.sort.uniq) + counter),sep="_")
   bedpe[,7]              = paste("obs",( 1:nrow(bedpe              ) + counter),sep="_")
   
+  # add columns to use to define reads
+  randpair.sort.uniq[,11] = rep(1,nrow(randpair.sort.uniq))
+  randpair.sort.uniq[,12] = rep(2,nrow(randpair.sort.uniq))
+  bedpe[,11] = rep(1,nrow(bedpe))
+  bedpe[,12] = rep(2,nrow(bedpe))
+  
   # write to new bedpe files
   write.table(randpair.sort.uniq[,1:10],file=rwrpetsfile,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,append=TRUE)
   write.table(bedpe[,1:10],file=obspetsfile,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,append=TRUE)
   
   # write to new bed files
-  write.table(randpair.sort.uniq[,c(1,2,3,7,8,9)],file=rwrreadsfile,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,append=TRUE)
-  write.table(randpair.sort.uniq[,c(4,5,6,7,8,10)],file=rwrreadsfile,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,append=TRUE)
-  
-  write.table(bedpe[,c(1,2,3,7,8,9)],file=obsreadsfile,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,append=TRUE)
-  write.table(bedpe[,c(4,5,6,7,8,10)],file=obsreadsfile,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,append=TRUE)
-  
+  readstoprint = randpair.sort.uniq[,c(1,2,3,7,8,9)]
+  readstoprint[,4] = paste(readstoprint[,4],"1",sep=".")
+  write.table(readstoprint,file=rwrreadsfile,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,append=TRUE)
+  readstoprint = randpair.sort.uniq[,c(4,5,6,7,8,10)]
+  readstoprint[,4] = paste(readstoprint[,4],"2",sep=".")
+  write.table(readstoprint,file=rwrreadsfile,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,append=TRUE)
+
+  readstoprint = bedpe[,c(1,2,3,7,8,9)]
+  readstoprint[,4] = paste(readstoprint[,4],"1",sep=".")
+  write.table(readstoprint,file=obsreadsfile,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,append=TRUE)
+  readstoprint = bedpe[,c(4,5,6,7,8,10)]
+  readstoprint[,4] = paste(readstoprint[,4],"2",sep=".")
+  write.table(readstoprint,file=obsreadsfile,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,append=TRUE)
+
   densities[[4]] = nrow(bedpe) + counter
   
   return (densities)

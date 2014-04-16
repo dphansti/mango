@@ -21,6 +21,10 @@ removeDupBedpe <- function(infile, outfile) {
     invisible(.Call('mango_removeDupBedpe', PACKAGE = 'mango', infile, outfile))
 }
 
+findPairs <- function(overlapfile, petpairsfile, interactionfile) {
+    invisible(.Call('mango_findPairs', PACKAGE = 'mango', overlapfile, petpairsfile, interactionfile))
+}
+
 splitBedbyChrom <- function(bedfile, outnamebase) {
     .Call('mango_splitBedbyChrom', PACKAGE = 'mango', bedfile, outnamebase)
 }

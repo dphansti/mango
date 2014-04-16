@@ -17,6 +17,7 @@ using namespace Rcpp;
 #include "mergesort.h"
 using namespace std;
 
+
 // Define a function that joins vectors of strings
 // [[Rcpp::export]]
 std::string vector_join( const std::vector<std::string>& v, const std::string& token ){
@@ -427,45 +428,158 @@ void removeDupBedpe(std::string infile,std::string outfile)
 //  
 //}
 //
-//// Define a function that puts pairs together
-//// [[Rcpp::export]]
-//void findPairs(std::string overlapfile, std::string petpairsfile,std::string peakpairsfile)
-//{
-//  // streams
-//  ifstream input(overlapfile.c_str());
-//
-//  std::string curchrom = NULL;
-//  std::string line;
-//  std::map<std::string, std::string> readpeaks;
-//  
-//  // read in file line by line store currentline and last line
-//    while (getline(overlapfile, line))
-//    {
-//        // split lines
-//        std::vector<std::string> currEall = string_split(line,"\t");
-//        
-//        // if you come to a new chromosome
-//        if (curchrom != e[0])
-//        {
-//          // clear the dictionary
-//          readpeaks.clear();
-//          
-//          // as long as it is not the first line
-//          if (curchrom != NULL)
-//          {
-//            // go through pet file and count pairs
-//            
-//            
-//            
-//          }
-//        }
-//        
-//        
-//        
-//    }
-//  
-//  
-//}
+
+
+// Define a class to keep track of peak information
+class peak{
+public:
+  std::string name;
+  std::string chrom;
+  int start;
+  int end;
+  int intra;
+};
+
+// Define a class to keep track of pair information
+class chiapair{
+public:
+  std::string pairname;
+  std::string p1name;
+  std::string p2name;
+  std::string p1chrom;
+  std::string p2chrom;
+  int p1start;
+  int p1end;
+  int p2start;
+  int p2end;
+  int p1intra;
+  int p2intra;
+  int linking;
+  int distance;
+};
+
+
+
+// Define a function that puts pairs together
+// [[Rcpp::export]]
+void findPairs(std::string overlapfile, std::string petpairsfile,std::string interactionfile)
+{
+  // (1) Read in overlap info
+  
+  // streams
+  ifstream input(overlapfile.c_str());
+
+  std::string line;
+  //std::map<std::string, peak> peakinfodict;
+  std::map<std::string, peak> peakinfodict;
+  std::map<std::string, std::vector<std::string> > readpeakdict;
+  
+  // read in file line by line store currentline and last line
+    while (getline(input, line))
+    {
+        // split lines
+        std::vector<std::string> currEall = string_split(line,"\t");
+        string readname = currEall[3];
+        string peakname = currEall[9];
+      
+        // add info to peak dict
+        if (peakinfodict.find(peakname) == peakinfodict.end())
+        {
+            peak p = *(new peak());
+            peakinfodict.insert(std::pair<string,peak>(peakname,p));
+            peakinfodict[peakname].name  = currEall[9];
+            peakinfodict[peakname].chrom = currEall[6];
+            peakinfodict[peakname].start = atoi( currEall[7].c_str() );
+            peakinfodict[peakname].end   = atoi( currEall[8].c_str() );
+            peakinfodict[peakname].intra = 0;
+        }
+        peakinfodict[peakname].intra++;
+        
+        // add info to readpeak dict
+        if (readpeakdict.find(peakname) == readpeakdict.end())
+        {
+            std::vector<std::string> v = *(new std::vector<std::string>);
+            readpeakdict.insert(std::pair<string,std::vector<std::string> > (readname, v));
+        }
+        readpeakdict[readname].push_back(peakname);
+    }
+  input.close();
+  
+  // (1) Go through PETs and make interactions
+  ifstream inputpets(petpairsfile.c_str());
+
+  std::string line2;
+  std::map<std::string, chiapair> pairdict;
+  
+  // read in file line by line store currentline and last line
+  while (getline(inputpets, line2))
+  {
+      // split lines
+      std::vector<std::string> currEall = string_split(line2,"\t");
+      string readname  = currEall[6];
+      string r1 = readname + ".1";
+      string r2 = readname + ".2";
+      std::vector<std::string> p1s = readpeakdict[r1];
+      std::vector<std::string> p2s = readpeakdict[r2];
+      
+      // interate through all combinations of peaks
+      for (std::vector<std::string>::iterator p1 = p1s.begin() ; p1 != p1s.end() ; ++p1)
+      {
+        for (std::vector<std::string>::iterator p2 = p2s.begin() ; p2 != p2s.end() ; ++p2)
+        {
+          peak thep1 = peakinfodict[*p1];
+          peak thep2 = peakinfodict[*p2];
+          
+          // swith the order of the peaks based on start position
+          if (peakinfodict[*p1].start > peakinfodict[*p2].start   )
+          {
+            thep2 = peakinfodict[*p1];
+            thep1 = peakinfodict[*p2];
+          }
+
+          // join the peak names for the name of the pair
+          std::string pairname =  thep1.name + "_" + thep2.name;
+
+          // add info to pair dict
+          if (pairdict.find(pairname) == pairdict.end())
+          {
+            chiapair pa = *(new chiapair());
+            pairdict.insert(std::pair<string,chiapair>(pairname,pa));
+            pairdict[pairname].pairname  = pairname; 
+            pairdict[pairname].p1name  = thep1.name; 
+            pairdict[pairname].p2name  = thep2.name; 
+            pairdict[pairname].p1chrom  = thep1.chrom; 
+            pairdict[pairname].p2chrom  = thep2.chrom; 
+            pairdict[pairname].p1start  = thep1.start; 
+            pairdict[pairname].p1end  = thep1.end;
+            pairdict[pairname].p2start  = thep2.start; 
+            pairdict[pairname].p2end  = thep2.end; 
+            pairdict[pairname].p1intra  = thep1.intra; 
+            pairdict[pairname].p2intra  = thep2.intra; 
+            pairdict[pairname].linking  = 0; 
+            pairdict[pairname].distance  = thep2.start - thep1.end; 
+          }
+
+          //   STOP POINT 
+           
+           cout << IntToString(thep1.start) + " " + IntToString(thep1.end) + " " +
+                   IntToString(thep2.start) + " " + IntToString(thep2.end);
+          
+         // cout << line2 + "   "  + readname + "  " + *p1 + "   " +  *p2;
+          cout << "\n";
+        }
+      }
+      
+  } 
+  inputpets.close();
+  
+  // print out info to pair file
+  
+  
+  
+  
+  
+}
 
 
 
@@ -496,6 +610,7 @@ std::vector<std::string> splitBedbyChrom(std::string bedfile,std::string outname
         if (chrom != "*")
         {
             *readoutput[chrom] << line;
+            *readoutput[chrom] << "\n";
         }
     }
     

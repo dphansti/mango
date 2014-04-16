@@ -93,13 +93,13 @@ external_sort(bedpefile, bedpefilesort)
 print ("removing PCR duplicates")
 removeDupBedpe(bedpefilesort,bedpefilesortrmdup);
 
-# separate by chrom (making reads and pets files)
-print ("splitting PETs and reads by chromosome")
-filestorewire = splitBedpe(bedpefilesortrmdup,outname);
-
 ##################################### rewire reads #####################################
 
 print ("rewiring PETs")
+
+# separate by chrom (making reads and pets files)
+print ("splitting PETs and reads by chromosome")
+filestorewire = splitBedpe(bedpefilesortrmdup,outname);
 
 # make a pdf to print results
 pdf(paste(outname ,".rw.results.pdf",sep=""),height=10.5,width=10.5)
@@ -117,9 +117,9 @@ if (file.exists(obsreadsfile)) file.remove(obsreadsfile)
 # split into reads
 firstsample = TRUE
 counter = 0
-for (f in filestorewire)
+for (chrom in filestorewire)
 {
-
+  f = paste(outname,".",chrom,sep="")
   print (f)
   readsfile   = paste(f,".bed",sep="")
   petsfile    = paste(f,".bedpe",sep="")
@@ -156,28 +156,64 @@ callpeaks(macs2path,tagAlignfile,peaksfile,pvalue=.00001)
 
 ##################################### group pairs #####################################
 
-# files to split
-rwrreadsfile  = paste(outname,".rwr.bed",sep="")
-obsreadsfile  = paste(outname,".obs.bed",sep="")
-rwrpetsfile   = paste(outname,".rwr.bedpe",sep="")
-obspetsfile   = paste(outname,".obs.bedpe",sep="")
+peaksfile     = paste(outname,"_peaks.narrowPeak",sep="")
 
-# split reads by chromosome
-rwrreadschroms = splitBedbyChrom(rwrreadsfile,paste(outname, ".rwr",sep="")) 
-obsreadschroms = splitBedbyChrom(obsreadsfile,paste(outname, ".obs",sep="")) 
-rwrpetschroms  = splitBedpe(rwrpetsfile,paste(outname,".rwr",sep=""),printreads=FALSE) 
-obspetschroms  = splitBedpe(obspetsfile,paste(outname,".rwr",sep=""),printreads=FALSE)
+# perform intersect bed
+peakOverlap(outname=outname,datatype="obs",peaksfile=peaksfile,
+                        verbose=FALSE)
+peakOverlap(outname=outname,datatype="rwr",peaksfile=peaksfile,
+                          verbose=FALSE) 
 
-# do intersect bed to associate reads with peaks
-for (datatype in c("obs","rwr"))
+
+
+
+# Define a function that finds PET / peak overlaps
+peakOverlap <- function(outname,datatype,peaksfile,verbose=FALSE)
 {
-  readsfile    = paste(outname,".", datatype , ".bed",sep="")
-  overlapfile  = paste(outname,".", datatype , ".bedNpeak",sep="")
+  # (1) Split files by chromosome
+  # files to split
+  totreadsfile  = paste(outname,".", datatype,".bed",  sep="")
+  totpetsfile   = paste(outname,".", datatype,".bedpe",sep="")
   
-  command = paste(bedtoolspath , " intersect -wo -a " ,readsfile ,
-                  " -b ", peaksfile, "_peaks.narrowPeak > ",overlapfile,sep="")
-  system(command)
+  # split reads by chromosome
+  readschroms = splitBedbyChrom(totreadsfile,paste(outname, ".",datatype,sep="")) 
+  petschroms  =      splitBedpe(totpetsfile, paste(outname, ".",datatype,sep=""), printreads=FALSE)
+  
+  # (2) Overlap with peak files
+  for (chrom in petschroms)
+  {
+    readsfile    = paste(outname,"." ,datatype,"." ,chrom, ".bed",sep="")
+    overlapfile  = paste(outname,"." ,datatype,"." ,chrom, ".bedNpeak",sep="")
+    if (file.exists(readsfile) == TRUE)
+    {
+      command = paste(bedtoolspath , " intersect -wo -a " ,readsfile ,
+                      " -b ", peaksfile, " > ",overlapfile,sep="")
+      if (verbose == TRUE)
+      {
+        print (command)
+      }
+      system(command)
+    }
+  }
+  
+  # (3) gather information
+  interactionfile = paste(outname,".", datatype , ".pairs.bedpe",sep="")
+  if (file.exists(interactionfile)) file.remove(interactionfile)
+  
+  for (chrom in petschroms)
+  {
+    overlapfile   = paste(outname,"." ,datatype,"." ,chrom, ".bedNpeak",sep="")
+    petpairsfile  = paste(outname,"." ,datatype,"." ,chrom, ".bedpe",sep="")
+    
+    findPairs(overlapfile,petpairsfile,interactionfile)
+  }
+  
+  # (4) clean up temp files
+  
+  
 }
+
+
 
 # count reads and peaks
 for (datatype in c("obs","rwr"))

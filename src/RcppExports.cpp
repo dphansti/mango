@@ -87,6 +87,20 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// findPairs
+void findPairs(std::string overlapfile, std::string petpairsfile, std::string interactionfile);
+RcppExport SEXP mango_findPairs(SEXP overlapfileSEXP, SEXP petpairsfileSEXP, SEXP interactionfileSEXP) {
+BEGIN_RCPP
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< std::string >::type overlapfile(overlapfileSEXP );
+        Rcpp::traits::input_parameter< std::string >::type petpairsfile(petpairsfileSEXP );
+        Rcpp::traits::input_parameter< std::string >::type interactionfile(interactionfileSEXP );
+        findPairs(overlapfile, petpairsfile, interactionfile);
+    }
+    return R_NilValue;
+END_RCPP
+}
 // splitBedbyChrom
 std::vector<std::string> splitBedbyChrom(std::string bedfile, std::string outnamebase);
 RcppExport SEXP mango_splitBedbyChrom(SEXP bedfileSEXP, SEXP outnamebaseSEXP) {
