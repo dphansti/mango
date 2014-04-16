@@ -418,18 +418,6 @@ void removeDupBedpe(std::string infile,std::string outfile)
 }
 
 
-
-
-
-
-//// Define a function that puts pairs together
-//void findPairs(std::string overlapfile, std::string petpairsfile,std::string peakpairsfile)
-//{
-//  
-//}
-//
-
-
 // Define a class to keep track of peak information
 class peak{
 public:
@@ -538,7 +526,7 @@ void findPairs(std::string overlapfile, std::string petpairsfile,std::string int
           }
 
           // join the peak names for the name of the pair
-          std::string pairname =  thep1.name + "_" + thep2.name;
+          std::string pairname =  thep1.name + ":" + thep2.name;
 
           // add info to pair dict
           if (pairdict.find(pairname) == pairdict.end())
@@ -562,23 +550,52 @@ void findPairs(std::string overlapfile, std::string petpairsfile,std::string int
 
           //   STOP POINT 
            
-           cout << IntToString(thep1.start) + " " + IntToString(thep1.end) + " " +
-                   IntToString(thep2.start) + " " + IntToString(thep2.end);
-          
+         // cout << IntToString(thep1.start) + " " + IntToString(thep1.end) + " " +
+         //           IntToString(thep2.start) + " " + IntToString(thep2.end);
          // cout << line2 + "   "  + readname + "  " + *p1 + "   " +  *p2;
-          cout << "\n";
+         // cout << "\n";
         }
-      }
-      
+      }  
   } 
   inputpets.close();
   
   // print out info to pair file
-  
-  
-  
-  
-  
+  ofstream pairsfilestream (interactionfile.c_str());
+  for (std::map<std::string, chiapair>::iterator cp = pairdict.begin() ; cp != pairdict.end() ; ++cp ) {
+      
+      cout << cp->second.p1chrom;
+      cout << "\t";
+
+      pairsfilestream << cp->second.p1chrom;
+      pairsfilestream << "\t";
+      pairsfilestream << cp->second.p1start;
+      pairsfilestream << "\t";
+      pairsfilestream << cp->second.p1end;
+      pairsfilestream << "\t";
+      pairsfilestream << cp->second.p2chrom;
+      pairsfilestream << "\t";
+      pairsfilestream << cp->second.p2start;
+      pairsfilestream << "\t";
+      pairsfilestream << cp->second.p2end;
+      pairsfilestream << "\t";      
+      pairsfilestream << cp->second.pairname;
+      pairsfilestream << "\t";
+      pairsfilestream << cp->second.p1name;
+      pairsfilestream << "\t";
+      pairsfilestream << cp->second.p2name;
+      pairsfilestream << "\t";
+      pairsfilestream << cp->second.p1intra;
+      pairsfilestream << "\t";
+      pairsfilestream << cp->second.p2intra;
+      pairsfilestream << "\t";
+      pairsfilestream << cp->second.linking;
+      pairsfilestream << "\t";
+      pairsfilestream << cp->second.distance;
+      pairsfilestream << "\n";
+    } 
+    
+  // close output stream
+  pairsfilestream.close();
 }
 
 
@@ -586,8 +603,7 @@ void findPairs(std::string overlapfile, std::string petpairsfile,std::string int
 // Define a function splits bed file by chromosome
 // [[Rcpp::export]]
 std::vector<std::string> splitBedbyChrom(std::string bedfile,std::string outnamebase)
-{
-    
+{   
     // streams
     ifstream file1 (bedfile.c_str());
     std::map<std::string, std::ofstream*> readoutput;

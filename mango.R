@@ -24,7 +24,7 @@ if (usr == "doug")
   outdir     = "/Users/dougphanstiel/Desktop/mango2014test/"
   bigfastqs = c(paste(outdir,"NH.K562_RAD21_K562_std_2.1_1.fastq",sep=""),
                 paste(outdir,"NH.K562_RAD21_K562_std_2.1_2.fastq",sep=""))
-  #fastqs = bigfastqs
+  fastqs = bigfastqs
 }
 
 if (usr == "aster")
@@ -38,7 +38,7 @@ if (usr == "aster")
 }
 
 
-expname = "NH.K562_RAD21_K562_std_2.1.head"
+expname = "NH.K562_RAD21_K562_std_2.1"
 outname  = paste(outdir,expname,sep="")
 linkers = c("GTTGGATAAG","GTTGGAATGT")
 minlength = 15
@@ -158,72 +158,10 @@ callpeaks(macs2path,tagAlignfile,peaksfile,pvalue=.00001)
 
 peaksfile     = paste(outname,"_peaks.narrowPeak",sep="")
 
-# perform intersect bed
 peakOverlap(outname=outname,datatype="obs",peaksfile=peaksfile,
                         verbose=FALSE)
 peakOverlap(outname=outname,datatype="rwr",peaksfile=peaksfile,
                           verbose=FALSE) 
-
-
-
-
-# Define a function that finds PET / peak overlaps
-peakOverlap <- function(outname,datatype,peaksfile,verbose=FALSE)
-{
-  # (1) Split files by chromosome
-  # files to split
-  totreadsfile  = paste(outname,".", datatype,".bed",  sep="")
-  totpetsfile   = paste(outname,".", datatype,".bedpe",sep="")
-  
-  # split reads by chromosome
-  readschroms = splitBedbyChrom(totreadsfile,paste(outname, ".",datatype,sep="")) 
-  petschroms  =      splitBedpe(totpetsfile, paste(outname, ".",datatype,sep=""), printreads=FALSE)
-  
-  # (2) Overlap with peak files
-  for (chrom in petschroms)
-  {
-    readsfile    = paste(outname,"." ,datatype,"." ,chrom, ".bed",sep="")
-    overlapfile  = paste(outname,"." ,datatype,"." ,chrom, ".bedNpeak",sep="")
-    if (file.exists(readsfile) == TRUE)
-    {
-      command = paste(bedtoolspath , " intersect -wo -a " ,readsfile ,
-                      " -b ", peaksfile, " > ",overlapfile,sep="")
-      if (verbose == TRUE)
-      {
-        print (command)
-      }
-      system(command)
-    }
-  }
-  
-  # (3) gather information
-  interactionfile = paste(outname,".", datatype , ".pairs.bedpe",sep="")
-  if (file.exists(interactionfile)) file.remove(interactionfile)
-  
-  for (chrom in petschroms)
-  {
-    overlapfile   = paste(outname,"." ,datatype,"." ,chrom, ".bedNpeak",sep="")
-    petpairsfile  = paste(outname,"." ,datatype,"." ,chrom, ".bedpe",sep="")
-    
-    findPairs(overlapfile,petpairsfile,interactionfile)
-  }
-  
-  # (4) clean up temp files
-  
-  
-}
-
-
-
-# count reads and peaks
-for (datatype in c("obs","rwr"))
-{
-  overlapfile   = paste(outname,".", datatype , ".bedNpeak",sep="")
-  petpairsfile = paste(outname,".", datatype , ".bedpe",sep="")
-  peakpairsfile = paste(outname,".", datatype , ".pairs.bedpe",sep="")
-  findPairs(overlapfile,petpairsfile,peakpairsfile)
-}
-
 
 ##################################### call pairs #####################################
 
