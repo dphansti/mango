@@ -247,13 +247,22 @@ int StringToInt( std::string Text ) {
     return output;
 }
 
-// Define a function that converts string to int
+// Define a function that converts int to string 
 std::string IntToString( int Number ) {
     std::string Result;          // string which will contain the result
     ostringstream convert;   // stream used for the conversion
     convert << Number;      // insert the textual representation of 'Number' in the characters in the stream
     Result = convert.str(); // set 'Result' to the contents of the stream
     return Result;
+}
+
+// Define a function that converts number to string
+template <typename T>
+std::string NumberToString ( T Number )
+{
+  stringstream ss;
+	ss << Number;
+	return ss.str();
 }
 
 
@@ -366,12 +375,15 @@ void buildBedpe(std::string sam1, std::string sam2,std::string bedpefile)
 
 // Define a function that removes duplicates from a bedpe file
 // [[Rcpp::export]]
-void removeDupBedpe(std::string infile,std::string outfile)
+void removeDupBedpe(std::string infile,std::string outfile , bool renamePets = true)
 {
+    // initialize petnumer
+    int petnumber = 0;
+    
     // arguments
     ifstream file1(infile.c_str());
     ofstream bedpefilestream (outfile.c_str());
-    
+ 
     // read in file line by line store currentline and last line
     std::string lastline;
     std::string currline;
@@ -386,7 +398,13 @@ void removeDupBedpe(std::string infile,std::string outfile)
         // print first line
         if (lastEall.size() == 0)
         {
-            bedpefilestream << currline;
+            if (renamePets == true)
+            {
+              petnumber ++;
+              currEall[6] = "obs_" +  IntToString(petnumber);
+            }
+          
+            bedpefilestream << vector_join(currEall,"\t");;
             bedpefilestream << "\n";
             lastline = currline;
             continue;
@@ -409,14 +427,23 @@ void removeDupBedpe(std::string infile,std::string outfile)
         }
         
         // print out non duplicates
-        bedpefilestream << currline;
-        bedpefilestream << "\n";
+        if (renamePets == true)
+        {
+          petnumber ++;
+          currEall[6] = "obs_" +  IntToString(petnumber);
+        }
         
+        bedpefilestream << vector_join(currEall,"\t");;
+        bedpefilestream << "\n";
+
         // update last line
         lastline = currline;
     }
-}
+    
+    // close files
+    bedpefilestream.close();
 
+}
 
 // Define a class to keep track of peak information
 class peak{
@@ -426,6 +453,7 @@ public:
   int start;
   int end;
   int intra;
+  std::set<std::string> PETs;
 };
 
 // Define a class to keep track of pair information
@@ -450,7 +478,7 @@ public:
 
 // Define a function that puts pairs together
 // [[Rcpp::export]]
-void findPairs(std::string overlapfile, std::string petpairsfile,std::string interactionfile)
+void findPairs(std::string overlapfile, std::string petpairsfile,std::string interactionfile,std::string peakscount, int distancecutoff)
 {
   // (1) Read in overlap info
   
@@ -469,6 +497,8 @@ void findPairs(std::string overlapfile, std::string petpairsfile,std::string int
         std::vector<std::string> currEall = string_split(line,"\t");
         string readname = currEall[3];
         string peakname = currEall[9];
+        std::vector<std::string> readnamestuff = string_split(readname,".");
+        std::string readnamenonumeber = readnamestuff[0];
       
         // add info to peak dict
         if (peakinfodict.find(peakname) == peakinfodict.end())
@@ -481,6 +511,7 @@ void findPairs(std::string overlapfile, std::string petpairsfile,std::string int
             peakinfodict[peakname].end   = atoi( currEall[8].c_str() );
             peakinfodict[peakname].intra = 0;
         }
+        peakinfodict[peakname].PETs.insert(readnamenonumeber);
         peakinfodict[peakname].intra++;
         
         // add info to readpeak dict
@@ -492,6 +523,16 @@ void findPairs(std::string overlapfile, std::string petpairsfile,std::string int
         readpeakdict[readname].push_back(peakname);
     }
   input.close();
+  
+  // count number of PETs in each peak
+  for (std::map<std::string, peak>::iterator chippeak = peakinfodict.begin() ; chippeak != peakinfodict.end() ; ++chippeak )
+  {
+    // cout << IntToString(chippeak->second.intra) + " \t " +  IntToString(chippeak->second.PETs.size()) + "\n";
+    chippeak->second.intra = chippeak->second.PETs.size();
+    
+    // clear the hash to save memory
+    chippeak->second.PETs.clear();
+  }
   
   // (1) Go through PETs and make interactions
   ifstream inputpets(petpairsfile.c_str());
@@ -528,32 +569,26 @@ void findPairs(std::string overlapfile, std::string petpairsfile,std::string int
           // join the peak names for the name of the pair
           std::string pairname =  thep1.name + ":" + thep2.name;
 
-          // add info to pair dict
-          if (pairdict.find(pairname) == pairdict.end())
-          {
-            chiapair pa = *(new chiapair());
-            pairdict.insert(std::pair<string,chiapair>(pairname,pa));
-            pairdict[pairname].pairname  = pairname; 
-            pairdict[pairname].p1name  = thep1.name; 
-            pairdict[pairname].p2name  = thep2.name; 
-            pairdict[pairname].p1chrom  = thep1.chrom; 
-            pairdict[pairname].p2chrom  = thep2.chrom; 
-            pairdict[pairname].p1start  = thep1.start; 
-            pairdict[pairname].p1end  = thep1.end;
-            pairdict[pairname].p2start  = thep2.start; 
-            pairdict[pairname].p2end  = thep2.end; 
-            pairdict[pairname].p1intra  = thep1.intra; 
-            pairdict[pairname].p2intra  = thep2.intra; 
-            pairdict[pairname].linking  = 0; 
-            pairdict[pairname].distance  = thep2.start - thep1.end; 
-          }
-
-          //   STOP POINT 
-           
-         // cout << IntToString(thep1.start) + " " + IntToString(thep1.end) + " " +
-         //           IntToString(thep2.start) + " " + IntToString(thep2.end);
-         // cout << line2 + "   "  + readname + "  " + *p1 + "   " +  *p2;
-         // cout << "\n";
+            // add info to pair dict
+            if (pairdict.find(pairname) == pairdict.end())
+            {
+              chiapair pa = *(new chiapair());
+              pairdict.insert(std::pair<string,chiapair>(pairname,pa));
+              pairdict[pairname].pairname  = pairname; 
+              pairdict[pairname].p1name  = thep1.name; 
+              pairdict[pairname].p2name  = thep2.name; 
+              pairdict[pairname].p1chrom  = thep1.chrom; 
+              pairdict[pairname].p2chrom  = thep2.chrom; 
+              pairdict[pairname].p1start  = thep1.start; 
+              pairdict[pairname].p1end  = thep1.end;
+              pairdict[pairname].p2start  = thep2.start; 
+              pairdict[pairname].p2end  = thep2.end; 
+              pairdict[pairname].p1intra  = thep1.intra; 
+              pairdict[pairname].p2intra  = thep2.intra; 
+              pairdict[pairname].linking  = 0; 
+              pairdict[pairname].distance  = thep2.start - thep1.end; 
+            }
+            pairdict[pairname].linking++; 
         }
       }  
   } 
@@ -563,9 +598,6 @@ void findPairs(std::string overlapfile, std::string petpairsfile,std::string int
   ofstream pairsfilestream (interactionfile.c_str());
   for (std::map<std::string, chiapair>::iterator cp = pairdict.begin() ; cp != pairdict.end() ; ++cp ) {
       
-      cout << cp->second.p1chrom;
-      cout << "\t";
-
       pairsfilestream << cp->second.p1chrom;
       pairsfilestream << "\t";
       pairsfilestream << cp->second.p1start;
@@ -596,6 +628,24 @@ void findPairs(std::string overlapfile, std::string petpairsfile,std::string int
     
   // close output stream
   pairsfilestream.close();
+  
+  // print out info to peak file
+  ofstream peaksfilestream (peakscount.c_str());
+  for (std::map<std::string, peak>::iterator chippeak = peakinfodict.begin() ; chippeak != peakinfodict.end() ; ++chippeak )
+  {
+      peaksfilestream << chippeak->second.chrom;
+      peaksfilestream << "\t";
+      peaksfilestream << chippeak->second.start;
+      peaksfilestream << "\t";
+      peaksfilestream << chippeak->second.end;
+      peaksfilestream << "\t";
+      peaksfilestream << chippeak->second.name;
+      peaksfilestream << "\t";
+      peaksfilestream << chippeak->second.intra;
+      peaksfilestream << "\t.\n";
+  }
+  peaksfilestream.close();
+
 }
 
 
@@ -644,10 +694,64 @@ std::vector<std::string> splitBedbyChrom(std::string bedfile,std::string outname
 
 // Define a function splits bedpe file into reads and PETs by chromosome
 // [[Rcpp::export]]
-std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase, bool printreads = true , bool printpets = true)
+void makeDistanceFile(std::string bedpefilesortrmdup,std::string distancefile,int mindist, int maxdist)
+{
+    // streams
+    ifstream filein  (bedpefilesortrmdup.c_str());
+    ofstream fileout (distancefile.c_str());
+
+    
+    // read in file line by line and make same dif calls
+    std::string line;
+    while (getline(filein, line))
+    {
+        // split lines
+        std::vector<std::string> currEall = string_split(line,"\t");
+        
+        // skip unmapped and inter chrom
+        if ((currEall[0] != currEall[3]) || (currEall[0] == "*")  ||  (currEall[3] == "*"))
+        {
+          continue;
+        }
+        
+        // determine distance
+        std:string distance = IntToString((StringToInt(currEall[5]) + StringToInt(currEall[4]))
+        / 2 - (StringToInt(currEall[2]) + StringToInt(currEall[1])) / 2);
+        
+        // determine orientation
+        std::string pairtype = "D";
+        if (currEall[8] == currEall[9])
+        {
+          pairtype = "S";
+        }
+        
+        
+        if (StringToInt(distance) > mindist & StringToInt(distance) < maxdist)
+        {
+          fileout << distance + "\t" + pairtype + "\n";
+        }
+    
+        // make reads
+        std::vector<std::string> read1vec;
+        read1vec.push_back(currEall[0]);
+        read1vec.push_back(currEall[1]);
+    }
+
+    // close files
+    filein.close();
+    fileout.close();
+}
+
+
+
+
+// Define a function splits bedpe file into reads and PETs by chromosome
+// [[Rcpp::export]]
+std::vector< std::vector<std::string> > splitBedpe(std::string bedpein,std::string outnamebase, bool printreads = true , bool printpets = true)
 {
     // keep track of output files
-    std::vector<std::string> outputvector;
+    std::vector<std::string> outputvectorPETs;
+    std::vector<std::string> outputvectorReads;
     
     // streams
     ifstream file1(bedpein.c_str());
@@ -666,7 +770,7 @@ std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase,
         read1vec.push_back(currEall[0]);
         read1vec.push_back(currEall[1]);
         read1vec.push_back(currEall[2]);
-        read1vec.push_back(currEall[6]);
+        read1vec.push_back(currEall[6] + ".1");
         read1vec.push_back(currEall[7]);
         read1vec.push_back(currEall[8]);
         
@@ -674,7 +778,7 @@ std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase,
         read2vec.push_back(currEall[3]);
         read2vec.push_back(currEall[4]);
         read2vec.push_back(currEall[5]);
-        read2vec.push_back(currEall[6]);
+        read2vec.push_back(currEall[6] + ".2");
         read2vec.push_back(currEall[7]);
         read2vec.push_back(currEall[9]);
         
@@ -692,11 +796,13 @@ std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase,
           if ( (readoutput.find(chrom1) == readoutput.end()) & (chrom1 != "*" )  ) {  
               std::string outname = outnamebase + "." + chrom1 + ".bed";
               readoutput[chrom1] = new std::ofstream(outname.c_str());
+              outputvectorReads.push_back( chrom1);  
           }
           
           if ( (readoutput.find(chrom2) == readoutput.end()) & (chrom2 != "*" ) ) {
               std::string outname = outnamebase + "." + chrom2 + ".bed";
               readoutput[chrom2] = new std::ofstream(outname.c_str());
+              outputvectorReads.push_back( chrom2);  
           }
 
           // print reads
@@ -717,15 +823,22 @@ std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase,
             continue;
         }
         
-        if ( petsoutput.find(chrom1) == petsoutput.end() ) {
-            
-            std::string outname = outnamebase + "." + chrom1 + ".bedpe";
-            petsoutput[chrom1] = new std::ofstream(outname.c_str());
-            outputvector.push_back( chrom1);
-            
+        if (chrom1 != chrom2)
+        {
+            continue;
         }
-        *petsoutput[chrom1] << line;
-        *petsoutput[chrom1] << "\n";
+        
+        
+        if (printpets == true)
+        {
+          if ( petsoutput.find(chrom1) == petsoutput.end() ) {  
+              std::string outname = outnamebase + "." + chrom1 + ".bedpe";
+              petsoutput[chrom1] = new std::ofstream(outname.c_str());
+              outputvectorPETs.push_back( chrom1);  
+          }
+          *petsoutput[chrom1] << line;
+          *petsoutput[chrom1] << "\n";
+        }
     }
     
     // close reads files
@@ -737,8 +850,13 @@ std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase,
     for (std::map<std::string, std::ofstream*>::iterator i = petsoutput.begin() ; i != petsoutput.end() ; i ++ ) {
       i->second->close();
     }    
+    
+    // combine the outputs
+    std::vector< std::vector<std::string> > ReadAndPETchroms;
+    ReadAndPETchroms.push_back( outputvectorReads);  
+    ReadAndPETchroms.push_back( outputvectorPETs);  
 
-    return outputvector;
+    return ReadAndPETchroms;
 }
 
 // [[Rcpp::export]]
@@ -816,6 +934,74 @@ void external_sort( std::string inputfile, std::string outputfile ){
 
 }
 
+
+// Define a function the filters out every second line from a file
+// [[Rcpp::export]]
+void everyotherline(std::string overlapin, std::string overlapout) {
+    
+    // establish streams
+    ifstream infile  (overlapin.c_str());
+    ofstream outfile (overlapout.c_str() );
+
+   int i = 0;
+   std::string line;
+   while (getline(infile, line))
+    {
+        // increment counters
+        i++;
+        
+        if (i == 1)
+        {
+          outfile << line;
+          outfile << "\n";
+        }
+        if (i == 2)
+        {
+          i = 0;
+        }
+    }
+    infile.close();
+    outfile.close();
+}
+
+
+
+// Define a function that adds Q values and filters results
+// [[Rcpp::export]]
+void AddQvals(std::string interactionfile, std::string interactionfilefinal,std::vector<double> Q,double maxPval )
+{
+    // establish streams
+    ifstream infile  (interactionfile.c_str());
+    ofstream outfile (interactionfilefinal.c_str() );
+  
+    int i = -2;
+    std::string line;
+    while (getline(infile, line))
+    {
+      
+      // increment counters
+      i++;
+      
+      if (i == -1)
+      {
+        outfile << line + "\t" + "adjP";
+        outfile << "\n";
+        continue;
+      }
+      
+      
+      double Qvalue = Q[i];
+        
+      //if (Qvalue >= maxPval)
+      //{
+        outfile << line + "\t" + NumberToString(Qvalue);
+        outfile << "\n";
+      //}
+    }
+    infile.close();
+    outfile.close();
+  
+}
 
 
 

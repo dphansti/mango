@@ -75,28 +75,31 @@ BEGIN_RCPP
 END_RCPP
 }
 // removeDupBedpe
-void removeDupBedpe(std::string infile, std::string outfile);
-RcppExport SEXP mango_removeDupBedpe(SEXP infileSEXP, SEXP outfileSEXP) {
+void removeDupBedpe(std::string infile, std::string outfile, bool renamePets = true);
+RcppExport SEXP mango_removeDupBedpe(SEXP infileSEXP, SEXP outfileSEXP, SEXP renamePetsSEXP) {
 BEGIN_RCPP
     {
         Rcpp::RNGScope __rngScope;
         Rcpp::traits::input_parameter< std::string >::type infile(infileSEXP );
         Rcpp::traits::input_parameter< std::string >::type outfile(outfileSEXP );
-        removeDupBedpe(infile, outfile);
+        Rcpp::traits::input_parameter< bool >::type renamePets(renamePetsSEXP );
+        removeDupBedpe(infile, outfile, renamePets);
     }
     return R_NilValue;
 END_RCPP
 }
 // findPairs
-void findPairs(std::string overlapfile, std::string petpairsfile, std::string interactionfile);
-RcppExport SEXP mango_findPairs(SEXP overlapfileSEXP, SEXP petpairsfileSEXP, SEXP interactionfileSEXP) {
+void findPairs(std::string overlapfile, std::string petpairsfile, std::string interactionfile, std::string peakscount, int distancecutoff);
+RcppExport SEXP mango_findPairs(SEXP overlapfileSEXP, SEXP petpairsfileSEXP, SEXP interactionfileSEXP, SEXP peakscountSEXP, SEXP distancecutoffSEXP) {
 BEGIN_RCPP
     {
         Rcpp::RNGScope __rngScope;
         Rcpp::traits::input_parameter< std::string >::type overlapfile(overlapfileSEXP );
         Rcpp::traits::input_parameter< std::string >::type petpairsfile(petpairsfileSEXP );
         Rcpp::traits::input_parameter< std::string >::type interactionfile(interactionfileSEXP );
-        findPairs(overlapfile, petpairsfile, interactionfile);
+        Rcpp::traits::input_parameter< std::string >::type peakscount(peakscountSEXP );
+        Rcpp::traits::input_parameter< int >::type distancecutoff(distancecutoffSEXP );
+        findPairs(overlapfile, petpairsfile, interactionfile, peakscount, distancecutoff);
     }
     return R_NilValue;
 END_RCPP
@@ -117,8 +120,23 @@ BEGIN_RCPP
     return __sexp_result;
 END_RCPP
 }
+// makeDistanceFile
+void makeDistanceFile(std::string bedpefilesortrmdup, std::string distancefile, int mindist, int maxdist);
+RcppExport SEXP mango_makeDistanceFile(SEXP bedpefilesortrmdupSEXP, SEXP distancefileSEXP, SEXP mindistSEXP, SEXP maxdistSEXP) {
+BEGIN_RCPP
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< std::string >::type bedpefilesortrmdup(bedpefilesortrmdupSEXP );
+        Rcpp::traits::input_parameter< std::string >::type distancefile(distancefileSEXP );
+        Rcpp::traits::input_parameter< int >::type mindist(mindistSEXP );
+        Rcpp::traits::input_parameter< int >::type maxdist(maxdistSEXP );
+        makeDistanceFile(bedpefilesortrmdup, distancefile, mindist, maxdist);
+    }
+    return R_NilValue;
+END_RCPP
+}
 // splitBedpe
-std::vector<std::string> splitBedpe(std::string bedpein, std::string outnamebase, bool printreads = true, bool printpets = true);
+std::vector< std::vector<std::string> > splitBedpe(std::string bedpein, std::string outnamebase, bool printreads = true, bool printpets = true);
 RcppExport SEXP mango_splitBedpe(SEXP bedpeinSEXP, SEXP outnamebaseSEXP, SEXP printreadsSEXP, SEXP printpetsSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
@@ -128,7 +146,7 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< std::string >::type outnamebase(outnamebaseSEXP );
         Rcpp::traits::input_parameter< bool >::type printreads(printreadsSEXP );
         Rcpp::traits::input_parameter< bool >::type printpets(printpetsSEXP );
-        std::vector<std::string> __result = splitBedpe(bedpein, outnamebase, printreads, printpets);
+        std::vector< std::vector<std::string> > __result = splitBedpe(bedpein, outnamebase, printreads, printpets);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);
@@ -157,6 +175,34 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< std::string >::type inputfile(inputfileSEXP );
         Rcpp::traits::input_parameter< std::string >::type outputfile(outputfileSEXP );
         external_sort(inputfile, outputfile);
+    }
+    return R_NilValue;
+END_RCPP
+}
+// everyotherline
+void everyotherline(std::string overlapin, std::string overlapout);
+RcppExport SEXP mango_everyotherline(SEXP overlapinSEXP, SEXP overlapoutSEXP) {
+BEGIN_RCPP
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< std::string >::type overlapin(overlapinSEXP );
+        Rcpp::traits::input_parameter< std::string >::type overlapout(overlapoutSEXP );
+        everyotherline(overlapin, overlapout);
+    }
+    return R_NilValue;
+END_RCPP
+}
+// AddQvals
+void AddQvals(std::string interactionfile, std::string interactionfilefinal, std::vector<double> Q, double maxPval);
+RcppExport SEXP mango_AddQvals(SEXP interactionfileSEXP, SEXP interactionfilefinalSEXP, SEXP QSEXP, SEXP maxPvalSEXP) {
+BEGIN_RCPP
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< std::string >::type interactionfile(interactionfileSEXP );
+        Rcpp::traits::input_parameter< std::string >::type interactionfilefinal(interactionfilefinalSEXP );
+        Rcpp::traits::input_parameter< std::vector<double> >::type Q(QSEXP );
+        Rcpp::traits::input_parameter< double >::type maxPval(maxPvalSEXP );
+        AddQvals(interactionfile, interactionfilefinal, Q, maxPval);
     }
     return R_NilValue;
 END_RCPP

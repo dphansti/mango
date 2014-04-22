@@ -1,7 +1,8 @@
 
-rewire <- function(readsfile,petsfile,obspetsfile,rwrpetsfile,obsreadsfile,rwrreadsfile,reps = 10,counter=0)
+rewire <- function(readsfile,petsfile,obspetsfile,rwrpetsfile,obsreadsfile,rwrreadsfile,smallreps=20,bigreps=10,counter=0)
 {
   bedpe     = read.table(petsfile,header=FALSE,sep="\t")
+  
   # remove interchroms
   bedpe = bedpe[which(as.character(bedpe[,1]) == as.character(bedpe[,4] )),]
   
@@ -29,17 +30,41 @@ rewire <- function(readsfile,petsfile,obspetsfile,rwrpetsfile,obsreadsfile,rwrre
   # reorder
   reads = reads[order(reads[,2]),]
   
-  # determine the average separation
-  avg = (max(reads[,c(2,3)]) - min(reads[,c(2,3)])) / numreads
+  # determine the average separation based on whole chromosome (accurate for longer distances)
+  avg_long = (max(reads[,c(2,3)]) - min(reads[,c(2,3)])) / numreads
+  print (paste ("long range estimate = ", avg_long ))
+  
+  # determine the average separation based on several glimpses of regions(accurate for shorter distances)
+  shortestimates = c()
+  examples = sample(1:nrow(reads),100)
+  for (example in examples)
+  {
+    shortestimate = reads[example,2] - reads[example-1,2]
 
+    shortestimates = c(shortestimates,shortestimate )
+  }
+  avg_short = median(shortestimates)
+  if (avg_short < 1)
+  {
+    avg_short = 1
+  }
+  print (paste ("short range estimate = ", avg_short ))
+  
   # add an index
   reads$pos1 = (1:numreads)
 
   # generate random pairs (rep # of times)    
   randpair =c()
   i = 1
+  reps = smallreps + bigreps
   for (i in (1:reps))
   {
+    avg = avg_long
+    if (i > bigreps)
+    {
+      avg = avg_short
+    }
+      
     # pick a bunch of reads to starts with 
     randomdata = reads[sample((1:numreads),numPETS),] 
 

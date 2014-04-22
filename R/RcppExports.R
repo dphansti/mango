@@ -17,16 +17,20 @@ buildBedpe <- function(sam1, sam2, bedpefile) {
     invisible(.Call('mango_buildBedpe', PACKAGE = 'mango', sam1, sam2, bedpefile))
 }
 
-removeDupBedpe <- function(infile, outfile) {
-    invisible(.Call('mango_removeDupBedpe', PACKAGE = 'mango', infile, outfile))
+removeDupBedpe <- function(infile, outfile, renamePets = TRUE) {
+    invisible(.Call('mango_removeDupBedpe', PACKAGE = 'mango', infile, outfile, renamePets))
 }
 
-findPairs <- function(overlapfile, petpairsfile, interactionfile) {
-    invisible(.Call('mango_findPairs', PACKAGE = 'mango', overlapfile, petpairsfile, interactionfile))
+findPairs <- function(overlapfile, petpairsfile, interactionfile, peakscount, distancecutoff) {
+    invisible(.Call('mango_findPairs', PACKAGE = 'mango', overlapfile, petpairsfile, interactionfile, peakscount, distancecutoff))
 }
 
 splitBedbyChrom <- function(bedfile, outnamebase) {
     .Call('mango_splitBedbyChrom', PACKAGE = 'mango', bedfile, outnamebase)
+}
+
+makeDistanceFile <- function(bedpefilesortrmdup, distancefile, mindist, maxdist) {
+    invisible(.Call('mango_makeDistanceFile', PACKAGE = 'mango', bedpefilesortrmdup, distancefile, mindist, maxdist))
 }
 
 splitBedpe <- function(bedpein, outnamebase, printreads = TRUE, printpets = TRUE) {
@@ -39,5 +43,13 @@ buildTagAlign <- function(bedpefile, TagAlignfile) {
 
 external_sort <- function(inputfile, outputfile) {
     invisible(.Call('mango_external_sort', PACKAGE = 'mango', inputfile, outputfile))
+}
+
+everyotherline <- function(overlapin, overlapout) {
+    invisible(.Call('mango_everyotherline', PACKAGE = 'mango', overlapin, overlapout))
+}
+
+AddQvals <- function(interactionfile, interactionfilefinal, Q, maxPval) {
+    invisible(.Call('mango_AddQvals', PACKAGE = 'mango', interactionfile, interactionfilefinal, Q, maxPval))
 }
 
