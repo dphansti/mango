@@ -10,28 +10,30 @@
 #' @param nlines the number of lines to look at to determine the scoring method
 #' @export
 #' 
-alignBowtie <- function(fastq,output,bowtiepath,bowtieref,samtoolspath,
-                        bowtievar="-S -v 0 -k 1 --sam-nohead --mapq 40 -m 1",
-                        verbose=TRUE)
+alignBowtie <- function(fastq,output,bowtiepath,bowtieref,
+                        shortreads,verbose=TRUE)
 {
+  
+  # choose alignment parameters
+  bowtievar="-S -v 0 -k 1 --sam-nohead --mapq 40 -m 1"
+  if (shortreads == FALSE)
+  {
+    bowtievar="-S -v 2 -k 1 --sam-nohead --mapq 40 -m 1 --best"
+  }
+  
   # determine the illumina score encoding
   illuminascore = findScore(fastq,nlines =10000) 
   
   # form full command
   bowtiecommand = paste (bowtiepath, bowtieref, fastq, output, illuminascore, bowtievar)
   
-  #samtobamcommand = paste (samtoolspath," view -b -S ",output, " > ", output, ".bam",sep="")
-  
   # print command if desirec
   if (verbose ==TRUE)
   {
     print (bowtiecommand)
-   # print (samtobamcommand)
   }
   
   # execute command
   system(bowtiecommand)
-  #system(samtobamcommand)
-  
 }
 

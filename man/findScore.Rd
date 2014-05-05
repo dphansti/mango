@@ -1,0 +1,17 @@
+\name{findScore}
+\alias{findScore}
+\title{determines the illumina scoring system of the fastq}
+\usage{
+findScore(fastq, nlines = 10000)
+}
+\arguments{
+  \item{fastq}{full path to fastq file}
+
+  \item{nlines}{the number of lines to look at to determine
+  the scoring method}
+}
+\description{
+This function reads in the first nlines of a fastq and
+makes a best guess at the illumina scoring system used
+}
+

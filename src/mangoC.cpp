@@ -441,6 +441,7 @@ void removeDupBedpe(std::string infile,std::string outfile , bool renamePets = t
     }
     
     // close files
+    file1.close();
     bedpefilestream.close();
 
 }
@@ -929,7 +930,7 @@ void buildTagAlign(std::string bedpefile, std::string TagAlignfile) {
 // Define a function to do an external sort
 // [[Rcpp::export]]
 void external_sort( std::string inputfile, std::string outputfile ){
-    externalMergesort <string> externalMergeSorter(inputfile, outputfile, 1000000);
+    externalMergesort <string> externalMergeSorter(inputfile, outputfile, 50000000);
     return;
 
 }

@@ -32,7 +32,7 @@ scorePairs <- function(chromosomes,outname,min_distance = 1000,maxPval=0.01,
   {
     print ("Deterimining interaction probabilities")
   }
-  
+
   for (chrom in chromosomes)
   {
     if (verbose == TRUE )
@@ -63,14 +63,19 @@ scorePairs <- function(chromosomes,outname,min_distance = 1000,maxPval=0.01,
       
       # assign to bins
       chrpeaks$bin  = findInterval(chrpeaks$dist, bins)
-      
-      # sum over bins
-      summedvalues =  tapply(chrpeaks$score,chrpeaks$bin,sum)
-      tots[names(summedvalues)] = tots[names(summedvalues)] + summedvalues
-      
-      # now you need add the peaks own value
-      numberineachbin = table(chrpeaks$bin) * chrpeaks$score[i]
-      tots[names(numberineachbin)] = tots[names(numberineachbin)] + numberineachbin
+      for (eachbin in  (0:numofbins))
+      {
+        valsfromeachbin = length(which(chrpeaks$bin == eachbin))
+        tots[as.character(eachbin)] = tots[as.character(eachbin)] + valsfromeachbin
+      }
+
+#       # sum over bins
+#       summedvalues =  tapply(chrpeaks$score,chrpeaks$bin,length)
+#       tots[names(summedvalues)] = tots[names(summedvalues)] + summedvalues
+#       
+#       # now you need add the peaks own value
+#       numberineachbin = table(chrpeaks$bin) * chrpeaks$score[i]
+#       tots[names(numberineachbin)] = tots[names(numberineachbin)] + numberineachbin
     }
     
     # add to genome wide totals
