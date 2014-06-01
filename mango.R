@@ -1,8 +1,17 @@
 # runs mango chia pet analysis pipeline
-library('hash')
-library('mango')
+library("Rcpp")
+library("hash")
+library("mango")
 
 ##################################### initialization #####################################
+
+argsscript = c(
+"bowtiepath=/path/to/bowtie",
+"bowtieref=/path/to/indexes/hg19",
+"bedtoolspath=/path/to/bedtools",
+"bedtoolsgenome=/path/to/human.hg19.genome",
+"macs2path=/path/to/macs2"
+)
 
 print ("Starting mango ChIA PET analysis tool")
 Sys.time()
@@ -14,18 +23,22 @@ set.seed(1)
 argscmdline <- commandArgs(trailingOnly = TRUE)
 
 # gather all argum
-args = establishParameters(argscmdline)
+args = establishParameters(argscmdline,argsscript)
+
+print ("using the following parameters:")
+print (args)
+
 
 ##################################### parse fastqs #####################################
 
 if (1 %in% args[["stages"]])
 {
-  checkRequired(args,c("fastqs","outname","minlength","maxlength","keepempty"))
+  checkRequired(args,c("fastq1","fastq2","outname","minlength","maxlength","keepempty"))
   
   # gather arguments
   outname         = args[["outname"]]
-  fastq1=strsplit(args[["fastqs"]],split=",")[[1]][1]
-  fastq2=strsplit(args[["fastqs"]],split=",")[[1]][2]
+  fastq1=args[["fastq1"]]
+  fastq2=args[["fastq2"]]
   basename = args[["outname"]]
   minlength = as.numeric(args[["minlength"]])
   maxlength = as.numeric(args[["maxlength"]]) 
@@ -126,16 +139,19 @@ if (4 %in% args[["stages"]])
   
   if (is.null(peakinput) == TRUE)
   {
+    print ("building tagAlign file")
     # reverse strands for peak calling
     buildTagAlign(bedpefilesortrmdup ,tagAlignfile )
     
     # call peaks 
+    print ("calling peaks")
     callpeaks(macs2path=macs2path,tagAlignfile,outname,pvalue=MACS_pvalue,
               bedtoolspath=bedtoolspath,bedtoolsgenome=bedtoolsgenome,
               peakslop=peakslop)
   }
   
   # extend and merge peaks according to peakslop
+  print ("extending peaks")
   extendpeaks(peaksfile,peaksfileslop,bedtoolspath=bedtoolspath,
               bedtoolsgenome=bedtoolsgenome,peakslop=peakslop)
 }
@@ -145,7 +161,7 @@ if (4 %in% args[["stages"]])
 if (5 %in% args[["stages"]])
 {
   checkRequired(args,c("outname","distcutrangemin","biascut","maxPval",
-                       "numofbins","corrMethod","bedtoolspath",
+                       "numofbins","corrMethod","bedtoolspath","bedtoolsgenome",
                        "maxinteractingdist","FDR","minPETS","corrMethod",
                        "chrominclude","chromexclude","reportallpairs"))
   
@@ -154,6 +170,7 @@ if (5 %in% args[["stages"]])
   distcutrangemin = as.numeric(args[["distcutrangemin"]])
   distcutrangemax = as.numeric(args[["distcutrangemax"]])
   bedtoolspath = args[["bedtoolspath"]]
+  bedtoolsgenome    = args[["bedtoolsgenome"]]
   biascut = as.numeric(args[["biascut"]])
   maxinteractingdist = as.numeric(args[["maxinteractingdist"]])
   numofbins = as.numeric(args[["numofbins"]])
@@ -171,11 +188,11 @@ if (5 %in% args[["stages"]])
   distancefile       = paste(outname ,".distance",sep="")
   distancecutpdf     = paste(outname ,".distance.pdf",sep="")
   pestimatepdf       = paste(outname ,".pEstimate.pdf",sep="")
+  pestimate1txt       = paste(outname ,"pestimate1.txt",sep="")
+  pestimate2txt       = paste(outname ,"pestimate2.txt",sep="")
   summarypdf         = paste(outname ,".summary.pdf",sep="")
-  allpairsfile        = paste(outname ,".interactions.all.bedpe",sep="")
-  fdrpairsfile        = paste(outname ,".interactions.fdr.bedpe",sep="")
-  
-  
+  allpairsfile       = paste(outname ,".interactions.all.bedpe",sep="")
+  fdrpairsfile       = paste(outname ,".interactions.fdr.bedpe",sep="")
   
   # build a file of just distances and same / dif
   print ("deterimining self-ligation distance")
@@ -199,16 +216,20 @@ if (5 %in% args[["stages"]])
   
   # filter out unwanted chromosomes
   originalchroms = chromosomes
-    if(chrominclude[1] != "NULL")
-    {
-      chromosomes = unlist(strsplit(chrominclude,split=","))
-    }
-
-    if (chromexclude[1] !=  "NULL")
-    {
-      chromosomestpremove = unlist(strsplit(chromexclude,split=","))
-      chromosomes = chromosomes[-which(chromosomes %in% chromosomestpremove)] 
-    }
+  # get chromosomes from bedtools
+  bedtoolsgenome = read.table(bedtoolsgenome,header=FALSE,sep="\t")
+  chromosomes = bedtoolsgenome[,1]
+  chromosomes = chromosomes[grep("_",chromosomes,invert=TRUE)]
+  if(chrominclude[1] != "NULL")
+  {
+    chromosomes = unlist(strsplit(chrominclude,split=","))
+  }
+  
+  if (chromexclude[1] !=  "NULL")
+  {
+    chromosomestpremove = unlist(strsplit(chromexclude,split=","))
+    chromosomes = chromosomes[-which(chromosomes %in% chromosomestpremove)] 
+  }  
 
   # estimate probabilities
   print ("estimating p-values")
@@ -255,11 +276,17 @@ if (5 %in% args[["stages"]])
   
   # plot the spline
   pdf(pestimatepdf)
-    plot(pEstimates2$p_table$dist,pEstimates2$p_table$p,pch=19,xlab="log10(distance)",ylab="p estimate")
+    plot(pEstimates$p_table$dist,pEstimates$p_table$p,pch=19,xlab="log10(distance)",ylab="p estimate", col = "firebrick2")
+    points(pEstimates2$p_table$dist,pEstimates2$p_table$p,pch=19, col = "blue")
+    lines(pEstimates$spline, col = "firebrick2")
     lines(pEstimates2$spline, col = "blue")
-    legend("topright",inset=0.05,legend=c("binned values","spline fit"),pch=c(19,NA),lwd=c(NA,1),col=c("black","blue"))
+    legend("topright",inset=0.05,legend=c("bins 1","bins 2","spline fit 1","spline fit 2"),
+           pch=c(19,19,NA,NA),lwd=c(NA,NA,1,1),col=c("firebrick2","blue","firebrick2","blue"))
   dev.off()
   
+  # write spline to output
+  save(pEstimates, file=pestimate1txt)
+  save(pEstimates2,file=pestimate2txt)     
 
   pdf(summarypdf)
     par(mfrow=c(2,2))
@@ -284,13 +311,17 @@ if (5 %in% args[["stages"]])
   {
     peaksizecount  = paste(outname,"." ,chrom, "_peaks.count.slopPeak",sep="")
     pairsbedpe     = paste(outname,"." ,chrom, ".pairs.bedpe",sep="")
+    bedfile         = paste(outname,"." ,chrom, ".bedpe",sep="")
     if (file.exists(peaksizecount)) file.remove(peaksizecount)
     if (file.exists(pairsbedpe)) file.remove(pairsbedpe)
+    if (file.exists(bedfile)) file.remove(bedfile)
   }
 }
 
 Sys.time()
 print("done")
+
+
 
 
 

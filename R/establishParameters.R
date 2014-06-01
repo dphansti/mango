@@ -1,7 +1,7 @@
 
 
 # Define a funtion that establishes all parameters
-establishParameters <-function(argscmdline)
+establishParameters <-function(argscmdline,argsscript)
 {
   args = hash()
   
@@ -16,16 +16,25 @@ establishParameters <-function(argscmdline)
     }
   }
   
-  # first read in default parameters
+  # (1) first read in default parameters
   args = readParameters()
   
-  # overwrite with supplied file
-  if (is.null(argfile) == FALSE)
-  {
-    args = readParameters(argfile,args)
+  
+  # (2) overwrite with arguments in script itself
+  for (arg in argsscript)
+  {  
+    argparts = strsplit(arg,split="=")[[1]]
+    args[[argparts[1]]] = argparts[2]
   }
   
-  # overwrite with command line arguments
+  
+  # (3) overwrite with arguments froms supplied file
+  if (is.null(argfile) == FALSE)
+  {
+    args = readParameters(args,argfile)
+  }
+  
+  # (4) overwrite with command line arguments
   for (arg in argscmdline)
   {  
     argparts = strsplit(arg,split="=")[[1]]

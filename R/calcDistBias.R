@@ -70,5 +70,11 @@ calcDistBias <- function(distancefile,distancecutpdf,range,biascut)
   
   dev.off()
   
+  # print distance results to output
+  distanceresults = cbind(10^bins,S$counts,D$counts,S$counts/D$counts,biases)
+  colnames(distanceresults) = c("bins","Scounts","Dcounts","S_over_D","percentSelf")
+  distanceresultsout = paste( substr(distancecutpdf, 1, nchar(distancecutpdf) - 4),".txt",sep="")
+  write.table(distanceresults,file=distanceresultsout,quote = FALSE, sep = "\t",row.names = FALSE,col.names = TRUE)
+  
   return (distancecutoff)
 }

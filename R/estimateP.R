@@ -69,8 +69,9 @@ calcMandD <- function(chromosomes,outname,numofbins,binrange)
     peaksfile    = paste(outname,"." ,chrom, "_peaks.count.slopPeak",sep="")
     
     # read in data
+    if (file.exists(peaksfile)     == FALSE){next}
+    if (file.info(peaksfile)$size  == 0    ){next}
     chrpeaks = read.table(peaksfile,header=F,sep="\t")
-    
     names(chrpeaks) = c("chr","start","end","name","score","strand")
     
     # calc center position
