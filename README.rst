@@ -22,7 +22,8 @@ Mango Installation
 They can be installed throug CRAN. For example to install the package 'hash' open R and type the following
 
 ::
-   install.packages('hash')
+
+  install.packages('hash')
 
 2. Mango depends on the following software pacakges which should be installed prior to using Mango.
 
@@ -34,7 +35,8 @@ They can be installed throug CRAN. For example to install the package 'hash' ope
 3. Once dependencies are installed Mango can be installed from the command line using the following command.
 
 ::
- R CMD INSTALL Mango_0.9.9.tar.gz
+
+  R CMD INSTALL Mango_0.9.9.tar.gz
 
 
 Features
