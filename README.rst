@@ -16,19 +16,19 @@ Mango Installation
 
 1. Mango depends on the following R packages.
 
-1)hash
-2)Rcpp
+ *hash
+ *Rcpp
 
--They can be installed throug CRAN. For example to install the package 'hash' open R and type:
+They can be installed throug CRAN. For example to install the package 'hash' open R and type the following
 
 ::
    install.packages('hash')
 
-2. Mango depends on the following software pacakges which should be installed prior to using Mango
+2. Mango depends on the following software pacakges which should be installed prior to using Mango.
 
-1) Bowtie     (http://bowtie-bio.sourceforge.net)
-2) Bedtools   (https://github.com/arq5x/bedtools2)
-3) MACS2      (https://github.com/taoliu/MACS)
+ *Bowtie     (http://bowtie-bio.sourceforge.net)
+ *Bedtools   (https://github.com/arq5x/bedtools2)
+ *MACS2      (https://github.com/taoliu/MACS)
 
 
 3. Once dependencies are installed Mango can be installed from the command line using the following command.
@@ -52,7 +52,10 @@ Usage of Mango
 
   Rscript Mango.R [-options]
 
-:Example for regular interactions calling:: `Rscript Mango.R fastq1=samplename_1.fastq fastq2=samplename_1.fastq prefix=samplename argfile=argfile.txt chromexclude=chrM,chrY stages=1:5`
+Example for regular interactions calling
+:: 
+
+`Rscript Mango.R fastq1=samplename_1.fastq fastq2=samplename_1.fastq prefix=samplename argfile=argfile.txt chromexclude=chrM,chrY stages=1:5`
 
 Parameters
 ----------
