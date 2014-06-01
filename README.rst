@@ -1,9 +1,11 @@
-# Mango
+Mango
+=====
 
 chia pet analysis software
 
 
-## Citation
+Citation
+========
 
 Mango.R: a bias-correcting ChIA-PET data analysis pipeline
 Phanstiel DH, Boyle AP,  Snyder MP.  In Preparation. 
@@ -14,8 +16,8 @@ Mango Installation
 
 1. Mango depends on the following R packages.
 
-   a. hash
-   b. Rcpp
+ a. hash
+ b. Rcpp
 
    They can be installed throug CRAN. For example to install the package 'hash' open R and type:
 
@@ -30,7 +32,8 @@ Mango Installation
 
 3. Once dependencies are installed Mango can be installed from the command line using the following command.
 
-   R CMD INSTALL Mango_0.9.9.tar.gz
+::
+ R CMD INSTALL Mango_0.9.9.tar.gz
 
 
 Features
@@ -48,7 +51,7 @@ Usage of Mango
 
   Rscript Mango.R [-options]
 
-:Example for regular interactions calling ``Rscript Mango.R fastq1=samplename_1.fastq fastq2=samplename_1.fastq prefix=samplename argfile=argfile.txt chromexclude=chrM,chrY stages=1:5``
+:Example for regular interactions calling: ``Rscript Mango.R fastq1=samplename_1.fastq fastq2=samplename_1.fastq prefix=samplename argfile=argfile.txt chromexclude=chrM,chrY stages=1:5``
 
 Parameters
 ----------
