@@ -57,17 +57,17 @@ Usage of Mango
 Example for regular interactions calling
 :: 
 
-Rscript Mango.R fastq1=samplename_1.fastq fastq2=samplename_1.fastq prefix=samplename argfile=argfile.txt chromexclude=chrM,chrY stages=1:5
+ Rscript Mango.R fastq1=samplename_1.fastq fastq2=samplename_1.fastq prefix=samplename argfile=argfile.txt chromexclude=chrM,chrY stages=1:5
 
 
 Example of a argfile
 :: 
 
-bowtiepath        = /path/to/bowtie
-bedtoolspath      = /path/to/bedtools
-macs2path         = /path/to/macs2
-bowtieref         = /path/to/hg19
-bedtoolsgenome    = /path/to/human.hg19.genome
+ bowtiepath        = /path/to/bowtie
+ bedtoolspath      = /path/to/bedtools
+ macs2path         = /path/to/macs2
+ bowtieref         = /path/to/hg19
+ bedtoolsgenome    = /path/to/human.hg19.genome
 
 
 Parameters
