@@ -16,8 +16,8 @@ Mango Installation
 
 1. Mango depends on the following R packages.
 
- *hash
- *Rcpp
+ a) hash
+ b) Rcpp
 
 They can be installed throug CRAN. For example to install the package 'hash' open R and type the following
 
@@ -26,9 +26,9 @@ They can be installed throug CRAN. For example to install the package 'hash' ope
 
 2. Mango depends on the following software pacakges which should be installed prior to using Mango.
 
- *Bowtie     (http://bowtie-bio.sourceforge.net)
- *Bedtools   (https://github.com/arq5x/bedtools2)
- *MACS2      (https://github.com/taoliu/MACS)
+ a) Bowtie     (http://bowtie-bio.sourceforge.net)
+ b) Bedtools   (https://github.com/arq5x/bedtools2)
+ c) MACS2      (https://github.com/taoliu/MACS)
 
 
 3. Once dependencies are installed Mango can be installed from the command line using the following command.
