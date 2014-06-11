@@ -33,7 +33,7 @@ print (args)
 
 if (1 %in% args[["stages"]])
 {
-  checkRequired(args,c("fastq1","fastq2","outname","minlength","maxlength","keepempty"))
+  checkRequired(args,c("fastq1","fastq2","outname","minlength","maxlength","keepempty","linkerA","linkerB"))
   
   # gather arguments
   outname         = args[["outname"]]
@@ -216,6 +216,7 @@ if (5 %in% args[["stages"]])
   
   # filter out unwanted chromosomes
   originalchroms = chromosomes
+  
   # get chromosomes from bedtools
   bedtoolsgenome = read.table(bedtoolsgenome,header=FALSE,sep="\t")
   chromosomes = bedtoolsgenome[,1]
