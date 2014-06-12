@@ -18,11 +18,11 @@ buildBedpe <- function(sam1, sam2, bedpefile) {
 }
 
 removeDupBedpe <- function(infile, outfile, renamePets = TRUE) {
-    invisible(.Call('mango_removeDupBedpe', PACKAGE = 'mango', infile, outfile, renamePets))
+    .Call('mango_removeDupBedpe', PACKAGE = 'mango', infile, outfile, renamePets)
 }
 
-findPairs <- function(overlapfile, petpairsfile, interactionfile, peakscount, distancecutoff) {
-    invisible(.Call('mango_findPairs', PACKAGE = 'mango', overlapfile, petpairsfile, interactionfile, peakscount, distancecutoff))
+findPairs <- function(overlapfile, petpairsfile, interactionfile, peakscount) {
+    invisible(.Call('mango_findPairs', PACKAGE = 'mango', overlapfile, petpairsfile, interactionfile, peakscount))
 }
 
 splitBedbyChrom <- function(bedfile, outnamebase) {

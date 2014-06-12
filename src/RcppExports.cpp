@@ -38,7 +38,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // parseFastq
-std::string parseFastq(std::string fastq1, std::string fastq2, std::string basename, int minlength = 15, int maxlength = 25, bool keepempty = false, bool verbose = true, std::string linker1 = "GTTGGATAAG", std::string linker2 = "GTTGGAATGT");
+std::vector< int > parseFastq(std::string fastq1, std::string fastq2, std::string basename, int minlength = 15, int maxlength = 25, bool keepempty = false, bool verbose = true, std::string linker1 = "GTTGGATAAG", std::string linker2 = "GTTGGAATGT");
 RcppExport SEXP mango_parseFastq(SEXP fastq1SEXP, SEXP fastq2SEXP, SEXP basenameSEXP, SEXP minlengthSEXP, SEXP maxlengthSEXP, SEXP keepemptySEXP, SEXP verboseSEXP, SEXP linker1SEXP, SEXP linker2SEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
@@ -53,7 +53,7 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP );
         Rcpp::traits::input_parameter< std::string >::type linker1(linker1SEXP );
         Rcpp::traits::input_parameter< std::string >::type linker2(linker2SEXP );
-        std::string __result = parseFastq(fastq1, fastq2, basename, minlength, maxlength, keepempty, verbose, linker1, linker2);
+        std::vector< int > __result = parseFastq(fastq1, fastq2, basename, minlength, maxlength, keepempty, verbose, linker1, linker2);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);
@@ -75,22 +75,25 @@ BEGIN_RCPP
 END_RCPP
 }
 // removeDupBedpe
-void removeDupBedpe(std::string infile, std::string outfile, bool renamePets = true);
+std::vector< int > removeDupBedpe(std::string infile, std::string outfile, bool renamePets = true);
 RcppExport SEXP mango_removeDupBedpe(SEXP infileSEXP, SEXP outfileSEXP, SEXP renamePetsSEXP) {
 BEGIN_RCPP
+    SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
         Rcpp::traits::input_parameter< std::string >::type infile(infileSEXP );
         Rcpp::traits::input_parameter< std::string >::type outfile(outfileSEXP );
         Rcpp::traits::input_parameter< bool >::type renamePets(renamePetsSEXP );
-        removeDupBedpe(infile, outfile, renamePets);
+        std::vector< int > __result = removeDupBedpe(infile, outfile, renamePets);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
-    return R_NilValue;
+    UNPROTECT(1);
+    return __sexp_result;
 END_RCPP
 }
 // findPairs
-void findPairs(std::string overlapfile, std::string petpairsfile, std::string interactionfile, std::string peakscount, int distancecutoff);
-RcppExport SEXP mango_findPairs(SEXP overlapfileSEXP, SEXP petpairsfileSEXP, SEXP interactionfileSEXP, SEXP peakscountSEXP, SEXP distancecutoffSEXP) {
+void findPairs(std::string overlapfile, std::string petpairsfile, std::string interactionfile, std::string peakscount);
+RcppExport SEXP mango_findPairs(SEXP overlapfileSEXP, SEXP petpairsfileSEXP, SEXP interactionfileSEXP, SEXP peakscountSEXP) {
 BEGIN_RCPP
     {
         Rcpp::RNGScope __rngScope;
@@ -98,8 +101,7 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< std::string >::type petpairsfile(petpairsfileSEXP );
         Rcpp::traits::input_parameter< std::string >::type interactionfile(interactionfileSEXP );
         Rcpp::traits::input_parameter< std::string >::type peakscount(peakscountSEXP );
-        Rcpp::traits::input_parameter< int >::type distancecutoff(distancecutoffSEXP );
-        findPairs(overlapfile, petpairsfile, interactionfile, peakscount, distancecutoff);
+        findPairs(overlapfile, petpairsfile, interactionfile, peakscount);
     }
     return R_NilValue;
 END_RCPP

@@ -27,6 +27,8 @@ args = establishParameters(argscmdline,argsscript)
 
 print ("using the following parameters:")
 print (args)
+       
+resultshash = hash()
 
 
 ##################################### parse fastqs #####################################
@@ -47,7 +49,7 @@ if (1 %in% args[["stages"]])
   linker2=args[["linkerB"]]
   
   print ("finding linkers")
-  parseFastq( fastq1=fastq1,
+  parsingresults = parseFastq( fastq1=fastq1,
               fastq2=fastq2,
               basename = basename,
               minlength = minlength,
@@ -55,6 +57,11 @@ if (1 %in% args[["stages"]])
               keepempty = keepempty,
               linker1=linker1,
               linker2=linker2)
+  
+  resultshash[["total PETs"]] = sum(parsingresults)
+  resultshash[["same PETs"]] = parsingresults[1]
+  resultshash[["chimeric PETs"]] = parsingresults[2]
+  resultshash[["ambigious PETs"]] = parsingresults[3]
 }
   
 ###################################### align reads #####################################
@@ -107,7 +114,11 @@ if (3 %in% args[["stages"]])
   
   # filter duplicates
   print ("removing PCR duplicates")
-  removeDupBedpe(bedpefilesort,bedpefilesortrmdup,renamePets=TRUE);
+  rmdupresults = removeDupBedpe(bedpefilesort,bedpefilesortrmdup,renamePets=TRUE);
+  resultshash[["duplicate PETs"]] = rmdupresults[1]
+  resultshash[["nonduplicate PETs"]] = rmdupresults[2]
+  resultshash[["interchromosomal PETs"]] = rmdupresults[3]
+  resultshash[["intrachromosomal PETs"]] = rmdupresults[4]
 }
 
 ##################################### call peaks #####################################
@@ -152,8 +163,10 @@ if (4 %in% args[["stages"]])
   
   # extend and merge peaks according to peakslop
   print ("extending peaks")
-  extendpeaks(peaksfile,peaksfileslop,bedtoolspath=bedtoolspath,
+  peakcounts = extendpeaks(peaksfile,peaksfileslop,bedtoolspath=bedtoolspath,
               bedtoolsgenome=bedtoolsgenome,peakslop=peakslop)
+  resultshash[["peaks"]] = peakcounts[1]
+  resultshash[["mergedpeaks"]] = peakcounts[2]
 }
 
 ##################################### group pairs #####################################
@@ -211,7 +224,6 @@ if (5 %in% args[["stages"]])
                            outname=outname,
                            peaksfile=peaksfileslop,
                            bedtoolspath = bedtoolspath,
-                           distancecutoff=distancecutoff,
                            verbose=FALSE)
   
   # filter out unwanted chromosomes
@@ -238,12 +250,14 @@ if (5 %in% args[["stages"]])
   
   # score and filter interactions
   print ("scoring interactions")
-  allpairs   = scoreAndFilter(chromosomes = chromosomes,outname = outname,
+  scoreAndFilterResults   = scoreAndFilter(chromosomes = chromosomes,outname = outname,
                               mindist = distancecutoff, maxdist = maxinteractingdist,
                               averageDepth = pEstimates$averageDepth,
                               spline = pEstimates$spline,
                               N      = pEstimates$N,corrMethod)
 
+  allpairs = scoreAndFilterResults[[1]]
+  
   # filter out outliers
   outliercut = 1 / sum(pEstimates$p_table$M)
   outliers   = allpairs[which( allpairs$Q < outliercut),7]
@@ -255,12 +269,14 @@ if (5 %in% args[["stages"]])
 
   # score and filter interactions with new estimates
   print ("scoring interactions (2nd iteration)")
-  allpairs   = scoreAndFilter(chromosomes = chromosomes,outname = outname,
+  scoreAndFilterResults   = scoreAndFilter(chromosomes = chromosomes,outname = outname,
                               mindist = distancecutoff, maxdist = maxinteractingdist,
                               averageDepth = pEstimates2$averageDepth,
                               spline = pEstimates2$spline,
                               N      = pEstimates2$N,corrMethod)
 
+  allpairs = scoreAndFilterResults[[1]]
+  
   allpairs = cbind(allpairs[,c(1,2,3,4,5,6)],paste("pair_",(1:nrow(allpairs)),sep=""),allpairs[,c(10,11,12,14,18,19)])
   names(allpairs) = c("chrom1","start1","end1","chrom2","start2","end2","name",
                       "peak1","peak2","PETs","log10distance","P","Q")
@@ -272,6 +288,13 @@ if (5 %in% args[["stages"]])
   }
   sig= allpairs[which(allpairs$Q < FDR & allpairs$PETs >= minPETS),]
   write.table(x=sig,file=fdrpairsfile,quote = FALSE, sep = "\t",row.names = FALSE)
+  
+  resultshash[["putative interactions"]]    = nrow(allpairs)
+  resultshash[["significant interactions"]] = nrow(sig)
+  
+  resultshash[["short-filtered PETs"]] = scoreAndFilterResults[[2]]
+  resultshash[["non-filtered PETs"]]   = scoreAndFilterResults[[3]]
+  resultshash[["long-filtered PETs"]]  = scoreAndFilterResults[[4]]
   
   #- plot results -#
   
@@ -289,10 +312,10 @@ if (5 %in% args[["stages"]])
   save(pEstimates, file=pestimate1txt)
   save(pEstimates2,file=pestimate2txt)     
 
-  pdf(summarypdf)
+  pdf(summarypdf,height=6,width=10)
     par(mfrow=c(2,2))
-    hist(allpairs$P,main="P-value distribution",xlab="P",col="dodgerblue4")
-    hist(allpairs$Q,main="Q-value distribution",xlab="Q",col="dodgerblue4")
+    #hist(allpairs$P,main="P-value distribution",xlab="P",col="dodgerblue4")
+    #hist(allpairs$Q,main="Q-value distribution",xlab="Q",col="dodgerblue4")
     
     plot(density(sig$log10distance),main="Size of sig pairs",xlab="log10(distance)",lwd=2,col="dodgerblue4",xlim=log10(c(distancecutoff,maxinteractingdist)))
     legend("topright",inset=0.05,legend=c(paste("Q <",FDR),paste("n =",nrow(sig))),pch=NA)
@@ -319,135 +342,20 @@ if (5 %in% args[["stages"]])
   }
 }
 
-Sys.time()
+##################################### print to logfile #####################################
+
+logfile = file.path(args[["outname"]],".mango.log")
+write("Sys.time()",file=logfile,append=TRUE)
+write("Analyzed by Mango using the following parameters:",file=logfile,append=TRUE)
+for (key in keys(args))
+{
+  write(paste( key, ":",args[[key]]),file=logfile,append=TRUE)
+}
+write("",file=logfile,append=TRUE)
+write("With the following results:",file=logfile,append=TRUE)
+for (key in keys(resultshash))
+{
+  write(paste( resultshash, ":",resultshash[[key]]),file=logfile,append=TRUE)
+}
+
 print("done")
-
-
-
-
-
-
-
-# 
-# # command line call
-# # Rscript mango.R fastqs=data/NH.K562_RAD21_K562_std_2.1_1.head.fastq,data/NH.K562_RAD21_K562_std_2.1_2.head.fastq expname=NH.K562_RAD21_K562_std_2.1 /Users/dougphanstiel/Desktop/mango2014test/
-# 
-# 
-# usr = "doug"
-# 
-# ##################################### paths to externals #####################################
-# 
-# #! Need to figure out how to get R to use the same environment as bash (i.e. same PATH)
-# 
-# fastqs = c("data/NH.K562_RAD21_K562_std_2.1_1.head.fastq",
-#            "data/NH.K562_RAD21_K562_std_2.1_2.head.fastq")
-# 
-# expname = "NH.K562_RAD21_K562_std_2.1"
-# 
-# if (usr == "alan")
-# {
-#   bowtiepath = "/home/aboyle/bowtie-1.0.1/bowtie"
-#   bowtieref  = "/home/aboyle/bowtie-1.0.1/indexes/hg19"
-#   outdir    = "/home/aboyle/mango2014test/"
-# }
-# 
-# if (usr == "doug")
-# {
-#   outdir= "/Users/dougphanstiel/Desktop/mango2014test"
-#   bigfastqs = paste(paste(outdir,"/NH.K562_RAD21_K562_std_2.1_1.fastq",sep=""),
-#                     paste(outdir,"/NH.K562_RAD21_K562_std_2.1_2.fastq",sep=""),sep=",")
-#   fastqs = bigfastqs
-#   
-#   argscmdline = c(paste("fastqs=",fastqs,sep=""),
-#                   "bowtiepath=/Users/dougphanstiel/Tools/bowtie-1.0.0/bowtie",
-#                   "bowtieref=/Users/dougphanstiel/Tools/bowtie-1.0.0/indexes/hg19",
-#                   "bedtoolspath=/Users/dougphanstiel/Tools/bedtools-2.17.0/bin/bedtools",
-#                   "bedtoolsgenome=/Users/dougphanstiel/Tools/bedtools-2.17.0/genomes/human.hg19.genome",
-#                   "macs2path=/usr/local/bin/macs2",
-#                   "outdir=/Users/dougphanstiel/Desktop/mango2014test",
-#                   "prefix=NH.K562_RAD21_K562_std_2.1"             
-#   )
-# }
-# 
-# if (usr == "aster")
-# {
-#   bowtiepath = "/Users/dougphanstiel/tools/bowtie-0.12.7/bowtie"
-#   bowtieref  = "/Users/dougphanstiel/tools/bowtie-0.12.7/indexes/hg19"
-#   outdir   = "/Volumes/HD3/projects/newmango/data/"
-#   bigfastqs = fastqs = c("/Volumes/HD3/projects/newmango/data/NH.K562_RAD21_K562_std_2.1_1.fastq",
-#                          "/Volumes/HD3/projects/newmango/data/NH.K562_RAD21_K562_std_2.1_2.fastq")
-#   #fastqs = bigfastqs
-# }
-# 
-
-
-
-
-
-# ##################################### rewire reads #####################################
-# 
-# print ("rewiring PETs")
-# 
-# # make a pdf to print results
-# pdf(paste(outname ,".rw.results.pdf",sep=""),height=10.5,width=10.5)
-# par(mfrow=c(3,3))
-# 
-# rwrpetsfile  = paste(outname,".rwr.bedpe",sep="")
-# obspetsfile  = paste(outname,".obs.bedpe",sep="")
-# rwrreadsfile = paste(outname,".rwr.bed",sep="")
-# obsreadsfile = paste(outname,".obs.bed",sep="")
-# if (file.exists(rwrpetsfile)) file.remove(rwrpetsfile)
-# if (file.exists(obspetsfile)) file.remove(obspetsfile)
-# if (file.exists(rwrreadsfile)) file.remove(rwrreadsfile)
-# if (file.exists(obsreadsfile)) file.remove(obsreadsfile)
-# 
-# # split into reads
-# firstsample = TRUE
-# counter = 0
-# for (chrom in filestorewire)
-# {
-#   f = paste(outname,".",chrom,sep="")
-#   print (f)
-#   readsfile   = paste(f,".peakfilt.bed",sep="")
-#   petsfile    = paste(f,".peakfilt.bedpe",sep="")
-#   densities   = rewire(readsfile,petsfile,obspetsfile,rwrpetsfile,obsreadsfile,rwrreadsfile,counter=counter,smallreps=20,bigreps=10)
-# 
-#   # keep track of read numbers
-#   counter = densities[[4]]
-#   
-#   # remove files for individual chromosomes
-#   #if (file.exists(readsfile)) file.remove(readsfile)
-#   #if (file.exists(petsfile)) file.remove(petsfile)
-#   
-#   # plot the distributions
-#   par(ann=F)
-#   plot(densities[[1]],col='red',xaxt='n')
-#   axis(side=1,at=seq(1,8,by=1),labels = 10^seq(1,8,by=1),las=2)
-#   points(densities[[2]],col='black',type='l')
-#   mtext("distance",side=1,line=3.5,font=2)
-#   mtext(paste("Chromosome", densities[[3]]),side=3,line=1,font=1.0,cex=2)
-#   legend("topright",inset = .05,legend=c("observed","rewired"),col=c("red","black"),pch=15)
-# }
-# dev.off()
-# 
-# 
-# 
-# ##################################### call pairs #####################################
-## make a read file
-#print ("splitting PETs into reads")
-#PETsToReads(bedpefilesortrmdup,bedfilesortrmdup);
-
-##################################### determine min distance #####################################
-##################################### Split and Filter #####################################
-
-# # split bed and bedpe by chrom
-# print ("splitting PETs and reads by chromosome")
-# chromSplitResults = splitBedpe(bedpefilesortrmdup,outname);
-# # filter bed for those that overlap peaks
-# filterPeakOverlap(chroms=filestorewire,outname=outname,peaksfileslop=peaksfileslop,
-#                   bedtoolspath=bedtoolspath,bedpe=FALSE,verbose=TRUE)
-# 
-# # filter bedpe for those that overlap peaks
-# filterPeakOverlap(chroms=filestorewire,outname=outname,peaksfileslop=peaksfileslop,
-#                   bedtoolspath=bedtoolspath,bedpe=TRUE,verbose=TRUE)
-

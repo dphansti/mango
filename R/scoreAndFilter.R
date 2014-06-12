@@ -9,6 +9,11 @@ calcP <- function(v)
 # Define a function that calculates P for each pair
 scoreAndFilter <-function(chromosomes,outname ,mindist,maxdist,averageDepth,spline,N,corMeth="BY")
 {
+  # keep track of PETs filtered for size
+  smallPETs = 0
+  mediumPETs = 0
+  longPETs = 0
+  
   mindist = log10(mindist)
   maxdist = log10(maxdist)
   
@@ -17,12 +22,17 @@ scoreAndFilter <-function(chromosomes,outname ,mindist,maxdist,averageDepth,spli
   for (chrom in chromosomes)
   {
     print (chrom)
+    
     # get total intra IAB
     pairsfile = paste(outname,".",chrom,".pairs.bedpe",sep="")
     pairs = read.table(pairsfile,header=FALSE,sep="\t")
     pairs = pairs[which(as.character(pairs$V8) != as.character(pairs$V9)),]
     pairs$dist = log10(abs( (pairs[,3]+pairs[,2]/2) - (pairs[,6]+pairs[,5]/2) ) )
     pairs = pairs[which(pairs$dist>mindist & pairs$dist<maxdist),]
+    
+    smallPETs  = smallPETs  + length(which(pairs$dist<=mindist))
+    mediumPETs = mediumPETs + length(which(pairs$dist>mindist & pairs$dist<maxdist))
+    longPETs   = longPETs   + length(which(pairs$dist>=maxdist))
     
     if (nrow(pairs) == 0)
     {
@@ -45,5 +55,5 @@ scoreAndFilter <-function(chromosomes,outname ,mindist,maxdist,averageDepth,spli
   allpairs$P = apply(cbind(allpairs$V12,allpairs$N,allpairs$psuccess),1,calcP)    
   allpairs$Q = p.adjust(allpairs$P,method=corMeth)
   
-  return(allpairs)
+  return(list(allpairs,  smallPETs,mediumPETs,longPETs))
 }

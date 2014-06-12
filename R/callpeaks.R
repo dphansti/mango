@@ -14,14 +14,14 @@ callpeaks <- function(macs2path,tagAlignfile,peaksfile,pvalue=.00001,
   
   write.table(peaks,file=paste(peaksfile,"_peaks.narrowPeak",sep=""),quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,append=FALSE)
   
-#   # remove unneccesary files 
-#   listofsuffixes = c("peaks.xls","summits.bed","model.r","","")
-#   for (suf in listofsuffixes)
-#   {
-#     fname = paste(peaksfile,suf,sep="_")
-#     if (file.exists(fname) == TRUE)
-#     { 
-#         file.remove(fname)
-#     }
-#   }
+  # remove unneccesary files 
+  listofsuffixes = c("peaks.xls","summits.bed","model.r","","")
+  for (suf in listofsuffixes)
+  {
+    fname = paste(peaksfile,suf,sep="_")
+    if (file.exists(fname) == TRUE)
+    { 
+        file.remove(fname)
+    }
+  }
 }

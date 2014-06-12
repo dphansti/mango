@@ -27,7 +27,6 @@ establishParameters <-function(argscmdline,argsscript)
     args[[argparts[1]]] = argparts[2]
   }
   
-  
   # (3) overwrite with arguments froms supplied file
   if (is.null(argfile) == FALSE)
   {

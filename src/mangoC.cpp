@@ -47,7 +47,7 @@ std::vector<std::string> string_split( const std::string& s, const std::string& 
 }
 
 // [[Rcpp::export]]
-std::string parseFastq(std::string fastq1, std::string fastq2,std::string basename,
+std::vector< int > parseFastq(std::string fastq1, std::string fastq2,std::string basename,
               int minlength = 15,int maxlength = 25,
               bool keepempty = false, bool verbose = true,
               std::string linker1 = "GTTGGATAAG" , std::string linker2 = "GTTGGAATGT")
@@ -60,6 +60,11 @@ std::string parseFastq(std::string fastq1, std::string fastq2,std::string basena
     ofstream same2 ( (basename + "_2.same.fastq").c_str() );
     ofstream chim1 ( (basename + "_1.chim.fastq").c_str() );
     ofstream chim2 ( (basename + "_2.chim.fastq").c_str() );
+    
+    // keep track of PET types
+    int samecount = 0;
+    int chimcount = 0;
+    int ambicount = 0;
     
     // define variables
     std::string fqline1;
@@ -141,7 +146,7 @@ std::string parseFastq(std::string fastq1, std::string fastq2,std::string basena
             std::string pairtype = "unknown";
             if ((r1linker == 1 && r2linker == 1) || (r1linker == 2 && r2linker == 2))
             {
-                    pairtype = "same";
+                pairtype = "same";
             }
             if ((r1linker == 1 && r2linker == 2) || (r1linker == 2 && r2linker == 1))
             {
@@ -149,7 +154,7 @@ std::string parseFastq(std::string fastq1, std::string fastq2,std::string basena
             }
             if (r1linker == 3 || r2linker == 3)
             {
-                pairtype = "ambi";
+                pairtype = "ambi";   
             }
             if (keepempty == true)
             {
@@ -168,6 +173,20 @@ std::string parseFastq(std::string fastq1, std::string fastq2,std::string basena
                 {
                     pairtype = "ambi";
                 }
+            }
+            
+            // add to counters
+            if (pairtype == "same")
+            {
+              samecount++;
+            }
+            if (pairtype == "chim")
+            {
+              chimcount++;
+            }
+            if (pairtype == "ambi")
+            {
+              ambicount++;
             }
             
             // determine if they pass the size requirements and print to output
@@ -191,7 +210,6 @@ std::string parseFastq(std::string fastq1, std::string fastq2,std::string basena
                 }
             }
             
-            
             // reset lines
             i = 0;
             lines1.clear();
@@ -206,10 +224,7 @@ std::string parseFastq(std::string fastq1, std::string fastq2,std::string basena
             cout << "\n";
             
         }
-
     }
-    
-
     
     // close streams
     same1.close();
@@ -219,7 +234,13 @@ std::string parseFastq(std::string fastq1, std::string fastq2,std::string basena
     file1.close();
     file2.close();
      
-    return "linker parsing complete";
+    // report results
+    std::vector< int > parsingresults;
+    parsingresults.push_back(samecount);
+    parsingresults.push_back(chimcount);
+    parsingresults.push_back(ambicount);
+
+    return parsingresults;
 }
 
 
@@ -375,10 +396,14 @@ void buildBedpe(std::string sam1, std::string sam2,std::string bedpefile)
 
 // Define a function that removes duplicates from a bedpe file
 // [[Rcpp::export]]
-void removeDupBedpe(std::string infile,std::string outfile , bool renamePets = true)
+std::vector< int > removeDupBedpe(std::string infile,std::string outfile , bool renamePets = true)
 {
     // initialize petnumer
-    int petnumber = 0;
+    int petnumber  = 0;
+    int alllines   = 0;
+    int duplines   = 0;
+    int interchromosomal = 0;
+    int intrachromosomal = 0;
     
     // arguments
     ifstream file1(infile.c_str());
@@ -389,6 +414,9 @@ void removeDupBedpe(std::string infile,std::string outfile , bool renamePets = t
     std::string currline;
     while (getline(file1, currline))
     {
+        // increment counter 
+        alllines++;
+        
         // split lines
         std::vector<std::string> lastEall = string_split(lastline,"\t");
         std::vector<std::string> currEall = string_split(currline,"\t");
@@ -423,18 +451,28 @@ void removeDupBedpe(std::string infile,std::string outfile , bool renamePets = t
         if (lastlineshort == currlineshort)
         {
             lastline = currline;
+            duplines++;
             continue;
         }
         
         // print out non duplicates
         if (renamePets == true)
         {
-          petnumber ++;
+          petnumber++;
           currEall[6] = "obs_" +  IntToString(petnumber);
         }
         
         bedpefilestream << vector_join(currEall,"\t");;
         bedpefilestream << "\n";
+        
+        if ((currEall[0] == currEall[4]) & (currEall[0]  != "*") & (currEall[4]  != "*")  )
+        {
+          interchromosomal++;
+        }
+        if (currEall[0] != currEall[4]  & (currEall[0]  != "*") & (currEall[4]  != "*") )
+        {
+          intrachromosomal++;
+        }
 
         // update last line
         lastline = currline;
@@ -443,7 +481,14 @@ void removeDupBedpe(std::string infile,std::string outfile , bool renamePets = t
     // close files
     file1.close();
     bedpefilestream.close();
-
+    
+    // report results
+    std::vector< int > rmdupresults;
+    rmdupresults.push_back(duplines);
+    rmdupresults.push_back(petnumber);
+    rmdupresults.push_back(interchromosomal);
+    rmdupresults.push_back(intrachromosomal);
+    return(rmdupresults);
 }
 
 // Define a class to keep track of peak information
@@ -479,7 +524,7 @@ public:
 
 // Define a function that puts pairs together
 // [[Rcpp::export]]
-void findPairs(std::string overlapfile, std::string petpairsfile,std::string interactionfile,std::string peakscount, int distancecutoff)
+void findPairs(std::string overlapfile, std::string petpairsfile,std::string interactionfile,std::string peakscount)
 {
   // (1) Read in overlap info
   

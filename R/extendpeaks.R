@@ -13,5 +13,10 @@ extendpeaks <- function(peaksfile=peaksfile,peaksfileslop=peaksfileslop,
   # clean up the peak names
   mergedpeaks = read.table(peaksfileslop, header=FALSE,sep="\t")
   mergedpeaks$V4 = paste("speak_",1:nrow(mergedpeaks),sep="")
-  write.table(mergedpeaks,file=peaksfileslop,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,append=FALSE)  
+  write.table(mergedpeaks,file=peaksfileslop,quote=FALSE,sep="\t",col.names=FALSE,row.names=FALSE,append=FALSE)
+  
+  # count lines in peak files
+  numpeaks = nrow(read.table(peaksfile, header=FALSE,sep="\t"))
+  nummergepeaks = nrow(mergedpeaks)
+  return(c(numpeaks,nummergepeaks)) 
 }

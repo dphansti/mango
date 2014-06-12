@@ -1,6 +1,6 @@
 # Define a function that finds PET / peak overlaps
 groupPairs <- function(bedpefilesortrmdup,outname,peaksfile, bedtoolspath,
-                       distancecutoff=0, verbose=FALSE)
+                     verbose=FALSE)
 {
   
   # split reads by chromosome
@@ -32,7 +32,7 @@ groupPairs <- function(bedpefilesortrmdup,outname,peaksfile, bedtoolspath,
     overlapfile   = paste(outname,"." ,chrom, ".bedNpeak",sep="")
     petpairsfile  = paste(outname,"." ,chrom, ".bedpe",sep="")
     peakscount    = paste(outname,"." ,chrom, "_peaks.count.slopPeak",sep="")
-    findPairs(overlapfile,petpairsfile,interactionfile,peakscount,distancecutoff)
+    findPairs(overlapfile,petpairsfile,interactionfile,peakscount)
   }
   
   # (4) clean up temp files
