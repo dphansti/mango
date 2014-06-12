@@ -313,10 +313,10 @@ if (5 %in% args[["stages"]])
   save(pEstimates2,file=pestimate2txt)     
 
   pdf(summarypdf,height=6,width=10)
-    par(mfrow=c(2,2))
+    par(mfrow=c(1,2))
     #hist(allpairs$P,main="P-value distribution",xlab="P",col="dodgerblue4")
     #hist(allpairs$Q,main="Q-value distribution",xlab="Q",col="dodgerblue4")
-    
+
     plot(density(sig$log10distance),main="Size of sig pairs",xlab="log10(distance)",lwd=2,col="dodgerblue4",xlim=log10(c(distancecutoff,maxinteractingdist)))
     legend("topright",inset=0.05,legend=c(paste("Q <",FDR),paste("n =",nrow(sig))),pch=NA)
   
@@ -335,9 +335,11 @@ if (5 %in% args[["stages"]])
   {
     peaksizecount  = paste(outname,"." ,chrom, "_peaks.count.slopPeak",sep="")
     pairsbedpe     = paste(outname,"." ,chrom, ".pairs.bedpe",sep="")
-    bedfile         = paste(outname,"." ,chrom, ".bedpe",sep="")
+    bedpefile      = paste(outname,"." ,chrom, ".bedpe",sep="")
+    bedfile        = paste(outname,"." ,chrom, ".bed",sep="")
     if (file.exists(peaksizecount)) file.remove(peaksizecount)
     if (file.exists(pairsbedpe)) file.remove(pairsbedpe)
+    if (file.exists(bedpefile)) file.remove(bedpefile)
     if (file.exists(bedfile)) file.remove(bedfile)
   }
 }
