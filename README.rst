@@ -24,6 +24,7 @@ They can be installed throug CRAN. For example to install the package 'hash' ope
 ::
 
   install.packages('hash')
+  install.packages('Rcpp')
 
 2. Mango depends on the following software pacakges which should be installed prior to using Mango.
 
