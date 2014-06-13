@@ -36,8 +36,8 @@ They can be installed throug CRAN. For example to install the package 'hash' ope
 
 ::
 
-  R CMD INSTALL Mango_0.9.9.tar.gz
-
+  git clone https://github.com/dphansti/mango.git
+  R CMD INSTALL --no-multiarch --with-keep.source mango
 
 Features
 ========
