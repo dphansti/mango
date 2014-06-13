@@ -80,143 +80,89 @@ ALL STAGES
 ~~~~~~~~~~
 
 
-stages STAGES
-```````````````````````
+``stages``
+ stages of the pipeline to execute.  STAGE can be either a single stage (e.g 1 or a range of stagnes e.g 1:5). default = 1:5
 
-stages of the pipeline to execute.  STAGE can be either a single stage (e.g 1 or a range of stagnes e.g 1:5). default = 1:5
+``prefix``
+ prefix for all output files. default = mango
+ 
+``outdir``
+ The output direcoroy. default = NULL
 
-prefix PREFIX
-```````````````````````
-
-prefix for all output files. default = mango
-
-
-outdir OUTDIR
-```````````````````````
-
-The output direcoroy. default = NULL
-
-
-chrominclude CHROMINCLUDE
-```````````````````````
-
-comma separated list of chromosomes to use (e.g. chr1,chr2,chr3,...).  Only these chromosomes will be processed.  If NULL all chromosomes with be processed. default = NULL
-
-
-chromexclude CHROMECXLUDE
-```````````````````````
-
-comma separated list of chromosomes to exclude (e.g. chrM,chrY).  If NULL all chromosomes with be processed. default = NULL
+``chrominclude``
+ comma separated list of chromosomes to use (e.g. chr1,chr2,chr3,...).  Only these chromosomes will be processed.  If NULL all chromosomes with be processed. default = NULL
+ 
+``chromexclude``
+ comma separated list of chromosomes to exclude (e.g. chrM,chrY).  If NULL all chromosomes with be processed. default = NULL
 
 STAGE 1 PARAMETERS
 ~~~~~~~~~~
 
-linkerA LINKERA
-```````````````````````
+``linkerA``
+ linker sequence to look for. default = GTTGGATAAG
 
-linker sequence to look for. default = GTTGGATAAG
+``linkerB``
+ linker sequence to look for. default = GTTGGAATGT
 
-linkerB LINKERB
-```````````````````````
+``minlength``
+ min length of reads after linker trimming. default = 15
 
-linker sequence to look for. default = GTTGGAATGT
+``maxlength``
+ max length of reads after linker trimming. default = 25
 
-minlength MINLENGTH
-```````````````````````
-
-min length of reads after linker trimming. default = 15
-
-maxlength MAXLENGTH
-```````````````````````
-
-max length of reads after linker trimming. default = 25
-
-keepempty KEEPEMPTY
-```````````````````````
-
-Should reads with no linker be kept (TRUE or FALSE). default = FALSE
+``keepempty``
+ Should reads with no linker be kept (TRUE or FALSE). default = FALSE
 
 
 STAGE 2 PARAMETERS
 ~~~~~~~~~~
 
-shortreads SHORTREADS
-```````````````````````
-
-should bowtie alignments be done using paramter for very short reads (~20 bp). default = TRUE
+``shortreads``
+ should bowtie alignments be done using paramter for very short reads (~20 bp). default = TRUE
 
 
 STAGE 4 PARAMETERS
 ~~~~~~~~~~
 
-MACS_pvalue MACS_PVALUE
-```````````````````````
+``MACS_pvalue``
+ pvalue cutoff for peak calling in MACS2. default = 0.00001 
 
-pvalue cutoff for peak calling in MACS2. default = 0.00001 
+``peakslop``
+ Number of basespairs to extend peaks on both sides. default = 1000
 
-peakslop PEAKSLOP
-```````````````````````
-
-Number of basespairs to extend peaks on both sides. default = 1000
-
-
-peakinput PEAKINPUT
-```````````````````````
-
-Name of user supplied peaks file.  If NULL Mango will use peaks determined from MACS2 analysis. default = NULL
+``peakinput``
+ Name of user supplied peaks file.  If NULL Mango will use peaks determined from MACS2 analysis. default = NULL
 
 
 STAGE 5 PARAMETERS
 ~~~~~~~~~~
 
-distcutrangemin DISTCUTRANGEMIN
-```````````````````````
+``distcutrangemin``
+ When Mango determines the self-ligation cutoff this is the minimum distance it will consider. default = 1000
 
-When Mango determines the self-ligation cutoff this is the minimum distance it will consider. default = 1000
+``distcutrangemax``
+ When Mango determines the self-ligation cutoff this is the maximum distance it will consider. default = 100000
 
-
-distcutrangemax DISTCUTRANGEAX
-```````````````````````
-
-When Mango determines the self-ligation cutoff this is the maximum distance it will consider. default = 100000
-
-
-biascut BIASCUT
-```````````````````````
-
-Mango exlcudes very short distance PETS since they tend to arise from self-ligation of a single DNA framgent as opposed to interligation of two interacting fragments. To determine this distnce cutoff Mango determines the fraction of PETs at each distance that come from self-ligation and sets the cutoff at the point where the fraction is less than or equal to BIASCUT. default = 0.05
+``biascut``
+ Mango exlcudes very short distance PETS since they tend to arise from self-ligation of a single DNA framgent as opposed to interligation of two interacting fragments. To determine this distnce cutoff Mango determines the fraction of PETs at each distance that come from self-ligation and sets the cutoff at the point where the fraction is less than or equal to BIASCUT. default = 0.05
     
-maxPval MAXPVAL
-```````````````````````
+``maxPval``
+ P-value cutoff for significant interactions. default = 0.01
 
-P-value cutoff for significant interactions. default = 0.01
-
-numofbins NUMOFBINS
-```````````````````````
-
-number of bins to use for binomial p-value calculations. default = 30
+``numofbins``
+ number of bins to use for binomial p-value calculations. default = 30
     
-corrMethod CORRMETHOD
-```````````````````````
-
-Method to use for correction of mulitply hypothesis testing.  See (http://stat.ethz.ch/R-manual/R-devel/library/stats/html/p.adjust.html) for more details. default = BY
+``corrMethod``
+ Method to use for correction of mulitply hypothesis testing.  See (http://stat.ethz.ch/R-manual/R-devel/library/stats/html/p.adjust.html) for more details. default = BY
     
-maxinteractingdist MAXINTERACTINGDIST
-```````````````````````
-
-The maximum disance (in basepairs) considered for interaction. default = 10000000
+``maxinteractingdist``
+ The maximum disance (in basepairs) considered for interaction. default = 10000000
     
-FDR FDR
-```````````````````````
-
-FDR cutoff for interactions. default = 0.01
+``FDR``
+ FDR cutoff for interactions. default = 0.01
     
-minPETS MINPETS
-```````````````````````
+``minPETS``
+ The minimum number of PETs required for an interaction (applied after FDR filtering). default = 2
 
-The minimum number of PETs required for an interaction (applied after FDR filtering). default = 2
-
-reportallpairs REPORTALLPAIRS
-```````````````````````
-
-Should all pairs be reported or just significant pairs (TRUE or FALSE). default = FALSE
+``reportallpairs``
+ Should all pairs be reported or just significant pairs (TRUE or FALSE). default = FALSE
