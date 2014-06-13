@@ -3,3 +3,4 @@
 .RData
 *.o
 *.so
+.DS_Store
