@@ -793,7 +793,7 @@ void makeDistanceFile(std::string bedpefilesortrmdup,std::string distancefile,in
 
 // Define a function splits bedpe file into reads and PETs by chromosome
 // [[Rcpp::export]]
-std::vector< std::vector<std::string> > splitBedpe(std::string bedpein,std::string outnamebase, bool printreads = true , bool printpets = true)
+std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase, bool printreads = true , bool printpets = true)
 {
     // keep track of output files
     std::vector<std::string> outputvectorPETs;
@@ -898,9 +898,11 @@ std::vector< std::vector<std::string> > splitBedpe(std::string bedpein,std::stri
     }    
     
     // combine the outputs
-    std::vector< std::vector<std::string> > ReadAndPETchroms;
-    ReadAndPETchroms.push_back( outputvectorReads);  
-    ReadAndPETchroms.push_back( outputvectorPETs);  
+    std::vector<std::string> ReadAndPETchroms;
+    ReadAndPETchroms.reserve( outputvectorReads.size() + outputvectorPETs.size() ); // preallocate memory
+    ReadAndPETchroms.insert( ReadAndPETchroms.end(), outputvectorReads.begin(), outputvectorReads.end() );
+    ReadAndPETchroms.insert( ReadAndPETchroms.end(), outputvectorPETs.begin(), outputvectorPETs.end() );
+
 
     return ReadAndPETchroms;
 }

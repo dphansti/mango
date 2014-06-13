@@ -138,7 +138,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // splitBedpe
-std::vector< std::vector<std::string> > splitBedpe(std::string bedpein, std::string outnamebase, bool printreads = true, bool printpets = true);
+std::vector<std::string> splitBedpe(std::string bedpein, std::string outnamebase, bool printreads = true, bool printpets = true);
 RcppExport SEXP mango_splitBedpe(SEXP bedpeinSEXP, SEXP outnamebaseSEXP, SEXP printreadsSEXP, SEXP printpetsSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
@@ -148,7 +148,7 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< std::string >::type outnamebase(outnamebaseSEXP );
         Rcpp::traits::input_parameter< bool >::type printreads(printreadsSEXP );
         Rcpp::traits::input_parameter< bool >::type printpets(printpetsSEXP );
-        std::vector< std::vector<std::string> > __result = splitBedpe(bedpein, outnamebase, printreads, printpets);
+        std::vector<std::string> __result = splitBedpe(bedpein, outnamebase, printreads, printpets);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);

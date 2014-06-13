@@ -226,6 +226,7 @@ if (5 %in% args[["stages"]])
                            bedtoolspath = bedtoolspath,
                            verbose=FALSE)
   
+  print(chromosomes)
   # filter out unwanted chromosomes
   originalchroms = chromosomes
   
@@ -250,14 +251,12 @@ if (5 %in% args[["stages"]])
   
   # score and filter interactions
   print ("scoring interactions")
-  scoreAndFilterResults   = scoreAndFilter(chromosomes = chromosomes,outname = outname,
+  allpairs   = scoreAndFilter(chromosomes = chromosomes,outname = outname,
                               mindist = distancecutoff, maxdist = maxinteractingdist,
                               averageDepth = pEstimates$averageDepth,
                               spline = pEstimates$spline,
                               N      = pEstimates$N,corrMethod)
 
-  allpairs = scoreAndFilterResults[[1]]
-  
   # filter out outliers
   outliercut = 1 / sum(pEstimates$p_table$M)
   outliers   = allpairs[which( allpairs$Q < outliercut),7]
@@ -269,13 +268,11 @@ if (5 %in% args[["stages"]])
 
   # score and filter interactions with new estimates
   print ("scoring interactions (2nd iteration)")
-  scoreAndFilterResults   = scoreAndFilter(chromosomes = chromosomes,outname = outname,
+  allpairs   = scoreAndFilter(chromosomes = chromosomes,outname = outname,
                               mindist = distancecutoff, maxdist = maxinteractingdist,
                               averageDepth = pEstimates2$averageDepth,
                               spline = pEstimates2$spline,
                               N      = pEstimates2$N,corrMethod)
-
-  allpairs = scoreAndFilterResults[[1]]
   
   allpairs = cbind(allpairs[,c(1,2,3,4,5,6)],paste("pair_",(1:nrow(allpairs)),sep=""),allpairs[,c(10,11,12,14,18,19)])
   names(allpairs) = c("chrom1","start1","end1","chrom2","start2","end2","name",
@@ -291,10 +288,6 @@ if (5 %in% args[["stages"]])
   
   resultshash[["putative interactions"]]    = nrow(allpairs)
   resultshash[["significant interactions"]] = nrow(sig)
-  
-  resultshash[["short-filtered PETs"]] = scoreAndFilterResults[[2]]
-  resultshash[["non-filtered PETs"]]   = scoreAndFilterResults[[3]]
-  resultshash[["long-filtered PETs"]]  = scoreAndFilterResults[[4]]
   
   #- plot results -#
   
@@ -333,10 +326,12 @@ if (5 %in% args[["stages"]])
   if (file.exists(distancefile)) file.remove(distancefile)
   for (chrom in originalchroms)
   {
+    print (chrom)
     peaksizecount  = paste(outname,"." ,chrom, "_peaks.count.slopPeak",sep="")
     pairsbedpe     = paste(outname,"." ,chrom, ".pairs.bedpe",sep="")
     bedpefile      = paste(outname,"." ,chrom, ".bedpe",sep="")
     bedfile        = paste(outname,"." ,chrom, ".bed",sep="")
+    print (bedfile)
     if (file.exists(peaksizecount)) file.remove(peaksizecount)
     if (file.exists(pairsbedpe)) file.remove(pairsbedpe)
     if (file.exists(bedpefile)) file.remove(bedpefile)
@@ -346,8 +341,8 @@ if (5 %in% args[["stages"]])
 
 ##################################### print to logfile #####################################
 
-logfile = file.path(args[["outname"]],".mango.log")
-write("Sys.time()",file=logfile,append=TRUE)
+logfile = paste(args[["outname"]],".mango.log",sep="")
+write(Sys.time(),file=logfile,append=TRUE)
 write("Analyzed by Mango using the following parameters:",file=logfile,append=TRUE)
 for (key in keys(args))
 {
@@ -355,9 +350,10 @@ for (key in keys(args))
 }
 write("",file=logfile,append=TRUE)
 write("With the following results:",file=logfile,append=TRUE)
+print (resultshash)
 for (key in keys(resultshash))
 {
-  write(paste( resultshash, ":",resultshash[[key]]),file=logfile,append=TRUE)
+  write(paste( key, ":",resultshash[[key]]),file=logfile,append=TRUE)
 }
 
 print("done")

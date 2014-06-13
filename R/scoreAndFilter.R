@@ -29,10 +29,7 @@ scoreAndFilter <-function(chromosomes,outname ,mindist,maxdist,averageDepth,spli
     pairs = pairs[which(as.character(pairs$V8) != as.character(pairs$V9)),]
     pairs$dist = log10(abs( (pairs[,3]+pairs[,2]/2) - (pairs[,6]+pairs[,5]/2) ) )
     pairs = pairs[which(pairs$dist>mindist & pairs$dist<maxdist),]
-    
-    smallPETs  = smallPETs  + length(which(pairs$dist<=mindist))
-    mediumPETs = mediumPETs + length(which(pairs$dist>mindist & pairs$dist<maxdist))
-    longPETs   = longPETs   + length(which(pairs$dist>=maxdist))
+
     
     if (nrow(pairs) == 0)
     {
@@ -55,5 +52,5 @@ scoreAndFilter <-function(chromosomes,outname ,mindist,maxdist,averageDepth,spli
   allpairs$P = apply(cbind(allpairs$V12,allpairs$N,allpairs$psuccess),1,calcP)    
   allpairs$Q = p.adjust(allpairs$P,method=corMeth)
   
-  return(list(allpairs,  smallPETs,mediumPETs,longPETs))
+  return(allpairs)
 }
