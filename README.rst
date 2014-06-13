@@ -1,7 +1,7 @@
 Mango
 =====
 
-chia pet analysis software
+ChIA-PET Analysis Software
 
 
 Citation
