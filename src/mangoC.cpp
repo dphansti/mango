@@ -243,18 +243,10 @@ std::vector< int > parseFastq(std::string fastq1, std::string fastq2,std::string
     return parsingresults;
 }
 
-
-// Define a function that converts bitflag to 0s and 1s (in reverse order for some reason)
-std::vector< int > get_bits( unsigned long x ) {
-    std::string chars( std::bitset< sizeof(long) * CHAR_BIT >( x )
-                      .to_string( char(0), char(1) ) );
-    return std::vector< int >( chars.begin(), chars.end() );
-}
-
 // Define a function that returns the strand
-std::string get_strand( std::vector< int > bitflag, int strandbit = 4 ) {
+std::string get_strand( unsigned long x ) {
     std::string strand = "+";
-    if (bitflag[63 - strandbit] == 0)
+    if ( x & 0x10 )
     {
         strand = "-";
     }
@@ -317,8 +309,7 @@ void buildBedpe(std::string sam1, std::string sam2,std::string bedpefile)
         name1 = string_split(name1,"_")[0];
         name1 = string_split(name1," ")[0];
         int bitflag1 = StringToInt(e1[1]);
-        std::vector<int> bits1 = get_bits(bitflag1);
-        std::string strand1 = get_strand(bits1);
+        std::string strand1 = get_strand(bitflag1);
         std::string sequence1 = e1[9];
         std::string chrom1 = e1[2];
         int start1 = StringToInt(e1[3]) -1;
@@ -329,8 +320,7 @@ void buildBedpe(std::string sam1, std::string sam2,std::string bedpefile)
         name2 = string_split(name2,"_")[0];
         name2 = string_split(name2," ")[0];
         int bitflag2 = StringToInt(e2[1]);
-        std::vector<int> bits2 = get_bits(bitflag2);
-        std::string strand2 = get_strand(bits2);
+        std::string strand2 = get_strand(bitflag2);
         std::string sequence2 = e2[9];
         std::string chrom2 = e2[2];
         int start2 = StringToInt(e2[3]) -1;
@@ -977,7 +967,7 @@ void buildTagAlign(std::string bedpefile, std::string TagAlignfile) {
 // Define a function to do an external sort
 // [[Rcpp::export]]
 void external_sort( std::string inputfile, std::string outputfile ){
-    externalMergesort <string> externalMergeSorter(inputfile, outputfile, 50000000);
+    externalMergesort <string> externalMergeSorter(inputfile, outputfile, 5000000);
     return;
 
 }
