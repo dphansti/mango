@@ -50,7 +50,7 @@ scoreAndFilter <-function(chromosomes,outname ,mindist,maxdist,averageDepth,spli
   
   # do the actual P-value calculations
   allpairs$P = apply(cbind(allpairs$V12,allpairs$N,allpairs$psuccess),1,calcP)    
-  allpairs$Q = p.adjust(allpairs$P,method=corMeth)
-  
+  allpairs$Q = p.adjust(allpairs$P,method=corMeth,n=N)
+
   return(allpairs)
 }
