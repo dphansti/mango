@@ -1,4 +1,7 @@
-//in mergesort.h
+// C++ External Merge Sort
+// 2014 by Alan Boyle
+// Heavily modified from https://code.google.com/p/external-mergesort/ by keithema...@gmail.com which also does not appear to work
+
 #ifndef MERGESORT_H
 #define MERGESORT_H
 #include <deque>
@@ -21,10 +24,10 @@ public:
 private:
 	deque<T> sort(deque<T> &data);
 	deque<T> merge(deque<T> &left, deque<T> &right);
-	int readInputFile(ifstream &inputFile);
+	int readInputFile(ifstream &inputFile, string tempName);
 	bool readFile(ifstream &file, deque<T> &data);
 	void printFile(string fileName, deque<T> &data, bool append);
-	void mergeFiles(int numFiles);
+	void mergeFiles(int numFiles, string tempName);
   string NumberToString(T Number);
   bool compareFront(string left, string right);
   bool is_number(const string& s);
@@ -44,6 +47,7 @@ private:
 //takes a filename and a maximum number of deque items to have in memory at one time
 template<class T> externalMergesort<T>::externalMergesort(string inFileName, string outFileName){
 	ifstream inputFile;
+  std::string tempName = std::tmpnam(NULL);
 
 	this->maxDequeSize = 0;
 
@@ -56,7 +60,7 @@ template<class T> externalMergesort<T>::externalMergesort(string inFileName, str
 
 	//read the input file
 	cout << "Reading the input file...";
-	readInputFile(inputFile);
+	readInputFile(inputFile, tempName);
 	cout << "Done!\n\n";
 
 	//close the input file
@@ -64,8 +68,8 @@ template<class T> externalMergesort<T>::externalMergesort(string inFileName, str
 
 	//sort and merge files
 	cout << "Merging files...";
-	rename("temp", outFileName.c_str());
-	remove("temp");
+	rename(tempName.c_str(), outFileName.c_str());
+	remove(tempName.c_str());
 	cout << "Done!\n";
 }
 
@@ -74,6 +78,8 @@ template<class T> externalMergesort<T>::externalMergesort(string inFileName, str
 template<class T> externalMergesort<T>::externalMergesort(string inFileName, string outFileName, int maxDequeSize){
 	int numFiles;
 	ifstream inputFile;
+  string tempName = std::tmpnam(NULL);
+  string fileName;
 
 	this->maxDequeSize = maxDequeSize;
 
@@ -86,7 +92,7 @@ template<class T> externalMergesort<T>::externalMergesort(string inFileName, str
 
 	//read the input file
 	cout << "Reading the input file...\n-Progress-\n";
-	numFiles = readInputFile(inputFile);
+	numFiles = readInputFile(inputFile, tempName);
 	cout << "Done!\n";
 
 	//close the input file
@@ -94,9 +100,10 @@ template<class T> externalMergesort<T>::externalMergesort(string inFileName, str
 
 	//sort and merge files
 	cout << "\n\nMerging files...\n-Progress-\n";
-	mergeFiles(numFiles);
-	rename("sortfile_0.txt", outFileName.c_str());
-	remove("sortfile_0.txt");
+  fileName = tempName; fileName += "_0.txt";
+	mergeFiles(numFiles, tempName);
+	rename(fileName.c_str(), outFileName.c_str());
+	remove(fileName.c_str());
 	cout << "Done!\n";
 }
 
@@ -169,7 +176,7 @@ template<class T> deque<T> externalMergesort<T>::merge(deque<T> &left, deque<T> 
 //readInputFile()//
 ///////////////////
 //readInputFile reads from the input file and writes an output file for each deque
-template<class T> int externalMergesort<T>::readInputFile(ifstream &inputFile){
+template<class T> int externalMergesort<T>::readInputFile(ifstream &inputFile, string tempName){
 	deque<T> data;
 	T temp;
 	int fileCount = 0;
@@ -180,7 +187,7 @@ template<class T> int externalMergesort<T>::readInputFile(ifstream &inputFile){
 	if(maxDequeSize > 0){
 		//loop until out of input
 		for(numFiles = 0; inputFile.good(); numFiles++){
-			fileName = "sortfile_"; fileName += SSTR( numFiles ); fileName += ".txt";
+			fileName = tempName; fileName += "_"; fileName += SSTR( numFiles ); fileName += ".txt";
 			
   		for(int i = 0; (i < maxDequeSize && getline(inputFile, temp)); i++){
 				data.push_back(temp);
@@ -202,7 +209,7 @@ template<class T> int externalMergesort<T>::readInputFile(ifstream &inputFile){
 			}
 
 			data = sort(data);
-			printFile("temp", data, false);
+			printFile(tempName, data, false);
 			data.clear();
 		}
 	}
@@ -262,7 +269,7 @@ template<class T> void externalMergesort<T>::printFile(string fileName, deque<T>
 //mergeFiles()//
 ////////////////
 //merges the sortfiles until there is one file left
-template<class T> void externalMergesort<T>::mergeFiles(int numFiles){
+template<class T> void externalMergesort<T>::mergeFiles(int numFiles, string tempName){
 	ifstream inFile1, inFile2;
 	ofstream outFile;
 	string fileName1, fileName2;
@@ -277,8 +284,8 @@ template<class T> void externalMergesort<T>::mergeFiles(int numFiles){
 	max = numFiles - 1;
 	while(max >= 2){
 		//change filenames
-		fileName1 = "sortfile_"; fileName1 += SSTR(i); fileName1 += ".txt";
-		fileName2 = "sortfile_"; fileName2 += SSTR(i+1); fileName2 += ".txt";
+		fileName1 = tempName; fileName1 += "_"; fileName1 += SSTR(i); fileName1 += ".txt";
+		fileName2 = tempName; fileName2 += "_"; fileName2 += SSTR(i+1); fileName2 += ".txt";
 		
 		//open the files
 		try{
@@ -297,7 +304,7 @@ template<class T> void externalMergesort<T>::mergeFiles(int numFiles){
 			fileGood2 = readFile(inFile2, data2);
 
 			dataOUT = merge(data1, data2);
-			printFile("temp", dataOUT, true);
+			printFile(tempName, dataOUT, true);
 		}
 
 		//close and delete the unneeded files
@@ -307,8 +314,8 @@ template<class T> void externalMergesort<T>::mergeFiles(int numFiles){
 		remove(fileName2.c_str());
 
 		//rename the temp file to a sortfile
-		fileName1 = "sortfile_"; fileName1 += SSTR(k); fileName1 += ".txt";
-		rename("temp", fileName1.c_str());
+		fileName1 = tempName; fileName1 += "_"; fileName1 += SSTR(k); fileName1 += ".txt";
+		rename(tempName.c_str(), fileName1.c_str());
 
 		//increase counters
 		i = i + 2;
