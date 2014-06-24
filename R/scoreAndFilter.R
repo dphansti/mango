@@ -20,16 +20,13 @@ scoreAndFilter <-function(chromosomes,outname ,mindist,maxdist,averageDepth,spli
   # make bins
   allpairs = c()
   for (chrom in chromosomes)
-  {
-    print (chrom)
-    
+  { 
     # get total intra IAB
     pairsfile = paste(outname,".",chrom,".pairs.bedpe",sep="")
     pairs = read.table(pairsfile,header=FALSE,sep="\t")
     pairs = pairs[which(as.character(pairs$V8) != as.character(pairs$V9)),]
     pairs$dist = log10(abs( (pairs[,3]+pairs[,2]/2) - (pairs[,6]+pairs[,5]/2) ) )
     pairs = pairs[which(pairs$dist>mindist & pairs$dist<maxdist),]
-
     
     if (nrow(pairs) == 0)
     {
@@ -50,7 +47,7 @@ scoreAndFilter <-function(chromosomes,outname ,mindist,maxdist,averageDepth,spli
   
   # do the actual P-value calculations
   allpairs$P = apply(cbind(allpairs$V12,allpairs$N,allpairs$psuccess),1,calcP)    
-  allpairs$Q = p.adjust(allpairs$P,method=corMeth)
-  
+  allpairs$Q = p.adjust(allpairs$P,method=corMeth,n=N)
+
   return(allpairs)
 }

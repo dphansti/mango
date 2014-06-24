@@ -106,14 +106,17 @@ if (3 %in% args[["stages"]])
   
   # build bedpe
   print ("building bedpe")
-  #buildBedpe(sam1 =sam1, sam2 = sam2, bedpefile = bedpefile);
+  if (file.exists(bedpefile)){file.remove(bedpefile)}
+  buildBedpe(sam1 =sam1, sam2 = sam2, bedpefile = bedpefile);
   
   # sort bedpe
   print ("sorting bedpe")
+  if (file.exists(bedpefilesort)){file.remove(bedpefilesort)}
   external_sort(bedpefile, bedpefilesort)
   
   # filter duplicates
   print ("removing PCR duplicates")
+  if (file.exists(bedpefilesortrmdup)){file.remove(bedpefilesortrmdup)}
   rmdupresults = removeDupBedpe(bedpefilesort,bedpefilesortrmdup,renamePets=TRUE);
   resultshash[["duplicate PETs"]] = rmdupresults[1]
   resultshash[["nonduplicate PETs"]] = rmdupresults[2]
@@ -152,6 +155,7 @@ if (4 %in% args[["stages"]])
   {
     print ("building tagAlign file")
     # reverse strands for peak calling
+    if (file.exists(tagAlignfile)){file.remove(tagAlignfile)}
     buildTagAlign(bedpefilesortrmdup ,tagAlignfile )
     
     # call peaks 
@@ -226,7 +230,6 @@ if (5 %in% args[["stages"]])
                            bedtoolspath = bedtoolspath,
                            verbose=FALSE)
   
-  print(chromosomes)
   # filter out unwanted chromosomes
   originalchroms = chromosomes
   
