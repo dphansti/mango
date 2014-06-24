@@ -12,8 +12,6 @@ calcIAB <-function(chromosomes,outname,numofbins ,binrange,outliers)
   names(IABS)               = (1:numofbins)
   for (chrom in chromosomes)
   {
-    print(chrom)
-
     # get total intra IAB
     pairsfile = paste(outname,".",chrom,".pairs.bedpe",sep="")
     pairs = read.table(pairsfile,header=FALSE,sep="\t")
@@ -27,7 +25,7 @@ calcIAB <-function(chromosomes,outname,numofbins ,binrange,outliers)
     {
       pairs[which(pairs[,7] %in% outliers),12] = 0
     }
-    print(length(pairs[which(as.character(pairs[,7]) %in% as.character(outliers)),7]))
+    # print(length(pairs[which(as.character(pairs[,7]) %in% as.character(outliers)),7]))
     
     if (nrow(pairs) == 0)
     {
@@ -63,9 +61,7 @@ calcMandD <- function(chromosomes,outname,numofbins,binrange)
   names(distances)          = (1:numofbins)
   
   for (chrom in chromosomes)
-  {
-    print (chrom)
-    
+  {    
     peaksfile    = paste(outname,"." ,chrom, "_peaks.count.slopPeak",sep="")
     
     # read in data

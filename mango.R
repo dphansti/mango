@@ -155,6 +155,7 @@ if (4 %in% args[["stages"]])
   {
     print ("building tagAlign file")
     # reverse strands for peak calling
+    if (file.exists(tagAlignfile)){file.remove(tagAlignfile)}
     buildTagAlign(bedpefilesortrmdup ,tagAlignfile )
     
     # call peaks 
@@ -229,7 +230,6 @@ if (5 %in% args[["stages"]])
                            bedtoolspath = bedtoolspath,
                            verbose=FALSE)
   
-  print(chromosomes)
   # filter out unwanted chromosomes
   originalchroms = chromosomes
   
