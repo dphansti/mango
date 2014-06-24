@@ -106,14 +106,17 @@ if (3 %in% args[["stages"]])
   
   # build bedpe
   print ("building bedpe")
+  if (file.exists(bedpefile)){file.remove(bedpefile)}
   buildBedpe(sam1 =sam1, sam2 = sam2, bedpefile = bedpefile);
   
   # sort bedpe
   print ("sorting bedpe")
+  if (file.exists(bedpefilesort)){file.remove(bedpefilesort)}
   external_sort(bedpefile, bedpefilesort)
   
   # filter duplicates
   print ("removing PCR duplicates")
+  if (file.exists(bedpefilesortrmdup)){file.remove(bedpefilesortrmdup)}
   rmdupresults = removeDupBedpe(bedpefilesort,bedpefilesortrmdup,renamePets=TRUE);
   resultshash[["duplicate PETs"]] = rmdupresults[1]
   resultshash[["nonduplicate PETs"]] = rmdupresults[2]
