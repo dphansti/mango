@@ -55,22 +55,22 @@ template<class T> externalMergesort<T>::externalMergesort(string inFileName, str
 	try{
 		inputFile.open(inFileName.c_str());
 	} catch(int e){
-		cout << "Could not open the input file!\nError " << e;
+	  cerr << "Could not open the input file!\nError " << e;
 	}
 
 	//read the input file
-	cout << "Reading the input file...";
+	cerr << "Reading the input file...";
 	readInputFile(inputFile, tempName);
-	cout << "Done!\n\n";
+	cerr << "Done!\n\n";
 
 	//close the input file
 	inputFile.close();
 
 	//sort and merge files
-	cout << "Merging files...";
+	cerr << "Merging files...";
 	rename(tempName.c_str(), outFileName.c_str());
 	remove(tempName.c_str());
-	cout << "Done!\n";
+	cerr << "Done!\n";
 }
 
 //mergesort(inFileName, outFileName, maxDequeSize)
@@ -87,24 +87,24 @@ template<class T> externalMergesort<T>::externalMergesort(string inFileName, str
 	try{
 		inputFile.open(inFileName.c_str());
 	} catch(int e){
-		cout << "Could not open the input file!\nError " << e;
+		cerr << "Could not open the input file!\nError " << e;
 	}
 
 	//read the input file
-	cout << "Reading the input file...\n-Progress-\n";
+	cerr << "Reading the input file...\n-Progress-\n";
 	numFiles = readInputFile(inputFile, tempName);
-	cout << "Done!\n";
+	cerr << "Done!\n";
 
 	//close the input file
 	inputFile.close();
 
 	//sort and merge files
-	cout << "\n\nMerging files...\n-Progress-\n";
+	cerr << "\n\nMerging files...\n-Progress-\n";
   fileName = tempName; fileName += "_0.txt";
 	mergeFiles(numFiles, tempName);
 	rename(fileName.c_str(), outFileName.c_str());
 	remove(fileName.c_str());
-	cout << "Done!\n";
+	cerr << "Done!\n";
 }
 
 //////////
@@ -147,7 +147,7 @@ template<class T> deque<T> externalMergesort<T>::merge(deque<T> &left, deque<T> 
 	deque<T> result;
   int counter = 0;
   
-  //cout << "Left size: " << left.size() << " Right: " << right.size() << "\n";
+  //cerr << "Left size: " << left.size() << " Right: " << right.size() << "\n";
 	//merge the left and right deque by pulling of the lesser value of the front two values
 	while((left.size() > 0 || right.size() > 0) && (counter < maxDequeSize || maxDequeSize == 0)){
 		if (left.size() > 0 && right.size() > 0){
@@ -196,7 +196,7 @@ template<class T> int externalMergesort<T>::readInputFile(ifstream &inputFile, s
 			data = sort(data);
 			printFile(fileName, data, false);
 			data.clear();
-			cout << "*";
+			cerr << "*";
 		}
 	}
 
@@ -214,7 +214,7 @@ template<class T> int externalMergesort<T>::readInputFile(ifstream &inputFile, s
 		}
 	}
 
-	cout << endl;
+	cerr << endl;
 	return numFiles + 1;
 }
 
@@ -292,7 +292,7 @@ template<class T> void externalMergesort<T>::mergeFiles(int numFiles, string tem
 			inFile1.open(fileName1.c_str());
 			inFile2.open(fileName2.c_str());
 		} catch(int e){
-			cout << "Could not open the open the files!\nError " << e;
+			cerr << "Could not open the open the files!\nError " << e;
 		}
 
 		//read from the files until they are empty
@@ -327,10 +327,10 @@ template<class T> void externalMergesort<T>::mergeFiles(int numFiles, string tem
 			i = 0;
 			k = 0;
 		}
-		cout << "*";
+		cerr << "*";
 	}
 
-	cout << endl;
+	cerr << endl;
   return;
 }
 
