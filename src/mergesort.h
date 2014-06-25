@@ -78,8 +78,8 @@ template<class T> externalMergesort<T>::externalMergesort(string inFileName, str
 template<class T> externalMergesort<T>::externalMergesort(string inFileName, string outFileName, int maxDequeSize){
 	int numFiles;
 	ifstream inputFile;
-  string tempName = std::tmpnam(NULL);
-  string fileName;
+	string tempName = std::tmpnam(NULL);
+	string fileName;
 
 	this->maxDequeSize = maxDequeSize;
 
@@ -100,7 +100,7 @@ template<class T> externalMergesort<T>::externalMergesort(string inFileName, str
 
 	//sort and merge files
 	cerr << "\n\nMerging files...\n-Progress-\n";
-  fileName = tempName; fileName += "_0.txt";
+	fileName = tempName; fileName += "_0.txt";
 	mergeFiles(numFiles, tempName);
 	rename(fileName.c_str(), outFileName.c_str());
 	remove(fileName.c_str());
