@@ -160,17 +160,17 @@ if (4 %in% args[["stages"]])
     
     # call peaks 
     print ("calling peaks")
-#    callpeaks(macs2path=macs2path,tagAlignfile,outname,pvalue=MACS_pvalue,
-#              bedtoolspath=bedtoolspath,bedtoolsgenome=bedtoolsgenome,
-#              peakslop=peakslop)
+   callpeaks(macs2path=macs2path,tagAlignfile,outname,pvalue=MACS_pvalue,
+             bedtoolspath=bedtoolspath,bedtoolsgenome=bedtoolsgenome,
+             peakslop=peakslop)
   }
   
   # extend and merge peaks according to peakslop
   print ("extending peaks")
-#  peakcounts = extendpeaks(peaksfile,peaksfileslop,bedtoolspath=bedtoolspath,
-#              bedtoolsgenome=bedtoolsgenome,peakslop=peakslop)
-#  resultshash[["peaks"]] = peakcounts[1]
-#  resultshash[["mergedpeaks"]] = peakcounts[2]
+  peakcounts = extendpeaks(peaksfile,peaksfileslop,bedtoolspath=bedtoolspath,
+             bedtoolsgenome=bedtoolsgenome,peakslop=peakslop)
+  resultshash[["peaks"]] = peakcounts[1]
+  resultshash[["mergedpeaks"]] = peakcounts[2]
 }
 
 ##################################### group pairs #####################################
