@@ -10,6 +10,7 @@
 #include <string>
 #include <iomanip>
 #include <sstream>
+#include <errno.h>
 using namespace std;
 
 #define SSTR( x ) dynamic_cast< std::ostringstream & >( \
@@ -31,7 +32,7 @@ private:
   string NumberToString(T Number);
   bool compareFront(string left, string right);
   bool is_number(const string& s);
-
+	string random_string(const int length);
 	int maxDequeSize;
 };
 
@@ -47,7 +48,7 @@ private:
 //takes a filename and a maximum number of deque items to have in memory at one time
 template<class T> externalMergesort<T>::externalMergesort(string inFileName, string outFileName){
 	ifstream inputFile;
-  std::string tempName = std::tmpnam(NULL);
+  std::string tempName = "sort" + random_string(15);
 
 	this->maxDequeSize = 0;
 
@@ -78,7 +79,7 @@ template<class T> externalMergesort<T>::externalMergesort(string inFileName, str
 template<class T> externalMergesort<T>::externalMergesort(string inFileName, string outFileName, int maxDequeSize){
 	int numFiles;
 	ifstream inputFile;
-	string tempName = std::tmpnam(NULL);
+  std::string tempName = "sort" + random_string(15);
 	string fileName;
 
 	this->maxDequeSize = maxDequeSize;
@@ -100,8 +101,9 @@ template<class T> externalMergesort<T>::externalMergesort(string inFileName, str
 
 	//sort and merge files
 	cerr << "\n\nMerging files...\n-Progress-\n";
-	fileName = tempName; fileName += "_0.txt";
 	mergeFiles(numFiles, tempName);
+
+	fileName = tempName; fileName += "_0.txt";
 	rename(fileName.c_str(), outFileName.c_str());
 	remove(fileName.c_str());
 	cerr << "Done!\n";
@@ -385,4 +387,21 @@ template<class T> bool externalMergesort<T>::is_number(const std::string& s)
   return (ss >> d) && (ss >> std::ws).eof();
 }
 
+template<class T> std::string externalMergesort<T>::random_string(const int len) {
+	std::string randomString;
+	char s[len];
+
+	static const char alphanum[] =
+			"0123456789"
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			"abcdefghijklmnopqrstuvwxyz";
+
+	for (int i = 0; i < len; ++i) {
+		s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+	}
+
+	s[len] = 0;
+	randomString = s;
+	return randomString;
+}
 #endif
