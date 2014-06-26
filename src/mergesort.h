@@ -104,7 +104,6 @@ template<class T> externalMergesort<T>::externalMergesort(string inFileName, str
 	mergeFiles(numFiles, tempName);
 
 	fileName = tempName; fileName += "_0.txt";
-	cerr << "Moving " << fileName << " to " << outFileName << endl;
 	rename(fileName.c_str(), outFileName.c_str());
 	remove(fileName.c_str());
 	cerr << "Done!\n";
