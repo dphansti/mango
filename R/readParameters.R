@@ -28,6 +28,7 @@ readParameters <-function(args=hash(),argsfile=NULL,verbose=FALSE)
       "###### STAGE 4 PARAMETERS ######",
       
       "MACS_pvalue       = 0.00001                  # MACS values",
+      "MACS_shiftsize    = NULL                     # MACS shiftize.  NULL allows MACS to determine it",
       "peakslop          = 500                      # Number of basespairs to extend peaks on both sides",
       "peakinput         = NULL                     # name of user supplied peaks file",
       

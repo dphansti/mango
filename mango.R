@@ -138,8 +138,9 @@ if (4 %in% args[["stages"]])
   bedtoolspath    = args[["bedtoolspath"]]
   bedtoolsgenome  = args[["bedtoolsgenome"]]
   peakslop        = args[["peakslop"]]
-  peakinput       = args[["peeakinput"]]
-    
+  peakinput       = args[["peakinput"]]
+  MACS_shiftsize  = args[["MACS_shiftsize"]]  
+  
   # filenames
   bedpefilesortrmdup = paste(outname ,".sort.rmdup.bedpe",sep="")
   tagAlignfile       = paste(outname,".tagAlign",sep="")
@@ -162,7 +163,7 @@ if (4 %in% args[["stages"]])
     print ("calling peaks")
    callpeaks(macs2path=macs2path,tagAlignfile,outname,pvalue=MACS_pvalue,
              bedtoolspath=bedtoolspath,bedtoolsgenome=bedtoolsgenome,
-             peakslop=peakslop)
+             peakslop=peakslop,MACS_shiftsize)
   }
   
   # extend and merge peaks according to peakslop
