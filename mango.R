@@ -147,12 +147,12 @@ if (4 %in% args[["stages"]])
   peaksfile          = paste(outname,"_peaks.narrowPeak",sep="")
   peaksfileslop      = paste(outname,"_peaks.slopPeak",sep="")
   
-  if (is.null(peakinput) == FALSE)
+  if (peakinput != "NULL")
   {
     peaksfile = peakinput
   }
   
-  if (is.null(peakinput) == TRUE)
+  if (peakinput == "NULL")
   {
     print ("building tagAlign file")
     # reverse strands for peak calling

@@ -1,15 +1,15 @@
 
 # Define a function that calls peaks using macs2
 callpeaks <- function(macs2path,tagAlignfile,peaksfile,pvalue=.00001,
-                      bedtoolspath,bedtoolsgenome,peakslop=0,MACS_shiftsize=NULL)
+                      bedtoolspath,bedtoolsgenome,peakslop=0,MACS_shiftsize="NULL")
 {
   # call peaks
   shiftsize = ""
-  if (is.null(peakinput) == FALSE)
+  if (MACS_shiftsize != "NULL")
   {
     shiftsize =  paste("--nomodel --shiftsize",MACS_shiftsize,sep=" ")
   }
-  if (is.null(peakinput) == TRUE)
+  if (MACS_shiftsize == "NULL")
   {
     shiftsize = ""
   }
