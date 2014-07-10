@@ -45,7 +45,7 @@ calcIAB <-function(chromosomes,outname,numofbins ,binrange,outliers)
 
 
 # Define a function that calculates M (# combos) and D (average read depth: CA + CB) from the peak overlap files
-calcMandD <- function(chromosomes,outname,numofbins,binrange)
+calcMandD <- function(chromosomes,outname,numofbins,binrange,normPmeth)
 {
   
   # make bins
@@ -79,7 +79,14 @@ calcMandD <- function(chromosomes,outname,numofbins,binrange)
       chrpeaks$dist  = log10(abs(chrpeaks$pos - chrpeaks$pos[i]))
       
       #calc depth
-      chrpeaks$depth = chrpeaks$score + chrpeaks$score[i]
+      if (normPmeth == "sum")
+      {
+        chrpeaks$depth = chrpeaks$score + chrpeaks$score[i]
+      }
+      if (normPmeth == "product")
+      {
+        chrpeaks$depth = chrpeaks$score * chrpeaks$score[i]
+      }
       
       # assign to bins
       chrpeaks$bin  = findInterval(chrpeaks$dist, bins)
@@ -110,10 +117,10 @@ calcMandD <- function(chromosomes,outname,numofbins,binrange)
 ############################# estimateP function #############################
 
 # Define a function that estimates p of success
-estimateP <- function(chromosomes,outname,numofbins ,binrange,outliers)
+estimateP <- function(chromosomes,outname,numofbins ,binrange,outliers,normPmeth )
 {
   
-  MDD    = calcMandD(chromosomes,outname,numofbins,binrange)
+  MDD    = calcMandD(chromosomes,outname,numofbins,binrange,normPmeth = normPmeth)
   IAB    = calcIAB(chromosomes,outname,numofbins,binrange,outliers)
   p_tab = data.frame(cbind(MDD,IAB))
   names(p_tab) = c("dist","M","D","IAB")

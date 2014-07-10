@@ -9,3 +9,4 @@ Description: ChIA-PET data analysis software
 License: GPL (>= 2)
 Depends: hash,Rcpp
 LinkingTo: Rcpp
+Packaged: 2014-07-09 19:41:18 UTC; dougphanstiel

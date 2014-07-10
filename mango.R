@@ -198,6 +198,7 @@ if (5 %in% args[["stages"]])
   chrominclude      = args[["chrominclude"]]
   chromexclude      = args[["chromexclude"]]
   reportallpairs    = args[["reportallpairs"]]
+  normPmeth          = "product"
   
   # filenames
   peaksfile          = paste(outname ,"_peaks.narrowPeak",sep="")
@@ -212,8 +213,9 @@ if (5 %in% args[["stages"]])
   allpairsfile       = paste(outname ,".interactions.all.bedpe",sep="")
   fdrpairsfile       = paste(outname ,".interactions.fdr.bedpe",sep="")
   
+  
   # build a file of just distances and same / dif
-  print ("deterimining self-ligation distance")
+  print ("determining self-ligation distance")
   makeDistanceFile(bedpefilesortrmdup,distancefile,
                    distcutrangemin,
                    distcutrangemax)
@@ -251,7 +253,7 @@ if (5 %in% args[["stages"]])
 
   # estimate probabilities
   print ("estimating p-values")
-  pEstimates = estimateP (chromosomes,outname,numofbins=numofbins ,binrange=c(distancecutoff,maxinteractingdist),outliers=NULL)
+  pEstimates = estimateP (chromosomes,outname,numofbins=numofbins ,binrange=c(distancecutoff,maxinteractingdist),outliers=NULL,normPmeth = normPmeth)
   
   # score and filter interactions
   print ("scoring interactions")
@@ -259,7 +261,8 @@ if (5 %in% args[["stages"]])
                               mindist = distancecutoff, maxdist = maxinteractingdist,
                               averageDepth = pEstimates$averageDepth,
                               spline = pEstimates$spline,
-                              N      = pEstimates$N,corrMethod)
+                              N      = pEstimates$N,corrMethod,
+                              normPmeth = normPmeth)
 
   # filter out outliers
   outliercut = 1 / sum(pEstimates$p_table$M)
@@ -267,7 +270,7 @@ if (5 %in% args[["stages"]])
 
   # re-estimate probabilities excluding outliers
   print ("estimating p-values (2nd iteration)")
-  pEstimates2 = estimateP (chromosomes,outname,numofbins=numofbins ,binrange=c(distancecutoff,maxinteractingdist),outliers=outliers)
+  pEstimates2 = estimateP (chromosomes,outname,numofbins=numofbins ,binrange=c(distancecutoff,maxinteractingdist),outliers=outliers,normPmeth = normPmeth)
 
 
   # score and filter interactions with new estimates
@@ -276,7 +279,8 @@ if (5 %in% args[["stages"]])
                               mindist = distancecutoff, maxdist = maxinteractingdist,
                               averageDepth = pEstimates2$averageDepth,
                               spline = pEstimates2$spline,
-                              N      = pEstimates2$N,corrMethod)
+                              N      = pEstimates2$N,corrMethod,
+                              normPmeth = normPmeth)
   
   allpairs = cbind(allpairs[,c(1,2,3,4,5,6)],paste("pair_",(1:nrow(allpairs)),sep=""),allpairs[,c(10,11,12,14,18,19)])
   names(allpairs) = c("chrom1","start1","end1","chrom2","start2","end2","name",

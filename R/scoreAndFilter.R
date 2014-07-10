@@ -7,7 +7,7 @@ calcP <- function(v)
 }
 
 # Define a function that calculates P for each pair
-scoreAndFilter <-function(chromosomes,outname ,mindist,maxdist,averageDepth,spline,N,corMeth="BY")
+scoreAndFilter <-function(chromosomes,outname ,mindist,maxdist,averageDepth,spline,N,corMeth="BY",normPmeth )
 {
   # keep track of PETs filtered for size
   smallPETs = 0
@@ -33,11 +33,21 @@ scoreAndFilter <-function(chromosomes,outname ,mindist,maxdist,averageDepth,spli
       next
     }
     
-    # calculate D (depth)
-    pairs$D = pairs[,10] + pairs[,11]
+    # calculate p(success)
+    if (normPmeth == "sum")
+    {
+      # calculate D (depth)
+      pairs$D = pairs[,10] + pairs[,11]
+      pairs$psuccess = predict(spline,pairs$dist)$y * (pairs$D / averageDepth)
+    }
     
     # calculate p(success)
-    pairs$psuccess = predict(spline,pairs$dist)$y * (pairs$D / averageDepth)
+    if (normPmeth == "product")
+    {
+      # calculate D (depth)
+      pairs$D = pairs[,10] * pairs[,11]
+      pairs$psuccess = predict(spline,pairs$dist)$y * (pairs$D / averageDepth)
+    }
     
     # add N
     pairs$N = N
