@@ -121,13 +121,13 @@ if (opt["outdir"] != "NULL")
 ##################################### read in arguments #####################################
 
 lines = c()
-if (opt$argsfile != "NULL")
+if (as.character(opt$argsfile) != "NULL")
 {
-  if (file.exists(opt$argsfile) == FALSE)
+  if (file.exists(as.character(opt$argsfile)) == FALSE)
   {
     stop (paste("Exiting Mango.R pipeline.  No file named ",opt$argsfile,sep=""))
   }
-  lines = readLines(argsfile)
+  lines = readLines(as.character(opt$argsfile))
 }
 
 for (line in lines)
