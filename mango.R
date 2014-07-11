@@ -1,54 +1,177 @@
 # runs mango chia pet analysis pipeline
-library("Rcpp")
-library("hash")
-library("mango")
-
-##################################### initialization #####################################
-
-argsscript = c(
-"bowtiepath=/path/to/bowtie",
-"bowtieref=/path/to/indexes/hg19",
-"bedtoolspath=/path/to/bedtools",
-"bedtoolsgenome=/path/to/human.hg19.genome",
-"macs2path=/path/to/macs2"
-)
+suppressPackageStartupMessages(library("Rcpp"))
+suppressPackageStartupMessages(library("hash"))
+suppressPackageStartupMessages(library("mango"))
+suppressPackageStartupMessages(library("optparse"))
 
 print ("Starting mango ChIA PET analysis tool")
 Sys.time()
 set.seed(1)
 
+##################################### check for dependencies #####################################
+
+progs = c("bedtools","MACS2","bowtie")
+Paths = DefinePaths(progs = progs)
+bedtoolspath  = Paths[1]
+macs2path     = Paths[2]
+bowtiepath    = Paths[3]
+
+i = 0
+pathsOK = T
+for (p in Paths)
+{
+  i = i+ 1
+  if (p == "notfound")
+  {
+    pathsOK = F
+    print ("! Configuration Error !")
+    print (paste("     Path to ",progs[i]," not in PATH",sep=""))
+    print ("     Please add to PATH and try again")
+    print ("")
+  }
+}
+if (pathsOK == F)
+{
+  stop ("Exiting Mango.R pipeline.  Check system PATH")
+}  
+
+##################################### read commandline paramters #####################################
+
+# Should be able to delete readParameters and establishParameters if this works
+
+# read in parameters
+option_list <- list(
+  
+  #---------- GENERAL PARAMETERS ----------#
+  
+  make_option(c("--stages"),  default="1:5",help="stages of the pipeline to execute"),
+  make_option(c("--prefix"), default="mango",help="prefix for all output files"),
+  make_option(c("--outdir"),  default="NULL",help="out put directory"),
+  make_option(c("--argsfile"),  default="NULL",help="optional argument file used to pass in command line paramters"),
+  make_option(c("--bowtieref"),   default="NULL",help="genome reference file for bowtie"),
+  make_option(c("--bedtoolsgenome"),  default="NULL",help="bedtools genome file"),
+  make_option(c("--chrominclude"),  default="NULL",help="comma separated list of chromosomes to use (e.g. chr1,chr2,chr3,...).  Only these chromosomes will be processed"),
+  make_option(c("--chromexclude"),  default="NULL",help="comma separated list of chromosomes to exclude (e.g. chrM,chrY)"),
+  
+  #---------- STAGE 1 PARAMETERS ----------#
+  
+  make_option(c("--fastq1"),  default="NULL",help="fastq read 1 file"),
+  make_option(c("--fastq2"),  default="NULL",help="fastq read 2 file"),
+  make_option(c("--linkerA"),  default="GTTGGATAAG",help="linker sequence A to look for"),
+  make_option(c("--linkerB"),  default="GTTGGAATGT",help="linker sequence B to look for"),
+  make_option(c("--minlength"),  default="15",help="min length of reads after linker trimming"),
+  make_option(c("--maxlength"),  default="25",help="max length of reads after linker trimming"),
+  make_option(c("--keepempty"),  default="FALSE",help="Should reads with no linker be kept"),
+  
+  #---------- STAGE 2 PARAMETERS ----------#
+  
+  make_option(c("--shortreads"),  default="TRUE",help="should bowtie alignments be done using paramter for very short reads (~20 bp)"),
+
+  #---------- STAGE 4 PARAMETERS ----------#
+  
+  make_option(c("--MACS_pvalue"),  default="0.00001",help="MACS values"),
+  make_option(c("--MACS_shiftsize"),  default="NULL",help="MACS shiftize.  NULL allows MACS to determine it"),
+  make_option(c("--peakslop"),  default="500",help="Number of basespairs to extend peaks on both sides"),
+  make_option(c("--peakinput"),  default="NULL",help="user supplied peaks file"),
+  
+  #---------- STAGE 5 PARAMETERS ----------#
+  
+  make_option(c("--distcutrangemin"),  default="1000",help="range in which to look for the self-ligation distance"),
+  make_option(c("--distcutrangemax"),  default="100000",help="range in which to look for the self-ligation distance"),
+  make_option(c("--biascut"),  default="0.05",help="Self ligation bias cutoff"),
+  make_option(c("--maxPval"),  default="0.01",help="P-value cutoff"),
+  make_option(c("--numofbins"),  default="30",help="number of bins for probability calculations"),
+  make_option(c("--corrMethod"),  default="BY",help="multiple hypothesis tersting correction method"),
+  make_option(c("--maxinteractingdist"),  default="10000000",help="maximum disance allowed for an interaction"),
+  make_option(c("--FDR"),  default="0.01",help="FDR cutoff for interactions"),
+  make_option(c("--minPETS"),  default="2",help="minimum number of PETs required for an interaction (applied after FDR filtering)"),
+  make_option(c("--reportallpairs"),  default="FALSE",help="Should all pairs be reported or just significant pairs")  
+)
+
+# get command line options, if help option encountered print help and exit,
+# otherwise if options not found on command line then set defaults,
+opt <- parse_args(OptionParser(option_list=option_list))
+
+# correct stages
+if (grepl( ":",opt$stages))
+{
+  stages = strsplit(opt$stages,split=":")[[1]]
+  if (length(stages) == 2)
+  {
+    opt$stages = seq(as.numeric(stages[1]),as.numeric(stages[2]))
+  }
+  if (length(stages) == 1)
+  {
+    opt$stages = as.numeric(stages[1])
+  }
+}
+
+# set basename for output
+opt["outname"] = ""
+if (opt["outdir"] == "NULL")
+{
+  opt["outname"] = file.path(getwd(),opt["prefix"])
+}
+if (opt["outdir"] != "NULL")
+{
+  opt["outname"] = file.path( opt["outdir"] ,opt["prefix"]) 
+}
+
+
 ##################################### read in arguments #####################################
 
-# read in command line args
-argscmdline <- commandArgs(trailingOnly = TRUE)
+lines = c()
+if (opt$argsfile != "NULL")
+{
+  if (file.exists(opt$argsfile) == FALSE)
+  {
+    stop (paste("Exiting Mango.R pipeline.  No file named ",opt$argsfile,sep=""))
+  }
+  lines = readLines(argsfile)
+}
 
-# gather all argum
-args = establishParameters(argscmdline,argsscript)
-
-print ("using the following parameters:")
-print (args)
+for (line in lines)
+{
+  # remove spaces
+  line = gsub(pattern=" ",x=line,replace="")
+  
+  if (line == "")
+  {
+    next
+  }
+  else if (strsplit(line,split="")[[1]][1] == "#" )
+  {
+    next
+  }
+  else
+  {
+    lineinfo = strsplit(line,split="#")[[1]][1]
+    arginfo  = strsplit(lineinfo,split="=")[[1]]
+    opt[arginfo[1]] = arginfo[2]
+  }
+}
        
 resultshash = hash()
 
-
 ##################################### parse fastqs #####################################
 
-if (1 %in% args[["stages"]])
+if (1 %in% opt$stages)
 {
-  checkRequired(args,c("fastq1","fastq2","outname","minlength","maxlength","keepempty","linkerA","linkerB"))
-  
+  checkRequired(opt,c("fastq1","fastq2","outname","minlength","maxlength","keepempty","linkerA","linkerB"))
+
   # gather arguments
-  outname         = args[["outname"]]
-  fastq1=args[["fastq1"]]
-  fastq2=args[["fastq2"]]
-  basename = args[["outname"]]
-  minlength = as.numeric(args[["minlength"]])
-  maxlength = as.numeric(args[["maxlength"]]) 
-  keepempty=eval(parse(text=args[["keepempty"]]))
-  linker1=args[["linkerA"]]
-  linker2=args[["linkerB"]]
+  outname         = as.character(opt["outname"])
+  fastq1=as.character(opt["fastq1"])
+  fastq2=as.character(opt["fastq2"])
+  basename = as.character(opt["outname"])
+  minlength = as.numeric(as.character(opt["minlength"]))
+  maxlength = as.numeric(as.character(opt["maxlength"]) )
+  keepempty=eval(parse(text=as.character(opt["keepempty"])))
+  linker1=as.character(opt["linkerA"])
+  linker2=as.character(opt["linkerB"])
   
   print ("finding linkers")
+  
   parsingresults = parseFastq( fastq1=fastq1,
               fastq2=fastq2,
               basename = basename,
@@ -66,15 +189,14 @@ if (1 %in% args[["stages"]])
   
 ###################################### align reads #####################################
 
-if (2 %in% args[["stages"]])
+if (2 %in% opt$stages)
 {
-  checkRequired(args,c("outname","bowtiepath","bowtieref","shortreads"))
+  checkRequired(opt,c("outname","bowtieref","shortreads"))
   
   # gather arguments
-  outname         = args[["outname"]]
-  bowtiepath      = args[["bowtiepath"]]
-  bowtieref       = args[["bowtieref"]]
-  shortreads      = args[["shortreads"]]
+  outname         = as.character(opt["outname"])
+  bowtieref       = as.character(opt["bowtieref"])
+  shortreads      = as.character(opt["shortreads"])
   
   print ("aligning reads")
   # filenames
@@ -90,12 +212,12 @@ if (2 %in% args[["stages"]])
 
 ##################################### filter reads #####################################
 
-if (3 %in% args[["stages"]])
+if (3 %in% opt$stages)
 {
-  checkRequired(args,c("outname"))
+  checkRequired(opt,c("outname"))
   
   # gather arguments
-  outname         = args[["outname"]]
+  outname         =  as.character(opt["outname"])
   
   # filenames
   bedpefile          = paste(outname ,".bedpe",sep="")
@@ -126,20 +248,18 @@ if (3 %in% args[["stages"]])
 
 ##################################### call peaks #####################################
 
-if (4 %in% args[["stages"]])
+if (4 %in% opt$stages)
 {
-  checkRequired(args,c("outname","macs2path","MACS_pvalue",
-                       "bedtoolspath","bedtoolsgenome","peakslop","peakinput"))
+  checkRequired(opt,c("outname","MACS_pvalue",
+                       "bedtoolsgenome","peakslop","peakinput"))
   
   # gather arguments
-  outname         = args[["outname"]]
-  macs2path       = args[["macs2path"]]
-  MACS_pvalue     = args[["MACS_pvalue"]]
-  bedtoolspath    = args[["bedtoolspath"]]
-  bedtoolsgenome  = args[["bedtoolsgenome"]]
-  peakslop        = args[["peakslop"]]
-  peakinput       = args[["peakinput"]]
-  MACS_shiftsize  = args[["MACS_shiftsize"]]  
+  outname         = as.character(opt["outname"])
+  MACS_pvalue     = as.character(opt["MACS_pvalue"])
+  bedtoolsgenome  = as.character(opt["bedtoolsgenome"])
+  peakslop        = as.character(opt["peakslop"])
+  peakinput       = as.character(opt["peakinput"])
+  MACS_shiftsize  = as.character(opt["MACS_shiftsize"])
   
   # filenames
   bedpefilesortrmdup = paste(outname ,".sort.rmdup.bedpe",sep="")
@@ -176,28 +296,27 @@ if (4 %in% args[["stages"]])
 
 ##################################### group pairs #####################################
 
-if (5 %in% args[["stages"]])
+if (5 %in% opt$stages)
 {
-  checkRequired(args,c("outname","distcutrangemin","biascut","maxPval",
-                       "numofbins","corrMethod","bedtoolspath","bedtoolsgenome",
+  checkRequired(opt,c("outname","distcutrangemin","biascut","maxPval",
+                       "numofbins","corrMethod","bedtoolsgenome",
                        "maxinteractingdist","FDR","minPETS","corrMethod",
                        "chrominclude","chromexclude","reportallpairs"))
   
   # gather arguments
-  outname = args[["outname"]]
-  distcutrangemin = as.numeric(args[["distcutrangemin"]])
-  distcutrangemax = as.numeric(args[["distcutrangemax"]])
-  bedtoolspath = args[["bedtoolspath"]]
-  bedtoolsgenome    = args[["bedtoolsgenome"]]
-  biascut = as.numeric(args[["biascut"]])
-  maxinteractingdist = as.numeric(args[["maxinteractingdist"]])
-  numofbins = as.numeric(args[["numofbins"]])
-  FDR = as.numeric(args[["FDR"]])
-  minPETS = as.numeric(args[["minPETS"]])
-  corrMethod = args[["corrMethod"]]
-  chrominclude      = args[["chrominclude"]]
-  chromexclude      = args[["chromexclude"]]
-  reportallpairs    = args[["reportallpairs"]]
+  outname = as.character(opt["outname"])
+  distcutrangemin = as.numeric(as.character(opt["distcutrangemin"]))
+  distcutrangemax = as.numeric(as.character(opt["distcutrangemax"]))
+  bedtoolsgenome    = as.character(opt["bedtoolsgenome"])
+  biascut = as.numeric(as.character(opt["biascut"]))
+  maxinteractingdist = as.numeric(as.character(opt["maxinteractingdist"]))
+  numofbins = as.numeric(as.character(opt["numofbins"]))
+  FDR = as.numeric(as.character(opt["FDR"]))
+  minPETS = as.numeric(as.character(opt["minPETS"]))
+  corrMethod = as.character(opt["corrMethod"])
+  chrominclude      = as.character(opt["chrominclude"])
+  chromexclude      = as.character(opt["chromexclude"])
+  reportallpairs    = as.character(opt["reportallpairs"])
   normPmeth          = "product"
   
   # filenames
@@ -349,12 +468,12 @@ if (5 %in% args[["stages"]])
 
 ##################################### print to logfile #####################################
 
-logfile = paste(args[["outname"]],".mango.log",sep="")
+logfile = paste(opt["outname"],".mango.log",sep="")
 write(Sys.time(),file=logfile,append=TRUE)
 write("Analyzed by Mango using the following parameters:",file=logfile,append=TRUE)
 for (key in keys(args))
 {
-  write(paste( key, ":",args[[key]]),file=logfile,append=TRUE)
+  write(paste( key, ":",opt[key]),file=logfile,append=TRUE)
 }
 write("",file=logfile,append=TRUE)
 write("With the following results:",file=logfile,append=TRUE)
