@@ -1,6 +1,6 @@
 
 # Define a function that establishes bin borders for use with findInterval later
-binmaker <- function (vectortobin,binmethod="equalocc",numberbins=10)
+binmaker <- function (vectortobin,binmethod="equalocc",numberbins=30)
 {
   
   # sort vector
