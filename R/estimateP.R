@@ -50,7 +50,6 @@ calcMandD <- function(chromosomes,outname,numofbins,binrange,normPmeth)
   
   # make bins
   bins = seq(log10(binrange[1]),log10(binrange[2]),length.out=numofbins+1)
-  length(bins)
   
   # prepare genome wide counters of PETs for P(D|IB) and P(D|!IAB)
   readdepths                = rep(0,numofbins)

@@ -10,7 +10,7 @@ set.seed(1)
 
 ##################################### check for dependencies #####################################
 
-progs = c("bedtools","MACS2","bowtie")
+progs = c("bedtools","macs2","bowtie")
 Paths = DefinePaths(progs = progs)
 bedtoolspath  = Paths[1]
 macs2path     = Paths[2]
@@ -294,14 +294,40 @@ if (4 %in% opt$stages)
   resultshash[["mergedpeaks"]] = peakcounts[2]
 }
 
-##################################### group pairs #####################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##################################### new group/score/filter pairs #####################################
 
 if (5 %in% opt$stages)
 {
   checkRequired(opt,c("outname","distcutrangemin","biascut","maxPval",
-                       "numofbins","corrMethod","bedtoolsgenome",
-                       "maxinteractingdist","FDR","minPETS","corrMethod",
-                       "chrominclude","chromexclude","reportallpairs"))
+                      "numofbins","corrMethod","bedtoolsgenome",
+                      "maxinteractingdist","FDR","minPETS","corrMethod",
+                      "chrominclude","chromexclude","reportallpairs"))
   
   # gather arguments
   outname = as.character(opt["outname"])
@@ -317,7 +343,6 @@ if (5 %in% opt$stages)
   chrominclude      = as.character(opt["chrominclude"])
   chromexclude      = as.character(opt["chromexclude"])
   reportallpairs    = as.character(opt["reportallpairs"])
-  normPmeth          = "product"
   
   # filenames
   peaksfile          = paste(outname ,"_peaks.narrowPeak",sep="")
@@ -325,10 +350,7 @@ if (5 %in% opt$stages)
   bedpefilesortrmdup = paste(outname ,".sort.rmdup.bedpe",sep="")
   distancefile       = paste(outname ,".distance",sep="")
   distancecutpdf     = paste(outname ,".distance.pdf",sep="")
-  pestimatepdf       = paste(outname ,".pEstimate.pdf",sep="")
-  pestimate1txt      = paste(outname ,".pestimate1.txt",sep="")
-  pestimate2txt      = paste(outname ,".pestimate2.txt",sep="")
-  summarypdf         = paste(outname ,".summary.pdf",sep="")
+  modelspdf          = paste(outname ,".models.pdf",sep="")
   allpairsfile       = paste(outname ,".interactions.all.bedpe",sep="")
   fdrpairsfile       = paste(outname ,".interactions.fdr.bedpe",sep="")
   
@@ -341,9 +363,11 @@ if (5 %in% opt$stages)
   
   # calculate bias and cutoff
   distancecutoff = calcDistBias(distancefile,distancecutpdf=distancecutpdf,
-                   range=c(distcutrangemin,distcutrangemax),
-                   biascut= biascut)
-  
+                                range=c(distcutrangemin,distcutrangemax),
+                                biascut= biascut)
+
+  print (paste("self-ligation cutoff =",distancecutoff))
+    
   # group PETs into interactions
   print ("grouping PETs into interactions")
   chromosomes = groupPairs(bedpefilesortrmdup=bedpefilesortrmdup,
@@ -369,86 +393,182 @@ if (5 %in% opt$stages)
     chromosomestpremove = unlist(strsplit(chromexclude,split=","))
     chromosomes = chromosomes[-which(chromosomes %in% chromosomestpremove)] 
   }  
-
-  # estimate probabilities
-  print ("estimating p-values")
-  pEstimates = estimateP (chromosomes,outname,numofbins=numofbins ,binrange=c(distancecutoff,maxinteractingdist),outliers=NULL,normPmeth = normPmeth)
   
-  # score and filter interactions
-  print ("scoring interactions")
-  allpairs   = scoreAndFilter(chromosomes = chromosomes,outname = outname,
-                              mindist = distancecutoff, maxdist = maxinteractingdist,
-                              averageDepth = pEstimates$averageDepth,
-                              spline = pEstimates$spline,
-                              N      = pEstimates$N,corrMethod,
-                              normPmeth = normPmeth)
-
-  # filter out outliers
-  outliercut = 1 / sum(pEstimates$p_table$M)
-  outliers   = allpairs[which( allpairs$Q < outliercut),7]
-
-  # re-estimate probabilities excluding outliers
-  print ("estimating p-values (2nd iteration)")
-  pEstimates2 = estimateP (chromosomes,outname,numofbins=numofbins ,binrange=c(distancecutoff,maxinteractingdist),outliers=outliers,normPmeth = normPmeth)
-
-
-  # score and filter interactions with new estimates
-  print ("scoring interactions (2nd iteration)")
-  allpairs   = scoreAndFilter(chromosomes = chromosomes,outname = outname,
-                              mindist = distancecutoff, maxdist = maxinteractingdist,
-                              averageDepth = pEstimates2$averageDepth,
-                              spline = pEstimates2$spline,
-                              N      = pEstimates2$N,corrMethod,
-                              normPmeth = normPmeth)
+  maxinteractingdist = 10000000
+  distancecutoff = 22230
+  outname = "/Users/dougphanstiel/Desktop/normtest/NH.K562m_PolII_K562_std_1.1"
+  chromosomes = chromosomes[-which(chromosomes == "chrM" | chromosomes == "chrY")]
   
-  allpairs = cbind(allpairs[,c(1,2,3,4,5,6)],paste("pair_",(1:nrow(allpairs)),sep=""),allpairs[,c(10,11,12,14,18,19)])
-  names(allpairs) = c("chrom1","start1","end1","chrom2","start2","end2","name",
-                      "peak1","peak2","PETs","log10distance","P","Q")
-
+  #--------------- Gather IAB data ---------------#
+  
+  # gather all putative interactions
+  putpairs = combineputativepairs(chromosomes,outname)
+  
+  # calculate interaction distances
+  putpairs$distances = abs( (putpairs[,2] + putpairs[,3] ) / 2 - (putpairs[,5] + putpairs[,6] ) / 2  )
+  
+  # filter out putative interactions that don't fall into distance range
+  putpairs = putpairs[which(putpairs$distances < maxinteractingdist & putpairs$distances > distancecutoff),]
+  
+  # calculate depths
+  putpairs$depths = calcDepths(putpairs[,10:11],type="product")
+  
+  #--------------- Gather Combinations data ---------------#
+  
+  # model Combos vs distance
+  allcombos = c()
+  for (chrom in chromosomes)
+  {
+    print (chrom)
+    
+    # make combos
+    combos = makecombos(chrom,outname,mindist=distancecutoff,maxdist=maxinteractingdist)
+    
+    allcombos = rbind(allcombos,combos)
+  }
+    
+  # calculate distances
+  allcombos$distance = abs( (allcombos[,2] + allcombos[,3] ) / 2 - (allcombos[,5] + allcombos[,6] ) / 2  )
+  
+  # calculate depths
+  allcombos$depths = calcDepths(allcombos[,7:8],type="product")
+  
+  for (reps in (1:2))
+  {
+    #--------------- Distance Normalization ---------------#
+    
+    # determine borders to distance bins
+    distanceborders = binmaker(putpairs$distances,binmethod="equalocc",numberbins=50)
+    
+    # model IAB vs distance
+    distance_IAB_model = model_chia(x=putpairs$distances,y=putpairs[,12],borders=distanceborders)
+    distance_IAB_spline =   smooth.spline(log10(distance_IAB_model[,1]),distance_IAB_model[,3],spar=.75)
+    
+    # model Combo vs distance
+    distance_combo_model = model_chia(x=allcombos$distance,y=NA,borders=distanceborders)
+    distance_combo_spline =   smooth.spline(log10(distance_combo_model[,1]),distance_combo_model[,3],spar=.75)
+    
+    #--------------- Depth Normalization ---------------#
+    
+    # determine borders to depth bins
+    depthborders = binmaker(putpairs$depths,binmethod="equalocc",numberbins=30)
+    
+    # model IAB vs depth
+    depth_IAB_model = model_chia(x=putpairs$depths,y=putpairs[,12],borders=depthborders)
+    depth_IAB_spline =   smooth.spline(log10(depth_IAB_model[,1]),depth_IAB_model[,3],spar=.75)
+    
+    # model Combo vs depth
+    depth_combo_model = model_chia(x=allcombos$depths,y=NA,borders=depthborders)
+    depth_combo_spline =   smooth.spline(log10(depth_combo_model[,1]),depth_combo_model[,3],spar=.75)
+    
+    if (reps == 2)
+    {
+      #--------------- Gather IAB data again ---------------#
+      
+      # gather all putative interactions
+      putpairs = combineputativepairs(chromosomes,outname)
+      
+      # calculate interaction distances
+      putpairs$distances = abs( (putpairs[,2] + putpairs[,3] ) / 2 - (putpairs[,5] + putpairs[,6] ) / 2  )
+      
+      # filter out putative interactions that don't fall into distance range
+      putpairs = putpairs[which(putpairs$distances < maxinteractingdist & putpairs$distances > distancecutoff),]
+      
+      # calculate depths
+      putpairs$depths = calcDepths(putpairs[,10:11],type="product")
+    }
+    
+    #--------------- Score putative interactions ---------------#
+  
+    # Assing the four probabilities
+    putpairs$P_IAB_distance    = predict(distance_IAB_spline, log10(putpairs$distances))$y
+    putpairs$P_combos_distance = predict(distance_combo_spline,log10(putpairs$distances))$y
+    putpairs$P_IAB_depth       = predict(depth_IAB_spline,log10(putpairs$depths))$y
+    putpairs$P_combos_depth    = predict(depth_combo_spline,log10(putpairs$depths))$y
+    
+    # fix negative values
+    putpairs$P_IAB_distance[which(putpairs$P_IAB_distance <= 0)] = 
+      min(putpairs$P_IAB_distance[which(putpairs$P_IAB_distance > 0)])
+    putpairs$P_combos_distance[which(putpairs$P_combos_distance <= 0)] = 
+      min(putpairs$P_combos_distance[which(putpairs$P_combos_distance > 0)])
+    putpairs$P_IAB_depth[which(putpairs$P_IAB_depth <= 0)] = 
+      min(putpairs$P_IAB_depth[which(putpairs$P_IAB_depth > 0)])
+    putpairs$P_combos_depth[which(putpairs$P_combos_depth <= 0)] = 
+      min(putpairs$P_combos_depth[which(putpairs$P_combos_depth > 0)])
+    
+    # calculate the binomial probability
+    putpairs$p_binom           = (putpairs$P_IAB_distance * putpairs$P_IAB_depth) / 
+      (putpairs$P_combos_distance * putpairs$P_combos_depth * nrow(allcombos))
+   
+    # calculate the total IABs
+    totalIAB = sum(distance_IAB_model[,2])
+    
+    # calculate the final interaction P values
+    putpairs$P = apply(cbind(putpairs$V12,rep(totalIAB,nrow(putpairs)),putpairs$p_binom),1,calcP)
+    
+    if (reps == 1)
+    {
+      putpairs[which(putpairs$P < 1/nrow(allcombos) ),]$V12 = 0
+    }
+  }
+  
+  #--------------- Correct for multiple hypothesis testing ---------------#
+  
+  n=nrow(putpairs)
+  if (MHT == "all")
+  {
+    n=nrow(allcombos)
+  }
+  
+  putpairs$Q = p.adjust(putpairs$P,method="BY",n=n)
+  
+  #--------------- Organize  data ---------------#
+  
+  pairnames = paste("pair_",(1:nrow(putpairs)),sep="")
+  putpairs = cbind(putpairs[,c(1,2,3,4,5,6)],pairnames,putpairs[,c(10,11,12,14,15,16,17,18,19,21,22)])
+  names(putpairs) = c("chrom1","start1","end1","chrom2","start2","end2","name",
+                      "peak1","peak2","PETs","distance",
+                      "P_IAB_distance","P_combos_distance","P_IAB_depth","P_combos_depth",
+                      "p_binom","P","Q")
+  
+  #--------------- Filter interactions ---------------#
+  FDR = 0.05
+  minPETS = 2
+  sig = putpairs[which(putpairs$Q < FDR & putpairs$V12 >= minPETS),]
+  
+  #--------------- Write outputs ---------------#
+  
   # write results to output
   if (reportallpairs == TRUE)
   {
-    write.table(x=allpairs,file=allpairsfile,quote = FALSE, sep = "\t",row.names = FALSE)
+    write.table(x=putpairs,file=allpairsfile,quote = FALSE, sep = "\t",row.names = FALSE)
   }
-  sig= allpairs[which(allpairs$Q < FDR & allpairs$PETs >= minPETS),]
   write.table(x=sig,file=fdrpairsfile,quote = FALSE, sep = "\t",row.names = FALSE)
   
-  resultshash[["putative interactions"]]    = nrow(allpairs)
+  resultshash[["putative interactions"]]    = nrow(putpairs)
   resultshash[["significant interactions"]] = nrow(sig)
   
-  #- plot results -#
+  #--------------- Make plots ---------------#
   
-  # plot the spline
-  pdf(pestimatepdf)
-    plot(pEstimates$p_table$dist,pEstimates$p_table$p,pch=19,xlab="log10(distance)",ylab="p estimate", col = "firebrick2")
-    points(pEstimates2$p_table$dist,pEstimates2$p_table$p,pch=19, col = "blue")
-    lines(pEstimates$spline, col = "firebrick2")
-    lines(pEstimates2$spline, col = "blue")
-    legend("topright",inset=0.05,legend=c("bins 1","bins 2","spline fit 1","spline fit 2"),
-           pch=c(19,19,NA,NA),lwd=c(NA,NA,1,1),col=c("firebrick2","blue","firebrick2","blue"))
+  # plot models  
+  pdf(modelspdf)
+  par(mfrow=c(2,2))
+  par(mgp=c(3,.3,0))
+  plot(log10(distance_IAB_model[,1]),   distance_IAB_model[,3],pch=19,col="dodgerblue2",xlab="distance (bp)",ylab="IAB")
+  lines(x=log10(distance_IAB_model[,1]),   predict(distance_IAB_spline,log10(distance_IAB_model[,1]))$y)   
+  
+  plot(log10(distance_combo_model[,1]), distance_combo_model[,3],  pch=19,col="firebrick2",xlab="distance (bp)",ylab="# combos")  
+  lines(x=log10(distance_combo_model[,1]),   predict(distance_combo_spline,log10(distance_combo_model[,1]))$y)  
+  
+  plot(log10(depth_IAB_model[,1])   ,  depth_IAB_model[,3],    pch=19,col="dodgerblue2",xlab="depth (p1 * p2)",ylab="IAB") 
+  lines(x=log10(depth_IAB_model[,1]),   predict(depth_IAB_spline,log10(depth_IAB_model[,1]))$y)
+  
+  plot(log10(depth_combo_model[,1]),   depth_combo_model[,3],  pch=19,col="firebrick2",xlab="depth (p1 * p2)",ylab="# combos") 
+  lines(x=log10(depth_combo_model[,1]),   predict(depth_combo_spline,log10(depth_combo_model[,1]))$y)
   dev.off()
   
-  # write spline to output
-  save(pEstimates, file=pestimate1txt)
-  save(pEstimates2,file=pestimate2txt)     
-
-  pdf(summarypdf,height=6,width=10)
-    par(mfrow=c(1,2))
-    #hist(allpairs$P,main="P-value distribution",xlab="P",col="dodgerblue4")
-    #hist(allpairs$Q,main="Q-value distribution",xlab="Q",col="dodgerblue4")
-
-    plot(density(sig$log10distance),main="Size of sig pairs",xlab="log10(distance)",lwd=2,col="dodgerblue4",xlim=log10(c(distancecutoff,maxinteractingdist)))
-    legend("topright",inset=0.05,legend=c(paste("Q <",FDR),paste("n =",nrow(sig))),pch=NA)
+  #--------------- Delete temporary files ---------------#
   
-    maxy = max(hist(allpairs$PETs[which(allpairs$PETs<30 )],breaks=seq(0,30),plot=F)$counts)
-    hist(allpairs$PETs[which(allpairs$PETs<30 )],breaks=seq(0,30),main="PETs in sig pairs",xlab="# PETs",
-         ylab=paste("pairs (trunc ",maxy,")",sep=""),
-         col="red",ylim=c(0,1.2*length(which(allpairs$PETs==2 )  )))
-    hist(sig$PETs[which(sig$PETs<30)],breaks=seq(0,30),main="Q < 0.01",xlab="# PETs",add=TRUE,col="skyblue2")
-    legend("topright",inset=0.05,legend=paste("Q <",FDR),pch=NA)
-    legend("right",inset=0.05,legend=c("all observed","significant"),pch=15,col=c("red","skyblue2"),bty='n')
-  dev.off()
-
   # clean up extra files
   if (file.exists(distancefile)) file.remove(distancefile)
   for (chrom in originalchroms)
@@ -459,14 +579,14 @@ if (5 %in% opt$stages)
     bedpefile      = paste(outname,"." ,chrom, ".bedpe",sep="")
     bedfile        = paste(outname,"." ,chrom, ".bed",sep="")
     print (bedfile)
-    #if (file.exists(peaksizecount)) file.remove(peaksizecount)
+    if (file.exists(peaksizecount)) file.remove(peaksizecount)
     if (file.exists(pairsbedpe)) file.remove(pairsbedpe)
     if (file.exists(bedpefile)) file.remove(bedpefile)
     if (file.exists(bedfile)) file.remove(bedfile)
   }
-}
+} 
 
-##################################### print to logfile #####################################
+##################################### Make Log file #####################################
 
 logfile = paste(opt["outname"],".mango.log",sep="")
 write(Sys.time(),file=logfile,append=TRUE)
@@ -484,3 +604,247 @@ for (key in keys(resultshash))
 }
 
 print("done")
+
+
+
+
+##################################### group pairs #####################################
+
+# if (5 %in% opt$stages)
+# {
+#   checkRequired(opt,c("outname","distcutrangemin","biascut","maxPval",
+#                        "numofbins","corrMethod","bedtoolsgenome",
+#                        "maxinteractingdist","FDR","minPETS","corrMethod",
+#                        "chrominclude","chromexclude","reportallpairs"))
+# 
+#   # gather arguments
+#   outname = as.character(opt["outname"])
+#   distcutrangemin = as.numeric(as.character(opt["distcutrangemin"]))
+#   distcutrangemax = as.numeric(as.character(opt["distcutrangemax"]))
+#   bedtoolsgenome    = as.character(opt["bedtoolsgenome"])
+#   biascut = as.numeric(as.character(opt["biascut"]))
+#   maxinteractingdist = as.numeric(as.character(opt["maxinteractingdist"]))
+#   numofbins = as.numeric(as.character(opt["numofbins"]))
+#   FDR = as.numeric(as.character(opt["FDR"]))
+#   minPETS = as.numeric(as.character(opt["minPETS"]))
+#   corrMethod = as.character(opt["corrMethod"])
+#   chrominclude      = as.character(opt["chrominclude"])
+#   chromexclude      = as.character(opt["chromexclude"])
+#   reportallpairs    = as.character(opt["reportallpairs"])
+#   normPmeth          = "product"
+#   
+#   # filenames
+#   peaksfile          = paste(outname ,"_peaks.narrowPeak",sep="")
+#   peaksfileslop      = paste(outname ,"_peaks.slopPeak",sep="")
+#   bedpefilesortrmdup = paste(outname ,".sort.rmdup.bedpe",sep="")
+#   distancefile       = paste(outname ,".distance",sep="")
+#   distancecutpdf     = paste(outname ,".distance.pdf",sep="")
+#   pestimatepdf       = paste(outname ,".pEstimate.pdf",sep="")
+#   deptheffectplot    = paste(outname ,".deptheffect.pdf",sep="")
+#   pestimate1txt      = paste(outname ,".pestimate1.txt",sep="")
+#   pestimate2txt      = paste(outname ,".pestimate2.txt",sep="")
+#   summarypdf         = paste(outname ,".summary.pdf",sep="")
+#   allpairsfile       = paste(outname ,".interactions.all.bedpe",sep="")
+#   fdrpairsfile       = paste(outname ,".interactions.fdr.bedpe",sep="")
+#   
+# 
+#   # build a file of just distances and same / dif
+#   print ("determining self-ligation distance")
+#   makeDistanceFile(bedpefilesortrmdup,distancefile,
+#                    distcutrangemin,
+#                    distcutrangemax)
+#   
+#   # calculate bias and cutoff
+#   distancecutoff = calcDistBias(distancefile,distancecutpdf=distancecutpdf,
+#                    range=c(distcutrangemin,distcutrangemax),
+#                    biascut= biascut)
+# 
+#   # group PETs into interactions
+#   print ("grouping PETs into interactions")
+#   chromosomes = groupPairs(bedpefilesortrmdup=bedpefilesortrmdup,
+#                            outname=outname,
+#                            peaksfile=peaksfileslop,
+#                            bedtoolspath = bedtoolspath,
+#                            verbose=FALSE)
+#   
+#   # filter out unwanted chromosomes
+#   originalchroms = chromosomes
+#   
+#   # get chromosomes from bedtools
+#   bedtoolsgenome = read.table(bedtoolsgenome,header=FALSE,sep="\t")
+#   chromosomes = bedtoolsgenome[,1]
+#   chromosomes = chromosomes[grep("_",chromosomes,invert=TRUE)]
+#   if(chrominclude[1] != "NULL")
+#   {
+#     chromosomes = unlist(strsplit(chrominclude,split=","))
+#   }
+#   
+#   if (chromexclude[1] !=  "NULL")
+#   {
+#     chromosomestpremove = unlist(strsplit(chromexclude,split=","))
+#     chromosomes = chromosomes[-which(chromosomes %in% chromosomestpremove)] 
+#   }  
+# 
+#   # estimate depth effect
+#   depth_PETs = p_peakdepth(chromosomes,outname,pdepthbins = 50 ,distrange=c(distancecutoff,maxinteractingdist) ,deptheffectplot=deptheffectplot)
+#   meandepth =  depth_PETs[2][[1]]
+#   mediandepth = depth_PETs[2][[1]]
+# 
+#   # estimate probabilities
+#   print ("estimating p-values")
+#   pEstimates = estimateP (chromosomes,outname,numofbins=numofbins ,binrange=c(distancecutoff,maxinteractingdist),outliers=NULL,normPmeth = normPmeth)
+#   
+#   # score and filter interactions
+#   print ("scoring interactions")
+#   allpairs   = scoreAndFilter(chromosomes = chromosomes,outname = outname,
+#                               mindist = distancecutoff, maxdist = maxinteractingdist,
+#                               averageDepth = pEstimates$averageDepth,
+#                               spline = pEstimates$spline,
+#                               N      = pEstimates$N,
+#                               corrMethod,
+#                               depth_spline = ,
+#                               median_depth_prediction = predict( depth_PETs[2][[1]],  depth_PETs[3][[1]][1])$y)
+# 
+#   # filter out outliers
+#   outliercut = 1 / sum(pEstimates$p_table$M)
+#   outliers   = allpairs[which( allpairs$Q < outliercut),7]
+# 
+#   # re-estimate probabilities excluding outliers
+#   print ("estimating p-values (2nd iteration)")
+#   pEstimates2 = estimateP (chromosomes,outname,numofbins=numofbins ,binrange=c(distancecutoff,maxinteractingdist),outliers=outliers,normPmeth = normPmeth)
+# 
+# 
+#   # score and filter interactions with new estimates
+#   print ("scoring interactions (2nd iteration)")
+#   allpairs   = scoreAndFilter(chromosomes = chromosomes,outname = outname,
+#                               mindist = distancecutoff, maxdist = maxinteractingdist,
+#                               averageDepth = pEstimates2$averageDepth,
+#                               spline = pEstimates2$spline,
+#                               N      = pEstimates2$N,corrMethod,
+#                               depth_spline = depth_PETs[2][[1]],
+#                               median_depth_prediction = predict( depth_PETs[2][[1]],  depth_PETs[3][[1]][1])$y)
+#   
+#   allpairs = cbind(allpairs[,c(1,2,3,4,5,6)],paste("pair_",(1:nrow(allpairs)),sep=""),allpairs[,c(10,11,12,14,18,19)])
+#   names(allpairs) = c("chrom1","start1","end1","chrom2","start2","end2","name",
+#                       "peak1","peak2","PETs","log10distance","P","Q")
+# 
+#   # write results to output
+#   if (reportallpairs == TRUE)
+#   {
+#     write.table(x=allpairs,file=allpairsfile,quote = FALSE, sep = "\t",row.names = FALSE)
+#   }
+#   sig= allpairs[which(allpairs$Q < FDR & allpairs$PETs >= minPETS),]
+#   write.table(x=sig,file=fdrpairsfile,quote = FALSE, sep = "\t",row.names = FALSE)
+#   
+#   resultshash[["putative interactions"]]    = nrow(allpairs)
+#   resultshash[["significant interactions"]] = nrow(sig)
+#   
+#- plot results -#
+#     depth_PETs[1][[1]]$depths
+#   pdf(deptheffectplot)
+# 
+# a= depth_PETs
+# 
+# 
+# 
+#   #-- plot peak depth vs distance --#
+# 
+# par(mfrow=c(2,1))
+# #-- plot peak depth model --# 
+# requireddepth = 500
+# x =  log(depth_PETs[1][[1]]$depths/depth_PETs[1][[1]]$combos)[which(depth_PETs[1][[1]]$IABS>0)]
+# y = log(depth_PETs[1][[1]]$IABS/depth_PETs[1][[1]]$combos)[which(depth_PETs[1][[1]]$IABS>0)]
+# plot(x,y,xaxt='n',yaxt='n',ann=F,pch=19,col="grey")
+# points(x[which(depth_PETs[1][[1]]$IABS>requireddepth)],y[which(depth_PETs[1][[1]]$IABS>requireddepth)],pch=19,col="dodgerblue3")
+# axis(side=1,las=2,tcl=0.25)
+# axis(side=2,las=2,tcl=0.25)
+# mtext("depth",side=1,line=3,font=2)
+# mtext("PETs per combo",side=2,line=3,font=2)
+# spline_depth = smooth.spline(x[which(depth_PETs[1][[1]]$IABS>requireddepth)],y[which(depth_PETs[1][[1]]$IABS>requireddepth)],spar=1)
+# lines(predict(spline_depth,x))
+# predict(spline_depth,50000)
+# 
+#   par(mgp=c(3,.3,0))
+#   plot(depth_PETs[1][[1]]$depths/depth_PETs[1][[1]]$combos,log="y",xaxt='n',yaxt='n',ann=F,pch=19,col="dodgerblue3",ylim=c(1,(1.1*max(depth_PETs[1][[1]]$distances/depth_PETs[1][[1]]$combos))))
+#   axis(side=1,at=seq(5,30,by=5), round((depth_PETs[1][[1]]$readdepths/depth_PETs[1][[1]]$combos)[seq(5,30,by=5)]),las=2,tcl=0.25)
+#   axis(side=2,las=2,tcl=0.25)
+#   mtext("depth",side=1,line=3,font=2)
+#   mtext("distance per combo",side=2,line=3,font=2)
+# 
+#   #-- plot peak depth model --# 
+#   plot(depth_PETs$IABS/depth_PETs$combos,xaxt='n',yaxt='n',ann=F,pch=19,col="dodgerblue3",log='y')
+#   axis(side=1,at=seq(5,30,by=5), round((depth_PETs$readdepths/depth_PETs$combos)[seq(5,30,by=5)]),las=2,tcl=0.25)
+#   axis(side=2,las=2,tcl=0.25)
+#   mtext("depth",side=1,line=3,font=2)
+#   mtext("PETs per combo",side=2,line=3,font=2)
+#   lines(spline_depth$y)
+#   dev.off()
+
+
+
+#   # plot the spline
+#   pdf(pestimatepdf)
+#     plot(pEstimates$p_table$dist,pEstimates$p_table$p,pch=19,xlab="log10(distance)",ylab="p estimate", col = "firebrick2")
+#     points(pEstimates2$p_table$dist,pEstimates2$p_table$p,pch=19, col = "blue")
+#     lines(pEstimates$spline, col = "firebrick2")
+#     lines(pEstimates2$spline, col = "blue")
+#     legend("topright",inset=0.05,legend=c("bins 1","bins 2","spline fit 1","spline fit 2"),
+#            pch=c(19,19,NA,NA),lwd=c(NA,NA,1,1),col=c("firebrick2","blue","firebrick2","blue"))
+#   dev.off()
+#   
+#   # write spline to output
+#   save(pEstimates, file=pestimate1txt)
+#   save(pEstimates2,file=pestimate2txt)     
+# 
+#   pdf(summarypdf,height=6,width=10)
+#     par(mfrow=c(1,2))
+#     #hist(allpairs$P,main="P-value distribution",xlab="P",col="dodgerblue4")
+#     #hist(allpairs$Q,main="Q-value distribution",xlab="Q",col="dodgerblue4")
+# 
+#     plot(density(sig$log10distance),main="Size of sig pairs",xlab="log10(distance)",lwd=2,col="dodgerblue4",xlim=log10(c(distancecutoff,maxinteractingdist)))
+#     legend("topright",inset=0.05,legend=c(paste("Q <",FDR),paste("n =",nrow(sig))),pch=NA)
+#   
+#     maxy = max(hist(allpairs$PETs[which(allpairs$PETs<30 )],breaks=seq(0,30),plot=F)$counts)
+#     hist(allpairs$PETs[which(allpairs$PETs<30 )],breaks=seq(0,30),main="PETs in sig pairs",xlab="# PETs",
+#          ylab=paste("pairs (trunc ",maxy,")",sep=""),
+#          col="red",ylim=c(0,1.2*length(which(allpairs$PETs==2 )  )))
+#     hist(sig$PETs[which(sig$PETs<30)],breaks=seq(0,30),main="Q < 0.01",xlab="# PETs",add=TRUE,col="skyblue2")
+#     legend("topright",inset=0.05,legend=paste("Q <",FDR),pch=NA)
+#     legend("right",inset=0.05,legend=c("all observed","significant"),pch=15,col=c("red","skyblue2"),bty='n')
+#   dev.off()
+# 
+#   # clean up extra files
+#   if (file.exists(distancefile)) file.remove(distancefile)
+#   for (chrom in originalchroms)
+#   {
+#     print (chrom)
+#     peaksizecount  = paste(outname,"." ,chrom, "_peaks.count.slopPeak",sep="")
+#     pairsbedpe     = paste(outname,"." ,chrom, ".pairs.bedpe",sep="")
+#     bedpefile      = paste(outname,"." ,chrom, ".bedpe",sep="")
+#     bedfile        = paste(outname,"." ,chrom, ".bed",sep="")
+#     print (bedfile)
+#     #if (file.exists(peaksizecount)) file.remove(peaksizecount)
+#     if (file.exists(pairsbedpe)) file.remove(pairsbedpe)
+#     if (file.exists(bedpefile)) file.remove(bedpefile)
+#     if (file.exists(bedfile)) file.remove(bedfile)
+#   }
+}
+# 
+# ##################################### print to logfile #####################################
+# 
+# logfile = paste(opt["outname"],".mango.log",sep="")
+# write(Sys.time(),file=logfile,append=TRUE)
+# write("Analyzed by Mango using the following parameters:",file=logfile,append=TRUE)
+# for (key in keys(args))
+# {
+#   write(paste( key, ":",opt[key]),file=logfile,append=TRUE)
+# }
+# write("",file=logfile,append=TRUE)
+# write("With the following results:",file=logfile,append=TRUE)
+# print (resultshash)
+# for (key in keys(resultshash))
+# {
+#   write(paste( key, ":",resultshash[[key]]),file=logfile,append=TRUE)
+# }
+# 
+# print("done")
