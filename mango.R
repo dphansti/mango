@@ -83,7 +83,7 @@ option_list <- list(
   make_option(c("--maxinteractingdist"),  default="10000000",help="maximum disance allowed for an interaction"),
   make_option(c("--FDR"),  default="0.05",help="FDR cutoff for interactions"),
   make_option(c("--minPETS"),  default="2",help="minimum number of PETs required for an interaction (applied after FDR filtering)"),
-  make_option(c("--reportallpairs"),  default="FALSE",help="Should all pairs be reported or just significant pairs")
+  make_option(c("--reportallpairs"),  default="FALSE",help="Should all pairs be reported or just significant pairs"),
   make_option(c("--MHT"),  default="found",help="How should mutliple hypothsesis testing be done?  Correct for 'all' possible pairs of loci or only those 'found' with at least 1 PET")  
 )
 
@@ -419,7 +419,7 @@ if (5 %in% opt$stages)
     #--------------- Depth Normalization ---------------#
     
     # determine borders to depth bins
-    depthborders = binmaker(putpairs$depths,binmethod="equalocc",numberbins=30)
+    depthborders = binmaker(putpairs$depths,binmethod="equalocc",numberbins=50)
     
     # model IAB vs depth
     depth_IAB_model = model_chia(x=putpairs$depths,y=putpairs[,12],borders=depthborders)
@@ -489,7 +489,7 @@ if (5 %in% opt$stages)
   }
 
   putpairs$Q = p.adjust(putpairs$P,method=corrMethod,n=n)
-  
+
   #--------------- Organize  data ---------------#
   
   pairnames = paste("pair_",(1:nrow(putpairs)),sep="")
