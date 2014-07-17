@@ -67,7 +67,7 @@ option_list <- list(
 
   #---------- STAGE 4 PARAMETERS ----------#
   
-  make_option(c("--MACS_pvalue"),  default="0.00001",help="MACS values"),
+  make_option(c("--MACS_qvalue"),  default="0.05",help="MACS values"),
   make_option(c("--MACS_shiftsize"),  default="NULL",help="MACS shiftize.  NULL allows MACS to determine it"),
   make_option(c("--peakslop"),  default="500",help="Number of basespairs to extend peaks on both sides"),
   make_option(c("--peakinput"),  default="NULL",help="user supplied peaks file"),
@@ -77,14 +77,13 @@ option_list <- list(
   make_option(c("--distcutrangemin"),  default="1000",help="range in which to look for the self-ligation distance"),
   make_option(c("--distcutrangemax"),  default="100000",help="range in which to look for the self-ligation distance"),
   make_option(c("--biascut"),  default="0.05",help="Self ligation bias cutoff"),
-  make_option(c("--maxPval"),  default="0.01",help="P-value cutoff"),
-  make_option(c("--numofbins"),  default="30",help="number of bins for probability calculations"),
-  make_option(c("--corrMethod"),  default="BY",help="multiple hypothesis tersting correction method"),
+  make_option(c("--numofbins"),  default="50",help="number of bins for probability calculations"),
+  make_option(c("--corrMethod"),  default="BH",help="multiple hypothesis tersting correction method"),
   make_option(c("--maxinteractingdist"),  default="10000000",help="maximum disance allowed for an interaction"),
   make_option(c("--FDR"),  default="0.05",help="FDR cutoff for interactions"),
   make_option(c("--minPETS"),  default="2",help="minimum number of PETs required for an interaction (applied after FDR filtering)"),
   make_option(c("--reportallpairs"),  default="FALSE",help="Should all pairs be reported or just significant pairs"),
-  make_option(c("--MHT"),  default="found",help="How should mutliple hypothsesis testing be done?  Correct for 'all' possible pairs of loci or only those 'found' with at least 1 PET")  
+  make_option(c("--MHT"),  default="all",help="How should mutliple hypothsesis testing be done?  Correct for 'all' possible pairs of loci or only those 'found' with at least 1 PET")  
 )
 
 # get command line options, if help option encountered print help and exit,
@@ -116,6 +115,10 @@ if (opt["outdir"] != "NULL")
   opt["outname"] = file.path( opt["outdir"] ,opt["prefix"]) 
 }
 
+logfile = paste(as.character(opt["outname"]),".mango.log",sep="")
+if (file.exists(logfile) ==TRUE){file.remove(logfile)}
+starttime = paste("Analysis start time:" , as.character(Sys.time()))
+write(starttime,file=logfile,append=TRUE)
 
 ##################################### read in arguments #####################################
 
@@ -156,7 +159,7 @@ resultshash = hash()
 
 if (1 %in% opt$stages)
 {
-  checkRequired(opt,c("fastq1","fastq2","outname","minlength","maxlength","keepempty","linkerA","linkerB"))
+  checkRequired(opt,c("fastq1","fastq2"))
 
   # gather arguments
   outname         = as.character(opt["outname"])
@@ -190,7 +193,7 @@ if (1 %in% opt$stages)
 
 if (2 %in% opt$stages)
 {
-  checkRequired(opt,c("outname","bowtieref","shortreads"))
+  checkRequired(opt,c("bowtieref"))
   
   # gather arguments
   outname         = as.character(opt["outname"])
@@ -249,12 +252,11 @@ if (3 %in% opt$stages)
 
 if (4 %in% opt$stages)
 {
-  checkRequired(opt,c("outname","MACS_pvalue",
-                       "bedtoolsgenome","peakslop","peakinput"))
+  checkRequired(opt,c("bedtoolsgenome"))
   
   # gather arguments
   outname         = as.character(opt["outname"])
-  MACS_pvalue     = as.character(opt["MACS_pvalue"])
+  MACS_qvalue     = as.character(opt["MACS_qvalue"])
   bedtoolsgenome  = as.character(opt["bedtoolsgenome"])
   peakslop        = as.character(opt["peakslop"])
   peakinput       = as.character(opt["peakinput"])
@@ -280,7 +282,7 @@ if (4 %in% opt$stages)
     
     # call peaks 
     print ("calling peaks")
-   callpeaks(macs2path=macs2path,tagAlignfile,outname,pvalue=MACS_pvalue,
+   callpeaks(macs2path=macs2path,tagAlignfile,outname,qvalue=MACS_qvalue,
              bedtoolspath=bedtoolspath,bedtoolsgenome=bedtoolsgenome,
              peakslop=peakslop,MACS_shiftsize)
   }
@@ -298,10 +300,7 @@ if (4 %in% opt$stages)
 
 if (5 %in% opt$stages)
 {
-  checkRequired(opt,c("outname","distcutrangemin","biascut","maxPval",
-                      "numofbins","corrMethod","bedtoolsgenome",
-                      "maxinteractingdist","FDR","minPETS","corrMethod",
-                      "chrominclude","chromexclude","reportallpairs","MHT"))
+  checkRequired(opt,c("outname","bedtoolsgenome"))
   
   # gather arguments
   outname = as.character(opt["outname"])
@@ -368,6 +367,7 @@ if (5 %in% opt$stages)
     chromosomes = chromosomes[-which(chromosomes %in% chromosomestpremove)] 
   }    
   
+  print ("modeling PETs based on peak depth and distance")
   #--------------- Gather IAB data ---------------#
   
   # gather all putative interactions
@@ -382,52 +382,71 @@ if (5 %in% opt$stages)
   # calculate depths
   putpairs$depths = calcDepths(putpairs[,10:11],type="product")
   
-  #--------------- Gather Combinations data ---------------#
-  
-  # model Combos vs distance
-  allcombos = c()
-  for (chrom in chromosomes)
-  {
-    # make combos
-    combos = makecombos(chrom,outname,mindist=distancecutoff,maxdist=maxinteractingdist)
-    
-    # combine combos from all chromosomes
-    allcombos = rbind(allcombos,combos)
-  }
-    
-  # calculate distances
-  allcombos$distance = abs( (allcombos[,2] + allcombos[,3] ) / 2 - (allcombos[,5] + allcombos[,6] ) / 2  )
-  
-  # calculate depths
-  allcombos$depths = calcDepths(allcombos[,7:8],type="product")
-  
+  totalcombos = 0
   for (reps in (1:2))
   {
     #--------------- Distance Normalization ---------------#
     
     # determine borders to distance bins
-    distanceborders = binmaker(putpairs$distances,binmethod="equalocc",numberbins=50)
+    distanceborders = binmaker(putpairs$distances,binmethod="equalocc",numberbins=numofbins)
     
     # model IAB vs distance
     distance_IAB_model = model_chia(x=putpairs$distances,y=putpairs[,12],borders=distanceborders)
     distance_IAB_spline =   smooth.spline(log10(distance_IAB_model[,1]),distance_IAB_model[,3],spar=.75)
     
-    # model Combo vs distance
-    distance_combo_model = model_chia(x=allcombos$distance,y=NA,borders=distanceborders)
-    distance_combo_spline =   smooth.spline(log10(distance_combo_model[,1]),distance_combo_model[,3],spar=.75)
-    
     #--------------- Depth Normalization ---------------#
     
     # determine borders to depth bins
-    depthborders = binmaker(putpairs$depths,binmethod="equalocc",numberbins=50)
+    depthborders = binmaker(putpairs$depths,binmethod="equalocc",numberbins=numofbins)
     
     # model IAB vs depth
     depth_IAB_model = model_chia(x=putpairs$depths,y=putpairs[,12],borders=depthborders)
     depth_IAB_spline =   smooth.spline(log10(depth_IAB_model[,1]),depth_IAB_model[,3],spar=.75)
     
-    # model Combo vs depth
-    depth_combo_model = model_chia(x=allcombos$depths,y=NA,borders=depthborders)
-    depth_combo_spline =   smooth.spline(log10(depth_combo_model[,1]),depth_combo_model[,3],spar=.75)
+    # model Combos vs distance
+    meanofx_dist  = rep(0,numofbins)
+    sumofy_dist   = rep(0,numofbins)
+    pvals_dist    = rep(0,numofbins)
+    sumofx_dist   = rep(0,numofbins)
+    countofx_dist = rep(0,numofbins)
+    meanofx_depth  = rep(0,numofbins)
+    sumofy_depth   = rep(0,numofbins)
+    pvals_depth    = rep(0,numofbins)
+    sumofx_depth   = rep(0,numofbins)
+    countofx_depth = rep(0,numofbins)
+
+    for (chrom in chromosomes)
+    {
+      # make combos
+      combos = makecombos(chrom,outname,mindist=distancecutoff,maxdist=maxinteractingdist)
+      
+      # calculate distances
+      combos$distance = abs( (combos[,2] + combos[,3] ) / 2 - (combos[,5] + combos[,6] ) / 2  )
+      
+      # calculate depths
+      combos$depths = calcDepths(combos[,7:8],type="product")
+      
+      # model Combo vs distance
+      distance_combo_model_chrom = model_chia(x=combos$distance,y=NA,borders=distanceborders)
+      
+      sumofy_dist   = sumofy_dist   + distance_combo_model_chrom[,2]
+      sumofx_dist   = sumofx_dist   + distance_combo_model_chrom[,4]
+      countofx_dist = countofx_dist + distance_combo_model_chrom[,5]
+       
+      # model Combo vs depth
+      depth_combo_model_chrom  = model_chia(x=combos$depths,y=NA,borders=depthborders)
+      
+      sumofy_depth   = sumofy_depth   + depth_combo_model_chrom[,2]
+      sumofx_depth   = sumofx_depth   + depth_combo_model_chrom[,4]
+      countofx_depth = countofx_depth + depth_combo_model_chrom[,5]
+    }
+    
+    # combine data from all chromosomes
+    depth_combo_model    = cbind(sumofx_depth/countofx_depth, sumofy_depth, sumofy_depth/sum(sumofy_depth))
+    distance_combo_model = cbind(sumofx_dist /countofx_dist,  sumofy_dist, sumofy_dist/sum(sumofy_dist))
+    
+    depth_combo_spline    =   smooth.spline(log10(depth_combo_model[,1]),depth_combo_model[,3],spar=.75)
+    distance_combo_spline =   smooth.spline(log10(distance_combo_model[,1]),distance_combo_model[,3],spar=.75)
     
     if (reps == 2)
     {
@@ -445,9 +464,9 @@ if (5 %in% opt$stages)
       # calculate depths
       putpairs$depths = calcDepths(putpairs[,10:11],type="product")
     }
-    
+
     #--------------- Score putative interactions ---------------#
-  
+    
     # Assing the four probabilities
     putpairs$P_IAB_distance    = predict(distance_IAB_spline, log10(putpairs$distances))$y
     putpairs$P_combos_distance = predict(distance_combo_spline,log10(putpairs$distances))$y
@@ -465,27 +484,29 @@ if (5 %in% opt$stages)
       min(putpairs$P_combos_depth[which(putpairs$P_combos_depth > 0)])
     
     # calculate the binomial probability
+    totalcombos =  sum(sumofy_dist)
     putpairs$p_binom           = (putpairs$P_IAB_distance * putpairs$P_IAB_depth) / 
-      (putpairs$P_combos_distance * putpairs$P_combos_depth * nrow(allcombos))
+      (putpairs$P_combos_distance * putpairs$P_combos_depth * totalcombos)
    
     # calculate the total IABs
     totalIAB = sum(distance_IAB_model[,2])
-    
+
     # calculate the final interaction P values
     putpairs$P = apply(cbind(putpairs$V12,rep(totalIAB,nrow(putpairs)),putpairs$p_binom),1,calcP)
-    
+
     if (reps == 1)
     {
-      putpairs[which(putpairs$P < 1/nrow(allcombos) ),]$V12 = 0
+      putpairs[which(putpairs$P < 1/totalcombos ),]$V12 = 0
     }
   }
   
   #--------------- Correct for multiple hypothesis testing ---------------#
 
+  print ("correcting for multiple hypothesis testing")
   n=nrow(putpairs)
   if (MHT == "all")
   {
-    n=nrow(allcombos)
+    n=totalcombos
   }
 
   putpairs$Q = p.adjust(putpairs$P,method=corrMethod,n=n)
@@ -493,7 +514,7 @@ if (5 %in% opt$stages)
   #--------------- Organize  data ---------------#
   
   pairnames = paste("pair_",(1:nrow(putpairs)),sep="")
-  putpairs = cbind(putpairs[,c(1,2,3,4,5,6)],pairnames,putpairs[,c(10,11,12,14,15,16,17,18,19,21,22)])
+  putpairs = cbind(putpairs[,c(1,2,3,4,5,6)],pairnames,putpairs[,c(10,11,12,14,16,17,18,19,20,21,22)])
   names(putpairs) = c("chrom1","start1","end1","chrom2","start2","end2","name",
                       "peak1","peak2","PETs","distance",
                       "P_IAB_distance","P_combos_distance","P_IAB_depth","P_combos_depth",
@@ -504,6 +525,8 @@ if (5 %in% opt$stages)
   sig = putpairs[which(putpairs$Q < FDR & putpairs$PETs >= minPETS),]
 
   #--------------- Write outputs ---------------#
+  
+  print ("writing output files")
   
   # write results to output
   if (reportallpairs == TRUE)
@@ -516,6 +539,8 @@ if (5 %in% opt$stages)
   resultshash[["significant interactions"]] = nrow(sig)
   
   #--------------- Make plots ---------------#
+  
+  print ("plotting results")
   
   # plot models  
   pdf(modelspdf)
@@ -537,28 +562,33 @@ if (5 %in% opt$stages)
   #--------------- Delete temporary files ---------------#
   
   # clean up extra files
+  print ("deleting temporary files")
   if (file.exists(distancefile)) file.remove(distancefile)
   for (chrom in originalchroms)
   {
-    print (chrom)
     peaksizecount  = paste(outname,"." ,chrom, "_peaks.count.slopPeak",sep="")
     pairsbedpe     = paste(outname,"." ,chrom, ".pairs.bedpe",sep="")
     bedpefile      = paste(outname,"." ,chrom, ".bedpe",sep="")
     bedfile        = paste(outname,"." ,chrom, ".bed",sep="")
-    print (bedfile)
+    overlapfile    = paste(outname,"." ,chrom, ".bedNpeak",sep="")
     if (file.exists(peaksizecount)) file.remove(peaksizecount)
     if (file.exists(pairsbedpe)) file.remove(pairsbedpe)
     if (file.exists(bedpefile)) file.remove(bedpefile)
     if (file.exists(bedfile)) file.remove(bedfile)
+    if (file.exists(overlapfile)) file.remove(overlapfile)
   }
 } 
 
 ##################################### Make Log file #####################################
 
-logfile = paste(as.character(opt["outname"]),".mango.log",sep="")
-write(Sys.time(),file=logfile,append=TRUE)
+print ("writing to log file")
+
+stoptime = paste("Analysis end time:" , as.character(Sys.time()))
+write(stoptime,file=logfile,append=TRUE)
+write("",file=logfile,append=TRUE)
 write("Analyzed by Mango using the following parameters:",file=logfile,append=TRUE)
-for (key in keys(args))
+
+for (key in names(opt))
 {
   write(paste( key, ":",opt[key]),file=logfile,append=TRUE)
 }
@@ -571,3 +601,5 @@ for (key in keys(resultshash))
 }
 
 print("done")
+
+

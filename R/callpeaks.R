@@ -1,6 +1,6 @@
 
 # Define a function that calls peaks using macs2
-callpeaks <- function(macs2path,tagAlignfile,peaksfile,pvalue=.00001,
+callpeaks <- function(macs2path,tagAlignfile,peaksfile,qvalue=0.05,
                       bedtoolspath,bedtoolsgenome,peakslop=0,MACS_shiftsize="NULL")
 {
   # call peaks
@@ -14,7 +14,7 @@ callpeaks <- function(macs2path,tagAlignfile,peaksfile,pvalue=.00001,
     shiftsize = ""
   }
 
-  command = paste(macs2path," callpeak -t ",tagAlignfile, shiftsize ,  " -f BED -n ",peaksfile," -p ",pvalue,sep=" ")
+  command = paste(macs2path," callpeak -t ",tagAlignfile, shiftsize ,  " -f BED -n ",peaksfile," -q ",qvalue,sep=" ")
   print (command)
   system(command)
   

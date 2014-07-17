@@ -21,3 +21,4 @@ DefinePaths <- function(progs = c("bedtools","MACS2","bowtie"))
   return(progpaths)
 }
 
+

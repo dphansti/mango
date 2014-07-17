@@ -2,7 +2,6 @@
 # Define a function that makes all possible combos of peaks
 makecombos <- function(chrom,outname,mindist,maxdist)
 {
-
   peaksfile    = paste(outname,"." ,chrom, "_peaks.count.slopPeak",sep="")
   chrpeaks = read.table(peaksfile,header=F,sep="\t")
   names(chrpeaks) = c("chr","start","end","name","score","strand")
@@ -26,9 +25,7 @@ makecombos <- function(chrom,outname,mindist,maxdist)
   
   for (i in (1:npeaks))
   {
-    #print (i)
     j = i + 1
-
     temp_score2=chrpeaks[j:npeaks ,5]
     temp_score1=rep(chrpeaks[i,5],length(temp_score2))
     temp_end2=chrpeaks[j:npeaks ,3]

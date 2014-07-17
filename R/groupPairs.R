@@ -4,12 +4,13 @@ groupPairs <- function(bedpefilesortrmdup,outname,peaksfile, bedtoolspath,
 {
 
   # split reads by chromosome
+  print ("---Splitting PETs by chromosome")
   petschroms  =      splitBedpe(bedpefilesortrmdup, outname, printreads=TRUE)
-  print(petschroms)
 
   petschroms = unique(petschroms)
 
   # (2) Overlap with peak files
+  print ("---Intersecting PETs with peaks")
   for (chrom in petschroms)
   {
     readsfile    = paste(outname,"." ,chrom, ".bed",sep="")
@@ -27,6 +28,7 @@ groupPairs <- function(bedpefilesortrmdup,outname,peaksfile, bedtoolspath,
   }
   
   # (3) gather information
+  print ("---Building putative interaction set")
   for (chrom in petschroms)
   {
 
@@ -47,9 +49,9 @@ groupPairs <- function(bedpefilesortrmdup,outname,peaksfile, bedtoolspath,
     overlapfile   = paste(outname,"." ,chrom, ".bedNpeak",sep="")
     readsfile     = paste(outname,"." ,chrom, ".bed",sep="")
     petssfile     = paste(outname,"." ,chrom, ".bedpe",sep="")
-#     if (file.exists(readsfile)) file.remove(readsfile)
-#     if (file.exists(petssfile)) file.remove(petssfile)
-#     if (file.exists(overlapfile)) file.remove(overlapfile)
+#      if (file.exists(readsfile)) file.remove(readsfile)
+#      if (file.exists(petssfile)) file.remove(petssfile)
+#      if (file.exists(overlapfile)) file.remove(overlapfile)
   }
   
   return (petschroms)

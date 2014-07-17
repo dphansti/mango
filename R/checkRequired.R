@@ -6,7 +6,8 @@ checkRequired <-function(opt,listofargs)
     if ( as.character(opt[key]) == "NULL")
     {
       print (paste("missing required argument:",key))
-      break
+      stop ("Exiting Mango.R pipeline.  Check required arguments")
+      
     }
   }  
 }
