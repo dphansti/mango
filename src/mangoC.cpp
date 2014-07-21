@@ -688,6 +688,11 @@ void findPairs(std::string overlapfile, std::string petpairsfile,std::string int
 
 
 
+
+
+
+
+
 // Define a function splits bed file by chromosome
 // [[Rcpp::export]]
 std::vector<std::string> splitBedbyChrom(std::string bedfile,std::string outnamebase)
@@ -782,10 +787,35 @@ void makeDistanceFile(std::string bedpefilesortrmdup,std::string distancefile,in
 
 
 
+// Define a function that joins file (normally files previously split by chromosome)
+// [[Rcpp::export]]
+void  joinchromfiles(std::vector<std::string> sortedchromfiles,std::string bedpefilesort)
+{
+  // open output stream
+  ofstream fileout(bedpefilesort.c_str());
+  
+  // read in each input stream
+  for (int i=0; i< sortedchromfiles.size() ; i++)
+  {
+    // open input stream
+    ifstream filein(sortedchromfiles[i].c_str());
+    
+    std::string line;
+    // read in file line by line store currentline and last line
+    while (getline(filein, line))
+    {
+      fileout << line;      
+      fileout << "\n";
+    }
+    filein.close();
+  }
+  fileout.close();
+}
+
 
 // Define a function splits bedpe file into reads and PETs by chromosome
 // [[Rcpp::export]]
-std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase, bool printreads = true , bool printpets = true)
+std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase, bool printreads = true , bool printpets = true, bool skipstars=true,bool skipinter=true)
 {
     // keep track of output files
     std::vector<std::string> outputvectorPETs;
@@ -856,16 +886,21 @@ std::vector<std::string> splitBedpe(std::string bedpein,std::string outnamebase,
           }
         }
         
-        if ((chrom1 == "*") | (chrom2 == "*"))
+        if (skipstars == true)
         {
-            continue;
+          if ((chrom1 == "*") | (chrom2 == "*"))
+          {
+              continue;
+          }
         }
         
-        if (chrom1 != chrom2)
+        if (skipinter == true)
         {
-            continue;
+          if (chrom1 != chrom2)
+          {
+              continue;
+          }
         }
-        
         
         if (printpets == true)
         {

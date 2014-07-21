@@ -236,7 +236,12 @@ if (3 %in% opt$stages)
   # sort bedpe
   print ("sorting bedpe")
   if (file.exists(bedpefilesort)){file.remove(bedpefilesort)}
-  external_sort(bedpefile, bedpefilesort)
+  
+  # thsplit by chrom and sort bedpe
+  sortbedpe(bedpefile,outname,bedpefilesort)
+  
+  # this as the way to sort the whol file at once
+  #external_sort(bedpefile, bedpefilesort)
   
   # filter duplicates
   print ("removing PCR duplicates")
@@ -392,6 +397,8 @@ if (5 %in% opt$stages)
     
     # model IAB vs distance
     distance_IAB_model = model_chia(x=putpairs$distances,y=putpairs[,12],borders=distanceborders)
+    distance_IAB_model_file   = paste(outname ,".distance_IAB_model.",reps, ".text",sep="")
+    write.table(distance_IAB_model,file=distance_IAB_model_file,quote = FALSE, sep = "\t",row.names = FALSE,col.names = TRUE)
     distance_IAB_spline =   smooth.spline(log10(distance_IAB_model[,1]),distance_IAB_model[,3],spar=.75)
     
     #--------------- Depth Normalization ---------------#
@@ -401,6 +408,8 @@ if (5 %in% opt$stages)
     
     # model IAB vs depth
     depth_IAB_model = model_chia(x=putpairs$depths,y=putpairs[,12],borders=depthborders)
+    depth_IAB_model_file   = paste(outname ,".depth_IAB_model.",reps, ".text",sep="")
+    write.table(depth_IAB_model,file=depth_IAB_model_file,quote = FALSE, sep = "\t",row.names = FALSE,col.names = TRUE)
     depth_IAB_spline =   smooth.spline(log10(depth_IAB_model[,1]),depth_IAB_model[,3],spar=.75)
     
     # model Combos vs distance
@@ -445,8 +454,16 @@ if (5 %in% opt$stages)
     depth_combo_model    = cbind(sumofx_depth/countofx_depth, sumofy_depth, sumofy_depth/sum(sumofy_depth))
     distance_combo_model = cbind(sumofx_dist /countofx_dist,  sumofy_dist, sumofy_dist/sum(sumofy_dist))
     
+    depth_combo_model_file   = paste(outname ,".depth_combo_model.",reps, ".text",sep="")
+    write.table(depth_combo_model,file=depth_combo_model_file,quote = FALSE, sep = "\t",row.names = FALSE,col.names = TRUE)
+    
+    distance_combo_model_file   = paste(outname ,".distance_combo_model.",reps, ".text",sep="")
+    write.table(distance_combo_model,file=distance_combo_model_file,quote = FALSE, sep = "\t",row.names = FALSE,col.names = TRUE)
+    
+    
     depth_combo_spline    =   smooth.spline(log10(depth_combo_model[,1]),depth_combo_model[,3],spar=.75)
     distance_combo_spline =   smooth.spline(log10(distance_combo_model[,1]),distance_combo_model[,3],spar=.75)
+
     
     if (reps == 2)
     {

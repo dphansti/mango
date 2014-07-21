@@ -137,9 +137,22 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// joinchromfiles
+void joinchromfiles(std::vector<std::string> sortedchromfiles, std::string bedpefilesort);
+RcppExport SEXP mango_joinchromfiles(SEXP sortedchromfilesSEXP, SEXP bedpefilesortSEXP) {
+BEGIN_RCPP
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< std::vector<std::string> >::type sortedchromfiles(sortedchromfilesSEXP );
+        Rcpp::traits::input_parameter< std::string >::type bedpefilesort(bedpefilesortSEXP );
+        joinchromfiles(sortedchromfiles, bedpefilesort);
+    }
+    return R_NilValue;
+END_RCPP
+}
 // splitBedpe
-std::vector<std::string> splitBedpe(std::string bedpein, std::string outnamebase, bool printreads = true, bool printpets = true);
-RcppExport SEXP mango_splitBedpe(SEXP bedpeinSEXP, SEXP outnamebaseSEXP, SEXP printreadsSEXP, SEXP printpetsSEXP) {
+std::vector<std::string> splitBedpe(std::string bedpein, std::string outnamebase, bool printreads = true, bool printpets = true, bool skipstars = true, bool skipinter = true);
+RcppExport SEXP mango_splitBedpe(SEXP bedpeinSEXP, SEXP outnamebaseSEXP, SEXP printreadsSEXP, SEXP printpetsSEXP, SEXP skipstarsSEXP, SEXP skipinterSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
@@ -148,7 +161,9 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< std::string >::type outnamebase(outnamebaseSEXP );
         Rcpp::traits::input_parameter< bool >::type printreads(printreadsSEXP );
         Rcpp::traits::input_parameter< bool >::type printpets(printpetsSEXP );
-        std::vector<std::string> __result = splitBedpe(bedpein, outnamebase, printreads, printpets);
+        Rcpp::traits::input_parameter< bool >::type skipstars(skipstarsSEXP );
+        Rcpp::traits::input_parameter< bool >::type skipinter(skipinterSEXP );
+        std::vector<std::string> __result = splitBedpe(bedpein, outnamebase, printreads, printpets, skipstars, skipinter);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);

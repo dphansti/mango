@@ -33,8 +33,12 @@ makeDistanceFile <- function(bedpefilesortrmdup, distancefile, mindist, maxdist)
     invisible(.Call('mango_makeDistanceFile', PACKAGE = 'mango', bedpefilesortrmdup, distancefile, mindist, maxdist))
 }
 
-splitBedpe <- function(bedpein, outnamebase, printreads = TRUE, printpets = TRUE) {
-    .Call('mango_splitBedpe', PACKAGE = 'mango', bedpein, outnamebase, printreads, printpets)
+joinchromfiles <- function(sortedchromfiles, bedpefilesort) {
+    invisible(.Call('mango_joinchromfiles', PACKAGE = 'mango', sortedchromfiles, bedpefilesort))
+}
+
+splitBedpe <- function(bedpein, outnamebase, printreads = TRUE, printpets = TRUE, skipstars = TRUE, skipinter = TRUE) {
+    .Call('mango_splitBedpe', PACKAGE = 'mango', bedpein, outnamebase, printreads, printpets, skipstars, skipinter)
 }
 
 buildTagAlign <- function(bedpefile, TagAlignfile) {
