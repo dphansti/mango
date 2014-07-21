@@ -18,8 +18,8 @@ model_chia <- function(x,y=NA,borders)
       {
         sumofy  = c(sumofy,  sum( y[binindexes]))
       }
-      meanofx = c(meanofx, mean(x[binindexes]))
-      sumofx  = c(sumofx, sum(x[binindexes]))
+      meanofx = c(meanofx, mean(as.numeric(x[binindexes])))
+      sumofx  = c(sumofx, sum(as.numeric(x[binindexes])))
       countofx = c(countofx,length(binindexes))
     }
     pvals = sumofy / sum(sumofy)
@@ -27,3 +27,6 @@ model_chia <- function(x,y=NA,borders)
     return (cbind(meanofx,sumofy,pvals,sumofx,countofx))
 }
 
+a = rep(422664,20000)
+b = mean(c(a,NA))
+b

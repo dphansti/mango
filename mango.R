@@ -489,28 +489,28 @@ if (5 %in% opt$stages)
     putpairs$P_IAB_depth       = predict(depth_IAB_spline,log10(putpairs$depths))$y
     putpairs$P_combos_depth    = predict(depth_combo_spline,log10(putpairs$depths))$y
     
-#     # fix negative values
-#     putpairs$P_IAB_distance[which(putpairs$P_IAB_distance <= 0)] = 
-#       min(putpairs$P_IAB_distance[which(putpairs$P_IAB_distance > 0)])
-#     putpairs$P_combos_distance[which(putpairs$P_combos_distance <= 0)] = 
-#       min(putpairs$P_combos_distance[which(putpairs$P_combos_distance > 0)])
-#     putpairs$P_IAB_depth[which(putpairs$P_IAB_depth <= 0)] = 
-#       min(putpairs$P_IAB_depth[which(putpairs$P_IAB_depth > 0)])
-#     putpairs$P_combos_depth[which(putpairs$P_combos_depth <= 0)] = 
-#       min(putpairs$P_combos_depth[which(putpairs$P_combos_depth > 0)])
+    # fix negative values
+    putpairs$P_IAB_distance[which(putpairs$P_IAB_distance <= 0)] = 
+      min(putpairs$P_IAB_distance[which(putpairs$P_IAB_distance > 0)])
+    putpairs$P_combos_distance[which(putpairs$P_combos_distance <= 0)] = 
+      min(putpairs$P_combos_distance[which(putpairs$P_combos_distance > 0)])
+    putpairs$P_IAB_depth[which(putpairs$P_IAB_depth <= 0)] = 
+      min(putpairs$P_IAB_depth[which(putpairs$P_IAB_depth > 0)])
+    putpairs$P_combos_depth[which(putpairs$P_combos_depth <= 0)] = 
+      min(putpairs$P_combos_depth[which(putpairs$P_combos_depth > 0)])
 
-    # cap values to min and max
-    putpairs$P_IAB_distance[which(putpairs$P_IAB_distance <= min(distance_IAB_model[,3]))] = min(distance_IAB_model[,3])
-    putpairs$P_IAB_distance[which(putpairs$P_IAB_distance >= max(distance_IAB_model[,3]))] = max(distance_IAB_model[,3]) 
-
-    putpairs$P_combos_distance[which(putpairs$P_combos_distance <= min(distance_combo_model[,3]))] = min(distance_combo_model[,3])
-    putpairs$P_combos_distance[which(putpairs$P_combos_distance >= max(distance_combo_model[,3]))] = max(distance_combo_model[,3])
-
-    putpairs$P_IAB_depth[which(putpairs$P_IAB_depth <=  min(depth_IAB_model[,3]))] =  min(depth_IAB_model[,3])  
-    putpairs$P_IAB_depth[which(putpairs$P_IAB_depth >=  max(depth_IAB_model[,3]))] =  max(depth_IAB_model[,3]
-
-    putpairs$P_combos_depth[which(putpairs$P_combos_depth <= min(depth_combo_model[,3]))] =  min(depth_combo_model[,3])   
-    putpairs$P_combos_depth[which(putpairs$P_combos_depth >= max(depth_combo_model[,3]))] =  max(depth_combo_model[,3])   
+#     # cap values to min and max
+#     putpairs$P_IAB_distance[which(putpairs$P_IAB_distance <= min(distance_IAB_model[,3]))] = min(distance_IAB_model[,3])
+#     putpairs$P_IAB_distance[which(putpairs$P_IAB_distance >= max(distance_IAB_model[,3]))] = max(distance_IAB_model[,3]) 
+# 
+#     putpairs$P_combos_distance[which(putpairs$P_combos_distance <= min(distance_combo_model[,3]))] = min(distance_combo_model[,3])
+#     putpairs$P_combos_distance[which(putpairs$P_combos_distance >= max(distance_combo_model[,3]))] = max(distance_combo_model[,3])
+# 
+#     putpairs$P_IAB_depth[which(putpairs$P_IAB_depth <=  min(depth_IAB_model[,3]))] =  min(depth_IAB_model[,3])  
+#     putpairs$P_IAB_depth[which(putpairs$P_IAB_depth >=  max(depth_IAB_model[,3]))] =  max(depth_IAB_model[,3]
+# 
+#     putpairs$P_combos_depth[which(putpairs$P_combos_depth <= min(depth_combo_model[,3]))] =  min(depth_combo_model[,3])   
+#     putpairs$P_combos_depth[which(putpairs$P_combos_depth >= max(depth_combo_model[,3]))] =  max(depth_combo_model[,3])   
 
     # calculate the binomial probability
     totalcombos =  sum(sumofy_dist)
