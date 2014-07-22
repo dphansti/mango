@@ -4,11 +4,11 @@ calcDepths <- function(df,type="product")
 {
   if (type == "product")
   {
-    depths = df[,1] * df[,2]
+    depths = as.numeric(df[,1]) * as.numeric(df[,2])
   }
   if (type == "sum")
   {
-    depths = df[,1] + df[,2]
+    depths = as.numeric(df[,1]) + as.numeric(df[,2])
   }
   return(depths)
 }

@@ -460,7 +460,6 @@ if (5 %in% opt$stages)
     distance_combo_model_file   = paste(outname ,".distance_combo_model.",reps, ".text",sep="")
     write.table(distance_combo_model,file=distance_combo_model_file,quote = FALSE, sep = "\t",row.names = FALSE,col.names = TRUE)
     
-    
     depth_combo_spline    =   smooth.spline(log10(depth_combo_model[,1]),depth_combo_model[,3],spar=.75)
     distance_combo_spline =   smooth.spline(log10(distance_combo_model[,1]),distance_combo_model[,3],spar=.75)
 
@@ -482,6 +481,9 @@ if (5 %in% opt$stages)
     }
 
     #--------------- Score putative interactions ---------------#
+    
+#    putpairstemfile       = paste(outname ,".putpairs",sep="")
+#    write.table(putpairs,file=putpairstemfile,quote = FALSE, sep = "\t",row.names = FALSE)
     
     # Assing the four probabilities
     putpairs$P_IAB_distance    = predict(distance_IAB_spline, log10(putpairs$distances))$y
@@ -630,5 +632,13 @@ for (key in keys(resultshash))
 }
 
 print("done")
+
+
+
+
+
+
+
+
 
 
