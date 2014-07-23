@@ -269,6 +269,7 @@ std::string IntToString( int Number ) {
     return Result;
 }
 
+
 // Define a function that converts number to string
 template <typename T>
 std::string NumberToString ( T Number )
@@ -277,7 +278,6 @@ std::string NumberToString ( T Number )
 	ss << Number;
 	return ss.str();
 }
-
 
 // Define a function that builds a bedpe file rom 2 sam file
 // [[Rcpp::export]]
@@ -328,6 +328,12 @@ void buildBedpe(std::string sam1, std::string sam2,std::string bedpefile)
         int start2 = StringToInt(e2[3]) -1;
         int stop2  = start2 + sequence2.length();
         
+        // skip double stars
+        if ((chrom1 == "*") & (chrom2 == "*"))
+        {
+          continue;
+        }
+        
         // check that read names match
         if (name1 != name2)
         {
@@ -345,6 +351,15 @@ void buildBedpe(std::string sam1, std::string sam2,std::string bedpefile)
         {
             reorder = true;
         }
+        if ((chrom1 != chrom2) & (chrom1 == "*") )
+        {
+            reorder = true;
+        }
+        if ((chrom1 != chrom2) & (chrom2 == "*") )
+        {
+            reorder = false;
+        }
+        
         
         // print out results
         if (reorder == false)
@@ -386,102 +401,103 @@ void buildBedpe(std::string sam1, std::string sam2,std::string bedpefile)
 }
 
 
-// Define a function that removes duplicates from a bedpe file
-// [[Rcpp::export]]
-std::vector< int > removeDupBedpe(std::string infile,std::string outfile , bool renamePets = true)
-{
-    // initialize petnumer
-    int petnumber  = 0;
-    int alllines   = 0;
-    int duplines   = 0;
-    int interchromosomal = 0;
-    int intrachromosomal = 0;
-    
-    // arguments
-    ifstream file1(infile.c_str());
-    ofstream bedpefilestream (outfile.c_str());
- 
-    // read in file line by line store currentline and last line
-    std::string lastline;
-    std::string currline;
-    while (getline(file1, currline))
-    {
-        // increment counter 
-        alllines++;
-        
-        // split lines
-        std::vector<std::string> lastEall = string_split(lastline,"\t");
-        std::vector<std::string> currEall = string_split(currline,"\t");
-        std::vector<std::string> lastE;
-        std::vector<std::string> currE;
-        
-        // print first line
-        if (lastEall.size() == 0)
-        {
-            if (renamePets == true)
-            {
-              petnumber ++;
-              currEall[6] = "obs_" +  IntToString(petnumber);
-            }
-          
-            bedpefilestream << vector_join(currEall,"\t");;
-            bedpefilestream << "\n";
-            lastline = currline;
-            continue;
-        }
-        
-        // make shorter line for comparison
-        for (int i=0; i<6; i++)
-        {
-            lastE.push_back(lastEall[i]);
-            currE.push_back(currEall[i]);
-        }
-        std::string currlineshort = vector_join(currE,"_");
-        std::string lastlineshort = vector_join(lastE,"_");
-        
-        // if duplicates continue
-        if (lastlineshort == currlineshort)
-        {
-            lastline = currline;
-            duplines++;
-            continue;
-        }
-        
-        // print out non duplicates
-        if (renamePets == true)
-        {
-          petnumber++;
-          currEall[6] = "obs_" +  IntToString(petnumber);
-        }
-        
-        bedpefilestream << vector_join(currEall,"\t");;
-        bedpefilestream << "\n";
-        
-        if ((currEall[0] == currEall[4]) & (currEall[0]  != "*") & (currEall[4]  != "*")  )
-        {
-          interchromosomal++;
-        }
-        if (currEall[0] != currEall[4]  & (currEall[0]  != "*") & (currEall[4]  != "*") )
-        {
-          intrachromosomal++;
-        }
-
-        // update last line
-        lastline = currline;
-    }
-    
-    // close files
-    file1.close();
-    bedpefilestream.close();
-    
-    // report results
-    std::vector< int > rmdupresults;
-    rmdupresults.push_back(duplines);
-    rmdupresults.push_back(petnumber);
-    rmdupresults.push_back(interchromosomal);
-    rmdupresults.push_back(intrachromosomal);
-    return(rmdupresults);
-}
+//// Define a function that removes duplicates from a bedpe file
+//// [[Rcpp::export]]
+//std::vector< int > removeDupBedpe(std::string infile,std::string outfile , bool renamePets = true)
+//{
+//    // initialize petnumer
+//    int petnumber  = 0;
+//    int alllines   = 0;
+//    int duplines   = 0;
+//    int interchromosomal = 0;
+//    int intrachromosomal = 0;
+//    
+//    // arguments
+//    ifstream file1(infile.c_str());
+//    ofstream bedpefilestream (outfile.c_str());
+// 
+//    // read in file line by line store currentline and last line
+//    std::string lastline;
+//    std::string currline;
+//    while (getline(file1, currline))
+//    {
+//        // increment counter 
+//        alllines++;
+//        
+//        // split lines
+//        std::vector<std::string> lastEall = string_split(lastline,"\t");
+//        std::vector<std::string> currEall = string_split(currline,"\t");
+//        std::vector<std::string> lastE;
+//        std::vector<std::string> currE;
+//        
+//        // print first line
+//        if (lastEall.size() == 0)
+//        {
+//            if (renamePets == true)
+//            {
+//              petnumber ++;
+//              currEall[6] = "obs_" +  IntToString(petnumber);
+//            }
+//          
+//            bedpefilestream << vector_join(currEall,"\t");;
+//            bedpefilestream << "\n";
+//            lastline = currline;
+//            continue;
+//        }
+//        
+//        // make shorter line for comparison
+//        for (int i=0; i<6; i++)
+//        {
+//            lastE.push_back(lastEall[i]);
+//            currE.push_back(currEall[i]);
+//        }
+//        std::string currlineshort = vector_join(currE,"_");
+//        std::string lastlineshort = vector_join(lastE,"_");
+//        
+//        // if duplicates continue
+//        if (lastlineshort == currlineshort)
+//        {
+//            lastline = currline;
+//            duplines++;
+//            continue;
+//        }
+//        
+//        // print out non duplicates
+//        if (renamePets == true)
+//        {
+//          petnumber++;
+//          currEall[6] = "obs_" +  IntToString(petnumber);
+//        }
+//        
+//        bedpefilestream << vector_join(currEall,"\t");;
+//        bedpefilestream << "\n";
+//        
+//        if ((currEall[0] == currEall[4]) & (currEall[0]  != "*") & (currEall[4]  != "*")  )
+//        {
+//          interchromosomal++;
+//        }
+//        if (currEall[0] != currEall[4]  & (currEall[0]  != "*") & (currEall[4]  != "*") )
+//        {
+//          intrachromosomal++;
+//        }
+//
+//        // update last line
+//        lastline = currline;
+//    }
+//    
+//    // close files
+//    file1.close();
+//    bedpefilestream.close();
+//    
+//    
+//    // report results
+//    std::vector< int > rmdupresults;
+//    rmdupresults.push_back(duplines);
+//    rmdupresults.push_back(petnumber);
+//    rmdupresults.push_back(interchromosomal);
+//    rmdupresults.push_back(intrachromosomal);
+//    return(rmdupresults);
+//}
 
 // Define a class to keep track of peak information
 class peak{
@@ -811,6 +827,136 @@ void  joinchromfiles(std::vector<std::string> sortedchromfiles,std::string bedpe
   }
   fileout.close();
 }
+
+
+
+// Define a function removes duplicates from a bedpe file
+// [[Rcpp::export]]
+std::vector< std::string > removeDups(std::string bedpein,std::string outnamebase,double distancesplit)
+{
+  // (1) split PETs by chrom and position 
+  
+  // keep track of output files
+  std::vector<std::string> outputvectorPETs;
+  
+  // streams
+  ifstream file1(bedpein.c_str());
+  std::map<std::string, std::ofstream*> petsoutput;
+  
+  std::string line;
+  while (getline(file1, line))
+  {
+    // split lines and determine bin
+    std::vector<std::string> currEall = string_split(line,"\t");
+    std::string chrom = currEall[0];
+    double pos = StringToInt(currEall[1]);
+    int bin = pos / distancesplit;
+    std::string binstring = NumberToString(bin);
+    
+    // set output file name
+    std::string outname = outnamebase + "." + chrom + "." + binstring + ".bedpe";
+    
+    // check if output file name exists (and make it fi neccesary)
+    if ( petsoutput.find(outname) == petsoutput.end() ) {  
+      petsoutput[outname] = new std::ofstream(outname.c_str());
+      outputvectorPETs.push_back( outname);  
+    }
+    
+    // print to output file
+    *petsoutput[outname] << line;
+    *petsoutput[outname] << "\n";
+  }
+  
+  // close input stream
+  file1.close();
+  
+  // close bedpe files streams
+  for (std::map<std::string, std::ofstream*>::iterator i = petsoutput.begin() ; i != petsoutput.end() ; i ++ ) {
+    i->second->close();
+  }    
+  
+  // initialize counters
+  int nondups  = 0;
+  int alllines   = 0;
+  int duplines   = 0;
+  int interchromosomal = 0;
+  int intrachromosomal = 0;
+  
+  // (2) read through each file and only print out non duplicates
+  // open input stream
+  std::string outputname = outnamebase + ".rmdup.bedpe";
+  ofstream finaloutput(outputname.c_str());
+  
+  for (std::vector<std::string>::const_iterator i = outputvectorPETs.begin() ; i != outputvectorPETs.end() ; i ++ ) {
+    
+    // make new map
+    std::map<std::string, int> PETmap;
+    
+    // open input stream
+    ifstream file1(*i);
+    
+    std::string line;
+    while (getline(file1, line))
+    {
+      alllines++;
+      
+      // split lines and determine bin
+      std::vector<std::string> currEall = string_split(line,"\t");
+      std::string chrom1  = currEall[0];
+      std::string pos1  = currEall[1];
+      std::string chrom2 = currEall[3];
+      std::string pos2 = currEall[4];
+      std::string uniqcode = pos1 + "_" + chrom2 + "_" + pos2;
+
+      // check if read has been seen before
+      if ( PETmap.find(uniqcode) == PETmap.end() ) {  
+        PETmap[uniqcode] = 0;
+      }
+      PETmap[uniqcode]++;
+      
+      if (PETmap[uniqcode] > 1)
+      {
+        duplines++;
+      }
+      
+      // if it is the first instance print it to the output file
+      if (PETmap[uniqcode] == 1)
+      {
+        nondups++;
+        if (chrom1 == chrom2)
+        {
+          intrachromosomal++;
+        }
+        if (chrom1 != chrom2)
+        {
+          interchromosomal++;
+        }
+        finaloutput << line;
+        finaloutput << "\n";
+      }
+    }    
+    // close input stream
+    file1.close();
+    
+  }
+  // close input stream
+  finaloutput.close();
+  
+  // report results
+  std::vector< std::string > rmdupresults;
+  rmdupresults.push_back(NumberToString(duplines));
+  rmdupresults.push_back(NumberToString(nondups));
+  rmdupresults.push_back(NumberToString(interchromosomal));
+  rmdupresults.push_back(NumberToString(intrachromosomal));
+  rmdupresults.push_back(NumberToString(alllines));
+  
+  for (std::vector<std::string>::const_iterator i = outputvectorPETs.begin() ; i != outputvectorPETs.end() ; i ++ ) { 
+    rmdupresults.push_back(*i);
+    }
+  
+  return(rmdupresults);
+}
+
 
 
 // Define a function splits bedpe file into reads and PETs by chromosome

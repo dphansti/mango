@@ -81,6 +81,7 @@ option_list <- list(
   make_option(c("--corrMethod"),  default="BH",help="multiple hypothesis tersting correction method"),
   make_option(c("--maxinteractingdist"),  default="10000000",help="maximum disance allowed for an interaction"),
   make_option(c("--FDR"),  default="0.05",help="FDR cutoff for interactions"),
+  make_option(c("--extendreads"),  default="120",help="how many bp to extend reads towards peak"),
   make_option(c("--minPETS"),  default="2",help="minimum number of PETs required for an interaction (applied after FDR filtering)"),
   make_option(c("--reportallpairs"),  default="FALSE",help="Should all pairs be reported or just significant pairs"),
   make_option(c("--MHT"),  default="all",help="How should mutliple hypothsesis testing be done?  Correct for 'all' possible pairs of loci or only those 'found' with at least 1 PET")  
@@ -233,24 +234,42 @@ if (3 %in% opt$stages)
   if (file.exists(bedpefile)){file.remove(bedpefile)}
   buildBedpe(sam1 =sam1, sam2 = sam2, bedpefile = bedpefile);
   
-  # sort bedpe
-  print ("sorting bedpe")
-  if (file.exists(bedpefilesort)){file.remove(bedpefilesort)}
+  # split by chromosome and position
+  print ("removing duplicate PETs")
+  distancesplit = 10000000
+  rmdupresults = removeDups(bedpefile,outname,distancesplit)
   
-  # thsplit by chrom and sort bedpe
-  sortbedpe(bedpefile,outname,bedpefilesort)
-  
-  # this as the way to sort the whol file at once
-  #external_sort(bedpefile, bedpefilesort)
-  
-  # filter duplicates
-  print ("removing PCR duplicates")
-  if (file.exists(bedpefilesortrmdup)){file.remove(bedpefilesortrmdup)}
-  rmdupresults = removeDupBedpe(bedpefilesort,bedpefilesortrmdup,renamePets=TRUE);
+  # add info to results hash for log file
   resultshash[["duplicate PETs"]] = rmdupresults[1]
   resultshash[["nonduplicate PETs"]] = rmdupresults[2]
   resultshash[["interchromosomal PETs"]] = rmdupresults[3]
   resultshash[["intrachromosomal PETs"]] = rmdupresults[4]
+  resultshash[["aligned PETs"]] = rmdupresults[5]
+  
+  # remove temporary files
+  for (f in (5:length(rmdupresults)))
+  {
+    if (file.exists(rmdupresults[f])==TRUE){file.remove(rmdupresults[f])} 
+  }
+  
+#   # split by chrom and sort bedpe
+#   print ("sorting bedpe")
+#   if (file.exists(bedpefilesort)){file.remove(bedpefilesort)}
+#   # check to see if sort program is available
+#   # split by chrom and sort bedpe
+#   sortbedpe(bedpefile,outname,bedpefilesort)
+#   
+#   # this as the way to sort the whol file at once
+#   #external_sort(bedpefile, bedpefilesort)
+#   
+#   # filter duplicates
+#   print ("removing PCR duplicates")
+#   if (file.exists(bedpefilesortrmdup)){file.remove(bedpefilesortrmdup)}
+#   rmdupresults = removeDupBedpe(bedpefilesort,bedpefilesortrmdup,renamePets=TRUE);
+#   resultshash[["duplicate PETs"]] = rmdupresults[1]
+#   resultshash[["nonduplicate PETs"]] = rmdupresults[2]
+#   resultshash[["interchromosomal PETs"]] = rmdupresults[3]
+#   resultshash[["intrachromosomal PETs"]] = rmdupresults[4]
 }
 
 ##################################### call peaks #####################################
@@ -322,6 +341,7 @@ if (5 %in% opt$stages)
   reportallpairs    = as.character(opt["reportallpairs"])
   corrMethod = as.character(opt["corrMethod"])
   MHT    = as.character(opt["MHT"])
+  extendreads = as.numeric(opt["extendreads"])
 
   # filenames
   peaksfile          = paste(outname ,"_peaks.narrowPeak",sep="")
@@ -352,6 +372,7 @@ if (5 %in% opt$stages)
                            outname=outname,
                            peaksfile=peaksfileslop,
                            bedtoolspath = bedtoolspath,
+                           extendreads,
                            verbose=FALSE)
   
   # filter out unwanted chromosomes
@@ -491,28 +512,28 @@ if (5 %in% opt$stages)
     putpairs$P_IAB_depth       = predict(depth_IAB_spline,log10(putpairs$depths))$y
     putpairs$P_combos_depth    = predict(depth_combo_spline,log10(putpairs$depths))$y
     
-    # fix negative values
-    putpairs$P_IAB_distance[which(putpairs$P_IAB_distance <= 0)] = 
-      min(putpairs$P_IAB_distance[which(putpairs$P_IAB_distance > 0)])
-    putpairs$P_combos_distance[which(putpairs$P_combos_distance <= 0)] = 
-      min(putpairs$P_combos_distance[which(putpairs$P_combos_distance > 0)])
-    putpairs$P_IAB_depth[which(putpairs$P_IAB_depth <= 0)] = 
-      min(putpairs$P_IAB_depth[which(putpairs$P_IAB_depth > 0)])
-    putpairs$P_combos_depth[which(putpairs$P_combos_depth <= 0)] = 
-      min(putpairs$P_combos_depth[which(putpairs$P_combos_depth > 0)])
+#     # fix negative values
+#     putpairs$P_IAB_distance[which(putpairs$P_IAB_distance <= 0)] = 
+#       min(putpairs$P_IAB_distance[which(putpairs$P_IAB_distance > 0)])
+#     putpairs$P_combos_distance[which(putpairs$P_combos_distance <= 0)] = 
+#       min(putpairs$P_combos_distance[which(putpairs$P_combos_distance > 0)])
+#     putpairs$P_IAB_depth[which(putpairs$P_IAB_depth <= 0)] = 
+#       min(putpairs$P_IAB_depth[which(putpairs$P_IAB_depth > 0)])
+#     putpairs$P_combos_depth[which(putpairs$P_combos_depth <= 0)] = 
+#       min(putpairs$P_combos_depth[which(putpairs$P_combos_depth > 0)])
 
-#     # cap values to min and max
-#     putpairs$P_IAB_distance[which(putpairs$P_IAB_distance <= min(distance_IAB_model[,3]))] = min(distance_IAB_model[,3])
-#     putpairs$P_IAB_distance[which(putpairs$P_IAB_distance >= max(distance_IAB_model[,3]))] = max(distance_IAB_model[,3]) 
-# 
-#     putpairs$P_combos_distance[which(putpairs$P_combos_distance <= min(distance_combo_model[,3]))] = min(distance_combo_model[,3])
-#     putpairs$P_combos_distance[which(putpairs$P_combos_distance >= max(distance_combo_model[,3]))] = max(distance_combo_model[,3])
-# 
-#     putpairs$P_IAB_depth[which(putpairs$P_IAB_depth <=  min(depth_IAB_model[,3]))] =  min(depth_IAB_model[,3])  
-#     putpairs$P_IAB_depth[which(putpairs$P_IAB_depth >=  max(depth_IAB_model[,3]))] =  max(depth_IAB_model[,3]
-# 
-#     putpairs$P_combos_depth[which(putpairs$P_combos_depth <= min(depth_combo_model[,3]))] =  min(depth_combo_model[,3])   
-#     putpairs$P_combos_depth[which(putpairs$P_combos_depth >= max(depth_combo_model[,3]))] =  max(depth_combo_model[,3])   
+    # cap values to min and max
+    putpairs$P_IAB_distance[which(putpairs$P_IAB_distance <= min(distance_IAB_model[,3]))] = min(distance_IAB_model[,3])
+    putpairs$P_IAB_distance[which(putpairs$P_IAB_distance >= max(distance_IAB_model[,3]))] = max(distance_IAB_model[,3]) 
+
+    putpairs$P_combos_distance[which(putpairs$P_combos_distance <= min(distance_combo_model[,3]))] = min(distance_combo_model[,3])
+    putpairs$P_combos_distance[which(putpairs$P_combos_distance >= max(distance_combo_model[,3]))] = max(distance_combo_model[,3])
+
+    putpairs$P_IAB_depth[which(putpairs$P_IAB_depth <=  min(depth_IAB_model[,3]))] =  min(depth_IAB_model[,3])  
+    putpairs$P_IAB_depth[which(putpairs$P_IAB_depth >=  max(depth_IAB_model[,3]))] =  max(depth_IAB_model[,3])
+                                                                                          
+    putpairs$P_combos_depth[which(putpairs$P_combos_depth <= min(depth_combo_model[,3]))] =  min(depth_combo_model[,3])   
+    putpairs$P_combos_depth[which(putpairs$P_combos_depth >= max(depth_combo_model[,3]))] =  max(depth_combo_model[,3])   
 
     # calculate the binomial probability
     totalcombos =  sum(sumofy_dist)

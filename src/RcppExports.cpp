@@ -74,23 +74,6 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
-// removeDupBedpe
-std::vector< int > removeDupBedpe(std::string infile, std::string outfile, bool renamePets = true);
-RcppExport SEXP mango_removeDupBedpe(SEXP infileSEXP, SEXP outfileSEXP, SEXP renamePetsSEXP) {
-BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< std::string >::type infile(infileSEXP );
-        Rcpp::traits::input_parameter< std::string >::type outfile(outfileSEXP );
-        Rcpp::traits::input_parameter< bool >::type renamePets(renamePetsSEXP );
-        std::vector< int > __result = removeDupBedpe(infile, outfile, renamePets);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
-END_RCPP
-}
 // findPairs
 void findPairs(std::string overlapfile, std::string petpairsfile, std::string interactionfile, std::string peakscount);
 RcppExport SEXP mango_findPairs(SEXP overlapfileSEXP, SEXP petpairsfileSEXP, SEXP interactionfileSEXP, SEXP peakscountSEXP) {
@@ -148,6 +131,23 @@ BEGIN_RCPP
         joinchromfiles(sortedchromfiles, bedpefilesort);
     }
     return R_NilValue;
+END_RCPP
+}
+// removeDups
+std::vector< std::string > removeDups(std::string bedpein, std::string outnamebase, double distancesplit);
+RcppExport SEXP mango_removeDups(SEXP bedpeinSEXP, SEXP outnamebaseSEXP, SEXP distancesplitSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< std::string >::type bedpein(bedpeinSEXP );
+        Rcpp::traits::input_parameter< std::string >::type outnamebase(outnamebaseSEXP );
+        Rcpp::traits::input_parameter< double >::type distancesplit(distancesplitSEXP );
+        std::vector< std::string > __result = removeDups(bedpein, outnamebase, distancesplit);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
 END_RCPP
 }
 // splitBedpe

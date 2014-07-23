@@ -17,10 +17,6 @@ buildBedpe <- function(sam1, sam2, bedpefile) {
     invisible(.Call('mango_buildBedpe', PACKAGE = 'mango', sam1, sam2, bedpefile))
 }
 
-removeDupBedpe <- function(infile, outfile, renamePets = TRUE) {
-    .Call('mango_removeDupBedpe', PACKAGE = 'mango', infile, outfile, renamePets)
-}
-
 findPairs <- function(overlapfile, petpairsfile, interactionfile, peakscount) {
     invisible(.Call('mango_findPairs', PACKAGE = 'mango', overlapfile, petpairsfile, interactionfile, peakscount))
 }
@@ -35,6 +31,10 @@ makeDistanceFile <- function(bedpefilesortrmdup, distancefile, mindist, maxdist)
 
 joinchromfiles <- function(sortedchromfiles, bedpefilesort) {
     invisible(.Call('mango_joinchromfiles', PACKAGE = 'mango', sortedchromfiles, bedpefilesort))
+}
+
+removeDups <- function(bedpein, outnamebase, distancesplit) {
+    .Call('mango_removeDups', PACKAGE = 'mango', bedpein, outnamebase, distancesplit)
 }
 
 splitBedpe <- function(bedpein, outnamebase, printreads = TRUE, printpets = TRUE, skipstars = TRUE, skipinter = TRUE) {
