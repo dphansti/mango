@@ -2,8 +2,11 @@
 # Define a function that makes all possible combos of peaks
 makecombos <- function(chrom,outname,mindist,maxdist)
 {
-  peaksfile    = paste(outname,"." ,chrom, "_peaks.count.slopPeak",sep="")
+  #peaksfile    = paste(outname,"." ,chrom, "_peaks.count.slopPeak",sep="")
+  peaksfile    = paste(outname,"_peaks.slopPeak.depth",sep="")
   chrpeaks = read.table(peaksfile,header=F,sep="\t")
+  chrpeaks = chrpeaks[which(chrpeaks[,1] == chrom),]
+  
   names(chrpeaks) = c("chr","start","end","name","score","strand")
   
   # sort by distance

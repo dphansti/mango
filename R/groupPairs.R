@@ -1,6 +1,6 @@
 # Define a function that finds PET / peak overlaps
 groupPairs <- function(bedpefilesortrmdup,outname,peaksfile, bedtoolspath,
-                     bedtoolsgenome,extendreads=120,verbose=FALSE)
+                     bedtoolsgenome,extendreads=120,peaksfileslopdepth,verbose=FALSE)
 {
 
   # split reads by chromosome
@@ -18,17 +18,21 @@ groupPairs <- function(bedpefilesortrmdup,outname,peaksfile, bedtoolspath,
     overlapfile   = paste(outname,"." ,chrom, ".bedNpeak",sep="")
     if (file.exists(readsfile) == TRUE)
     {
-      command = paste(bedtoolspath , " slop -r ",extendreads," -s -i " ,readsfile ,
+      command1 = paste(bedtoolspath , " slop -l 0 -r ",extendreads," -s -i " ,readsfile ,
                       " -g ", bedtoolsgenome, " > ",readexendfile,sep="")
       
-      command = paste(bedtoolspath , " intersect -wo -a " ,readexendfile,
+      command2 = paste(bedtoolspath , " intersect -wo -a " ,readexendfile,
                       " -b ", peaksfile, " > ",overlapfile,sep="")
       if (verbose == TRUE)
       {
-        print (command)
+        print (command1)
       }
-      system(command)
-      
+      system(command1)
+      if (verbose == TRUE)
+      {
+        print (command2)
+      }
+      system(command2)
     }
   }
   
@@ -43,8 +47,7 @@ groupPairs <- function(bedpefilesortrmdup,outname,peaksfile, bedtoolspath,
     overlapfile   = paste(outname,"." ,chrom, ".bedNpeak",sep="")
     petpairsfile  = paste(outname,"." ,chrom, ".bedpe",sep="")
     peakscount    = paste(outname,"." ,chrom, "_peaks.count.slopPeak",sep="")
-    findPairs(overlapfile,petpairsfile,interactionfile,peakscount)
-
+    findPairs(overlapfile,petpairsfile,interactionfile,peakscount,peaksfileslopdepth)
   }
 
   

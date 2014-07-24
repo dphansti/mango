@@ -507,6 +507,7 @@ public:
   int start;
   int end;
   int intra;
+  int peakdepth;
   std::set<std::string> PETs;
 };
 
@@ -522,6 +523,8 @@ public:
   int p1end;
   int p2start;
   int p2end;
+  int p1depth;
+  int p2depth;
   int p1intra;
   int p2intra;
   int linking;
@@ -532,7 +535,7 @@ public:
 
 // Define a function that puts pairs together
 // [[Rcpp::export]]
-void findPairs(std::string overlapfile, std::string petpairsfile,std::string interactionfile,std::string peakscount)
+void findPairs(std::string overlapfile, std::string petpairsfile,std::string interactionfile,std::string peakscount,std::string peaksfileslopdepth)
 {
   // (1) Read in overlap info
   
@@ -563,10 +566,11 @@ void findPairs(std::string overlapfile, std::string petpairsfile,std::string int
             peakinfodict[peakname].chrom = currEall[6];
             peakinfodict[peakname].start = atoi( currEall[7].c_str() );
             peakinfodict[peakname].end   = atoi( currEall[8].c_str() );
-            peakinfodict[peakname].intra = 0;
+            peakinfodict[peakname].peakdepth = 0;
+            //peakinfodict[peakname].intra = 0;
         }
         peakinfodict[peakname].PETs.insert(readnamenonumeber);
-        peakinfodict[peakname].intra++;
+        //peakinfodict[peakname].intra++;
         
         // add info to readpeak dict
         if (readpeakdict.find(peakname) == readpeakdict.end())
@@ -578,15 +582,31 @@ void findPairs(std::string overlapfile, std::string petpairsfile,std::string int
     }
   input.close();
   
-  // count number of PETs in each peak
-  for (std::map<std::string, peak>::iterator chippeak = peakinfodict.begin() ; chippeak != peakinfodict.end() ; ++chippeak )
+  // Add peak depth info
+  ifstream peakfile(peaksfileslopdepth.c_str());
+  while (getline(peakfile, line))
   {
-    // cout << IntToString(chippeak->second.intra) + " \t " +  IntToString(chippeak->second.PETs.size()) + "\n";
-    chippeak->second.intra = chippeak->second.PETs.size();
+    // split lines
+    std::vector<std::string> currEall = string_split(line,"\t");
+    std::string peakname  = currEall[3];
+    int peakdepth = atoi( currEall[4].c_str() );
     
-    // clear the hash to save memory
-    chippeak->second.PETs.clear();
+    if (peakinfodict.find(peakname) != peakinfodict.end())
+    {
+      peakinfodict[peakname].peakdepth = peakdepth;
+    }
   }
+  peakfile.close();
+  
+//  // count number of PETs in each peak
+//  for (std::map<std::string, peak>::iterator chippeak = peakinfodict.begin() ; chippeak != peakinfodict.end() ; ++chippeak )
+//  {
+//    // cout << IntToString(chippeak->second.intra) + " \t " +  IntToString(chippeak->second.PETs.size()) + "\n";
+//    chippeak->second.intra = chippeak->second.PETs.size();
+//    
+//    // clear the hash to save memory
+//    chippeak->second.PETs.clear();
+//  }
   
   // (1) Go through PETs and make interactions
   ifstream inputpets(petpairsfile.c_str());
@@ -637,8 +657,10 @@ void findPairs(std::string overlapfile, std::string petpairsfile,std::string int
               pairdict[pairname].p1end  = thep1.end;
               pairdict[pairname].p2start  = thep2.start; 
               pairdict[pairname].p2end  = thep2.end; 
-              pairdict[pairname].p1intra  = thep1.intra; 
-              pairdict[pairname].p2intra  = thep2.intra; 
+              pairdict[pairname].p1depth = thep1.peakdepth;
+              pairdict[pairname].p2depth = thep2.peakdepth;           
+              //pairdict[pairname].p1intra  = thep1.intra; 
+              //pairdict[pairname].p2intra  = thep2.intra; 
               pairdict[pairname].linking  = 0; 
               pairdict[pairname].distance  = thep2.start - thep1.end; 
             }
@@ -670,10 +692,14 @@ void findPairs(std::string overlapfile, std::string petpairsfile,std::string int
       pairsfilestream << "\t";
       pairsfilestream << cp->second.p2name;
       pairsfilestream << "\t";
-      pairsfilestream << cp->second.p1intra;
+      pairsfilestream << cp->second.p1depth;
       pairsfilestream << "\t";
-      pairsfilestream << cp->second.p2intra;
-      pairsfilestream << "\t";
+      pairsfilestream << cp->second.p2depth;
+      pairsfilestream << "\t";    
+//      pairsfilestream << cp->second.p1intra;
+//      pairsfilestream << "\t";
+//      pairsfilestream << cp->second.p2intra;
+//      pairsfilestream << "\t";
       pairsfilestream << cp->second.linking;
       pairsfilestream << "\t";
       pairsfilestream << cp->second.distance;
@@ -695,8 +721,10 @@ void findPairs(std::string overlapfile, std::string petpairsfile,std::string int
       peaksfilestream << "\t";
       peaksfilestream << chippeak->second.name;
       peaksfilestream << "\t";
-      peaksfilestream << chippeak->second.intra;
+      peaksfilestream << chippeak->second.peakdepth;
       peaksfilestream << "\t.\n";
+//      peaksfilestream << chippeak->second.intra;
+//      peaksfilestream << "\t.\n";
   }
   peaksfilestream.close();
 
@@ -827,6 +855,57 @@ void  joinchromfiles(std::vector<std::string> sortedchromfiles,std::string bedpe
   }
   fileout.close();
 }
+
+// Define a function the collects info from a peak / tagAlign overlap
+// [[Rcpp::export]]
+void DeterminePeakDepthsC(std::string temppeakoverlap,std::string peaksfileslopdepth)
+{
+  // streams
+  ifstream fileIN(temppeakoverlap.c_str());
+  ofstream fileOUT(peaksfileslopdepth.c_str());
+  
+  // make map of peaks
+  std::map<std::string, int > peaksmap;
+  
+  // read in file line by line
+  std::string line;
+  while (getline(fileIN, line))
+  {
+    // split lines and determine bin
+    std::vector<std::string> currEall = string_split(line,"\t");
+    std::string peakchrom = currEall[6];
+    std::string peakstart = currEall[7];
+    std::string peakend   = currEall[8];
+    std::string peakname  = currEall[9];
+  
+    // peak name
+    std::string longname = peakchrom + "\t" + peakstart + "\t" + peakend + "\t" + peakname;
+  
+    // add peak to map
+    if ( peaksmap.find(longname) == peaksmap.end() ) {  
+      peaksmap[longname] = 0;
+    }
+    
+    // increment count
+    peaksmap[longname]++;
+    
+  }
+  
+  // close input file
+  fileIN.close();
+  
+  // print out info
+  for (std::map<std::string, int >::const_iterator longname = peaksmap.begin() ; longname != peaksmap.end() ; longname ++ ){
+    fileOUT << longname->first + "\t" + NumberToString(peaksmap[longname->first]) + "\t.";
+    fileOUT << "\n";
+  }
+  
+  // close output file
+  fileOUT.close();
+
+}
+
+
 
 
 

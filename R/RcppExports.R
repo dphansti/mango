@@ -17,8 +17,8 @@ buildBedpe <- function(sam1, sam2, bedpefile) {
     invisible(.Call('mango_buildBedpe', PACKAGE = 'mango', sam1, sam2, bedpefile))
 }
 
-findPairs <- function(overlapfile, petpairsfile, interactionfile, peakscount) {
-    invisible(.Call('mango_findPairs', PACKAGE = 'mango', overlapfile, petpairsfile, interactionfile, peakscount))
+findPairs <- function(overlapfile, petpairsfile, interactionfile, peakscount, peaksfileslopdepth) {
+    invisible(.Call('mango_findPairs', PACKAGE = 'mango', overlapfile, petpairsfile, interactionfile, peakscount, peaksfileslopdepth))
 }
 
 splitBedbyChrom <- function(bedfile, outnamebase) {
@@ -31,6 +31,10 @@ makeDistanceFile <- function(bedpefilesortrmdup, distancefile, mindist, maxdist)
 
 joinchromfiles <- function(sortedchromfiles, bedpefilesort) {
     invisible(.Call('mango_joinchromfiles', PACKAGE = 'mango', sortedchromfiles, bedpefilesort))
+}
+
+DeterminePeakDepthsC <- function(temppeakoverlap, peaksfileslopdepth) {
+    invisible(.Call('mango_DeterminePeakDepthsC', PACKAGE = 'mango', temppeakoverlap, peaksfileslopdepth))
 }
 
 removeDups <- function(bedpein, outnamebase, distancesplit) {

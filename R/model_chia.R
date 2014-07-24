@@ -1,6 +1,6 @@
 
 # define a function that calculates values per bin
-model_chia <- function(x,y=NA,borders)
+model_chia <- function(x,y=NA,borders,yvals=TRUE)
 {
     sumofy  = c()
     meanofx = c()
@@ -10,11 +10,11 @@ model_chia <- function(x,y=NA,borders)
     for (b in 0:length(borders))
     {
       binindexes = which(bin == b)
-      if (is.na(y) == TRUE)
+      if (yvals == FALSE)
       {
         sumofy =  c(sumofy,length(binindexes))
       }
-      if (is.na(y) == FALSE)
+      if (yvals == TRUE)
       {
         sumofy  = c(sumofy,  sum( y[binindexes]))
       }
@@ -26,7 +26,3 @@ model_chia <- function(x,y=NA,borders)
     
     return (cbind(meanofx,sumofy,pvals,sumofx,countofx))
 }
-
-a = rep(422664,20000)
-b = mean(c(a,NA))
-b

@@ -71,6 +71,7 @@ option_list <- list(
   make_option(c("--MACS_shiftsize"),  default="NULL",help="MACS shiftize.  NULL allows MACS to determine it"),
   make_option(c("--peakslop"),  default="500",help="Number of basespairs to extend peaks on both sides"),
   make_option(c("--peakinput"),  default="NULL",help="user supplied peaks file"),
+  make_option(c("--blacklist"),  default="NULL",help="BED file of regions to remove from MACS peaks"),
   
   #---------- STAGE 5 PARAMETERS ----------#
   
@@ -79,7 +80,7 @@ option_list <- list(
   make_option(c("--biascut"),  default="0.05",help="Self ligation bias cutoff"),
   make_option(c("--numofbins"),  default="50",help="number of bins for probability calculations"),
   make_option(c("--corrMethod"),  default="BH",help="multiple hypothesis tersting correction method"),
-  make_option(c("--maxinteractingdist"),  default="10000000",help="maximum disance allowed for an interaction"),
+  make_option(c("--maxinteractingdist"),  default="1000000",help="maximum disance allowed for an interaction"),
   make_option(c("--FDR"),  default="0.05",help="FDR cutoff for interactions"),
   make_option(c("--extendreads"),  default="120",help="how many bp to extend reads towards peak"),
   make_option(c("--minPETS"),  default="2",help="minimum number of PETs required for an interaction (applied after FDR filtering)"),
@@ -255,9 +256,7 @@ if (3 %in% opt$stages)
 #   # split by chrom and sort bedpe
 #   print ("sorting bedpe")
 #   if (file.exists(bedpefilesort)){file.remove(bedpefilesort)}
-#   # check to see if sort program is available
-#   # split by chrom and sort bedpe
-#   sortbedpe(bedpefile,outname,bedpefilesort)
+
 #   
 #   # this as the way to sort the whol file at once
 #   #external_sort(bedpefile, bedpefilesort)
@@ -285,9 +284,10 @@ if (4 %in% opt$stages)
   peakslop        = as.character(opt["peakslop"])
   peakinput       = as.character(opt["peakinput"])
   MACS_shiftsize  = as.character(opt["MACS_shiftsize"])
+  blacklist       = as.character(opt["blacklist"])
   
   # filenames
-  bedpefilesortrmdup = paste(outname ,".sort.rmdup.bedpe",sep="")
+  bedpefilesortrmdup = paste(outname ,".rmdup.bedpe",sep="")
   tagAlignfile       = paste(outname,".tagAlign",sep="")
   peaksfile          = paste(outname,"_peaks.narrowPeak",sep="")
   peaksfileslop      = paste(outname,"_peaks.slopPeak",sep="")
@@ -314,7 +314,7 @@ if (4 %in% opt$stages)
   # extend and merge peaks according to peakslop
   print ("extending peaks")
   peakcounts = extendpeaks(peaksfile,peaksfileslop,bedtoolspath=bedtoolspath,
-             bedtoolsgenome=bedtoolsgenome,peakslop=peakslop)
+             bedtoolsgenome=bedtoolsgenome,peakslop=peakslop,blacklist=blacklist)
   resultshash[["peaks"]] = peakcounts[1]
   resultshash[["mergedpeaks"]] = peakcounts[2]
 }
@@ -344,14 +344,27 @@ if (5 %in% opt$stages)
   extendreads = as.numeric(opt["extendreads"])
 
   # filenames
+  tagAlignfile       = paste(outname,".tagAlign",sep="")
+  tagAlignfileExt    = paste(outname ,".tagAlign.extended.bed",sep="")
+  temppeakoverlap    = paste(outname ,".temppeakoverlap.bed",sep="")
   peaksfile          = paste(outname ,"_peaks.narrowPeak",sep="")
   peaksfileslop      = paste(outname ,"_peaks.slopPeak",sep="")
-  bedpefilesortrmdup = paste(outname ,".sort.rmdup.bedpe",sep="")
+  peaksfileslopdepth = paste(outname ,"_peaks.slopPeak.depth",sep="")
+  bedpefilesortrmdup = paste(outname ,".rmdup.bedpe",sep="")
   distancefile       = paste(outname ,".distance",sep="")
   distancecutpdf     = paste(outname ,".distance.pdf",sep="")
   modelspdf          = paste(outname ,".models.pdf",sep="")
   allpairsfile       = paste(outname ,".interactions.all.bedpe",sep="")
   fdrpairsfile       = paste(outname ,".interactions.fdr.bedpe",sep="")
+  
+  # counting reads per peak
+  print ("counting reads per peak")
+  if (file.exists(tagAlignfileExt) ==TRUE){file.remove(tagAlignfileExt)}
+  if (file.exists(temppeakoverlap) ==TRUE){file.remove(temppeakoverlap)}
+  DeterminePeakDepths(bedtools=bedtoolspath,bedtoolsgenome=bedtoolsgenome,extendreads=extendreads,tagAlignfile=tagAlignfile,
+                  tagAlignfileExt=tagAlignfileExt,peaksfileslop=peaksfileslop,temppeakoverlap=temppeakoverlap)
+  if (file.exists(tagAlignfileExt) ==TRUE){file.remove(tagAlignfileExt)}
+  if (file.exists(temppeakoverlap) ==TRUE){file.remove(temppeakoverlap)}
   
   # build a file of just distances and same / dif
   print ("determining self-ligation distance")
@@ -363,7 +376,7 @@ if (5 %in% opt$stages)
   distancecutoff = calcDistBias(distancefile,distancecutpdf=distancecutpdf,
                                 range=c(distcutrangemin,distcutrangemax),
                                 biascut= biascut)
-
+  #distancecutoff = 20236
   print (paste("self-ligation cutoff =",distancecutoff))
     
   # group PETs into interactions
@@ -372,15 +385,16 @@ if (5 %in% opt$stages)
                            outname=outname,
                            peaksfile=peaksfileslop,
                            bedtoolspath = bedtoolspath,
-                           extendreads,
+                           bedtoolsgenome = bedtoolsgenome,
+                           extendreads=extendreads,peaksfileslopdepth=peaksfileslopdepth,
                            verbose=FALSE)
   
   # filter out unwanted chromosomes
   originalchroms = chromosomes
   
   # get chromosomes from bedtools
-  bedtoolsgenome = read.table(bedtoolsgenome,header=FALSE,sep="\t")
-  chromosomes = bedtoolsgenome[,1]
+  bedtoolsgenomeinfo = read.table(bedtoolsgenome,header=FALSE,sep="\t")
+  chromosomes = bedtoolsgenomeinfo[,1]
   chromosomes = chromosomes[grep("_",chromosomes,invert=TRUE)]
   if(chrominclude[1] != "NULL")
   {
@@ -417,7 +431,7 @@ if (5 %in% opt$stages)
     distanceborders = binmaker(putpairs$distances,binmethod="equalocc",numberbins=numofbins)
     
     # model IAB vs distance
-    distance_IAB_model = model_chia(x=putpairs$distances,y=putpairs[,12],borders=distanceborders)
+    distance_IAB_model = model_chia(x=putpairs$distances,y=putpairs[,12],borders=distanceborders,yvals=TRUE)
     distance_IAB_model_file   = paste(outname ,".distance_IAB_model.",reps, ".text",sep="")
     write.table(distance_IAB_model,file=distance_IAB_model_file,quote = FALSE, sep = "\t",row.names = FALSE,col.names = TRUE)
     distance_IAB_spline =   smooth.spline(log10(distance_IAB_model[,1]),distance_IAB_model[,3],spar=.75)
@@ -428,7 +442,7 @@ if (5 %in% opt$stages)
     depthborders = binmaker(putpairs$depths,binmethod="equalocc",numberbins=numofbins)
     
     # model IAB vs depth
-    depth_IAB_model = model_chia(x=putpairs$depths,y=putpairs[,12],borders=depthborders)
+    depth_IAB_model = model_chia(x=putpairs$depths,y=putpairs[,12],borders=depthborders,yvals=TRUE)
     depth_IAB_model_file   = paste(outname ,".depth_IAB_model.",reps, ".text",sep="")
     write.table(depth_IAB_model,file=depth_IAB_model_file,quote = FALSE, sep = "\t",row.names = FALSE,col.names = TRUE)
     depth_IAB_spline =   smooth.spline(log10(depth_IAB_model[,1]),depth_IAB_model[,3],spar=.75)
@@ -457,14 +471,14 @@ if (5 %in% opt$stages)
       combos$depths = calcDepths(combos[,7:8],type="product")
       
       # model Combo vs distance
-      distance_combo_model_chrom = model_chia(x=combos$distance,y=NA,borders=distanceborders)
+      distance_combo_model_chrom = model_chia(x=combos$distance,y=NA,borders=distanceborders,yvals=FALSE)
       
       sumofy_dist   = sumofy_dist   + distance_combo_model_chrom[,2]
       sumofx_dist   = sumofx_dist   + distance_combo_model_chrom[,4]
       countofx_dist = countofx_dist + distance_combo_model_chrom[,5]
        
       # model Combo vs depth
-      depth_combo_model_chrom  = model_chia(x=combos$depths,y=NA,borders=depthborders)
+      depth_combo_model_chrom  = model_chia(x=combos$depths,y=NA,borders=depthborders,yvals=FALSE)
       
       sumofy_depth   = sumofy_depth   + depth_combo_model_chrom[,2]
       sumofx_depth   = sumofx_depth   + depth_combo_model_chrom[,4]

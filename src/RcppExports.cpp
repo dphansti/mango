@@ -75,8 +75,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // findPairs
-void findPairs(std::string overlapfile, std::string petpairsfile, std::string interactionfile, std::string peakscount);
-RcppExport SEXP mango_findPairs(SEXP overlapfileSEXP, SEXP petpairsfileSEXP, SEXP interactionfileSEXP, SEXP peakscountSEXP) {
+void findPairs(std::string overlapfile, std::string petpairsfile, std::string interactionfile, std::string peakscount, std::string peaksfileslopdepth);
+RcppExport SEXP mango_findPairs(SEXP overlapfileSEXP, SEXP petpairsfileSEXP, SEXP interactionfileSEXP, SEXP peakscountSEXP, SEXP peaksfileslopdepthSEXP) {
 BEGIN_RCPP
     {
         Rcpp::RNGScope __rngScope;
@@ -84,7 +84,8 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< std::string >::type petpairsfile(petpairsfileSEXP );
         Rcpp::traits::input_parameter< std::string >::type interactionfile(interactionfileSEXP );
         Rcpp::traits::input_parameter< std::string >::type peakscount(peakscountSEXP );
-        findPairs(overlapfile, petpairsfile, interactionfile, peakscount);
+        Rcpp::traits::input_parameter< std::string >::type peaksfileslopdepth(peaksfileslopdepthSEXP );
+        findPairs(overlapfile, petpairsfile, interactionfile, peakscount, peaksfileslopdepth);
     }
     return R_NilValue;
 END_RCPP
@@ -129,6 +130,19 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< std::vector<std::string> >::type sortedchromfiles(sortedchromfilesSEXP );
         Rcpp::traits::input_parameter< std::string >::type bedpefilesort(bedpefilesortSEXP );
         joinchromfiles(sortedchromfiles, bedpefilesort);
+    }
+    return R_NilValue;
+END_RCPP
+}
+// DeterminePeakDepthsC
+void DeterminePeakDepthsC(std::string temppeakoverlap, std::string peaksfileslopdepth);
+RcppExport SEXP mango_DeterminePeakDepthsC(SEXP temppeakoverlapSEXP, SEXP peaksfileslopdepthSEXP) {
+BEGIN_RCPP
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< std::string >::type temppeakoverlap(temppeakoverlapSEXP );
+        Rcpp::traits::input_parameter< std::string >::type peaksfileslopdepth(peaksfileslopdepthSEXP );
+        DeterminePeakDepthsC(temppeakoverlap, peaksfileslopdepth);
     }
     return R_NilValue;
 END_RCPP
