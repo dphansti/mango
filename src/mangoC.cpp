@@ -360,7 +360,6 @@ void buildBedpe(std::string sam1, std::string sam2,std::string bedpefile)
             reorder = false;
         }
         
-        
         // print out results
         if (reorder == false)
         {
@@ -972,7 +971,7 @@ std::vector< std::string > removeDups(std::string bedpein,std::string outnamebas
     std::map<std::string, int> PETmap;
     
     // open input stream
-    ifstream file1(*i);
+    ifstream file1(i->c_str());
     
     std::string line;
     while (getline(file1, line))
