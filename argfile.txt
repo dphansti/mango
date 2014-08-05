@@ -1,5 +1,2 @@
-bowtiepath        = /usr/bin/bowtie
-bedtoolspath      = /usr/bin/bedtools
-macs2path         = /usr/local/bin/macs2
 bowtieref         = bowtie/hg19
 bedtoolsgenome    = human.hg19.genome

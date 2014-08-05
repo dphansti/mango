@@ -78,13 +78,19 @@ ALL STAGES
 
 
 ``stages``
- stages of the pipeline to execute.  STAGE can be either a single stage (e.g 1 or a range of stagnes e.g 1:5). default = 1:5
+ stages of the pipeline to execute.  stage can be either a single stage (e.g 1 or a range of stagnes e.g 1:5). default = 1:5
 
 ``prefix``
  prefix for all output files. default = mango
  
 ``outdir``
  The output direcoroy. default = NULL
+
+``bowtieref``
+ genome reference file for bowtie
+ 
+``bedtoolsgenome``
+ bedtools genome file
 
 ``chrominclude``
  comma separated list of chromosomes to use (e.g. chr1,chr2,chr3,...).  Only these chromosomes will be processed.  If NULL all chromosomes with be processed. default = NULL
@@ -121,14 +127,20 @@ STAGE 2 PARAMETERS
 STAGE 4 PARAMETERS
 ~~~~~~~~~~
 
-``MACS_pvalue``
- pvalue cutoff for peak calling in MACS2. default = 0.00001 
+``MACS_qvalue``
+ pvalue cutoff for peak calling in MACS2. default = 0.05
+
+``MACS_shiftsize``
+ MACS shiftize.  NULL allows MACS to determine it
 
 ``peakslop``
- Number of basespairs to extend peaks on both sides. default = 1000
+ Number of basespairs to extend peaks on both sides. default = 500
 
 ``peakinput``
  Name of user supplied peaks file.  If NULL Mango will use peaks determined from MACS2 analysis. default = NULL
+
+``blacklist``
+ BED file of regions to remove from MACS peaks
 
 
 STAGE 5 PARAMETERS
@@ -143,18 +155,21 @@ STAGE 5 PARAMETERS
 ``biascut``
  Mango exlcudes very short distance PETS since they tend to arise from self-ligation of a single DNA framgent as opposed to interligation of two interacting fragments. To determine this distnce cutoff Mango determines the fraction of PETs at each distance that come from self-ligation and sets the cutoff at the point where the fraction is less than or equal to BIASCUT. default = 0.05
     
-``maxPval``
- P-value cutoff for significant interactions. default = 0.01
+``FDR``
+ FDR cutoff for significant interactions. default = 0.01
 
 ``numofbins``
- number of bins to use for binomial p-value calculations. default = 30
+ number of bins to use for binomial p-value calculations. default = 50
     
 ``corrMethod``
- Method to use for correction of mulitply hypothesis testing.  See (http://stat.ethz.ch/R-manual/R-devel/library/stats/html/p.adjust.html) for more details. default = BY
+ Method to use for correction of mulitply hypothesis testing.  See (http://stat.ethz.ch/R-manual/R-devel/library/stats/html/p.adjust.html) for more details. default = BH
     
 ``maxinteractingdist``
- The maximum disance (in basepairs) considered for interaction. default = 10000000
+ The maximum disance (in basepairs) considered for interaction. default = 1000000
     
+``extendreads``
+ how many bp to extend reads towards peak. default = 120
+
 ``FDR``
  FDR cutoff for interactions. default = 0.01
     
