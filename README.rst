@@ -7,8 +7,8 @@ ChIA-PET Analysis Software
 Citation
 ========
 
-Mango.R: a bias-correcting ChIA-PET data analysis pipeline
-Phanstiel DH, Boyle AP,  Snyder MP.  In Preparation. 
+Novel ChIA-PET analysis method reveals two major classes of chromatin interactions
+Phanstiel DH, Boyle AP,  Heidari N, Snyder MP.  In Preparation. 
 
 
 Mango Installation
@@ -53,7 +53,7 @@ Usage of Mango
 
 ::
 
-  Rscript Mango.R [-options]
+  Rscript mango.R [-options]
 
 Example for regular interactions calling
 :: 
