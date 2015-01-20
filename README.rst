@@ -7,7 +7,7 @@ ChIA-PET Analysis Software
 Citation
 ========
 
-Mango: A bias correcting ChIA-PET analysis pipeline
+Mango: A bias correcting ChIA-PET analysis pipeline.
 Phanstiel DH, Boyle AP,  Heidari N, Snyder MP.  Submitted. 
 
 
