@@ -7,8 +7,8 @@ ChIA-PET Analysis Software
 Citation
 ========
 
-Novel ChIA-PET analysis method reveals two major classes of chromatin interactions
-Phanstiel DH, Boyle AP,  Heidari N, Snyder MP.  In Preparation. 
+Mango: A bias correcting ChIA-PET analysis pipeline
+Phanstiel DH, Boyle AP,  Heidari N, Snyder MP.  Submitted. 
 
 
 Mango Installation
