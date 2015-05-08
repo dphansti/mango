@@ -8,33 +8,6 @@ print ("Starting mango ChIA PET analysis tool")
 Sys.time()
 set.seed(1)
 
-##################################### check for dependencies #####################################
-
-progs = c("bedtools","macs2","bowtie")
-Paths = DefinePaths(progs = progs)
-bedtoolspath  = Paths[1]
-macs2path     = Paths[2]
-bowtiepath    = Paths[3]
-
-i = 0
-pathsOK = T
-for (p in Paths)
-{
-  i = i+ 1
-  if (p == "notfound")
-  {
-    pathsOK = F
-    print ("! Configuration Error !")
-    print (paste("     Path to ",progs[i]," not in PATH",sep=""))
-    print ("     Please add to PATH and try again")
-    print ("")
-  }
-}
-if (pathsOK == F)
-{
-  stop ("Exiting Mango.R pipeline.  Check system PATH")
-}  
-
 ##################################### read commandline paramters #####################################
 
 # read in parameters
@@ -50,6 +23,9 @@ option_list <- list(
   make_option(c("--bedtoolsgenome"),  default="NULL",help="bedtools genome file"),
   make_option(c("--chrominclude"),  default="NULL",help="comma separated list of chromosomes to use (e.g. chr1,chr2,chr3,...).  Only these chromosomes will be processed"),
   make_option(c("--chromexclude"),  default="NULL",help="comma separated list of chromosomes to exclude (e.g. chrM,chrY)"),
+  make_option(c("--bedtoolspath"),  default="NULL",help="full path to bedtools"),
+  make_option(c("--macs2path"),  default="NULL",help="full path to macs2path"),
+  make_option(c("--bowtiepath"),  default="NULL",help="full path to bowtiepath"),
   
   #---------- STAGE 1 PARAMETERS ----------#
   
@@ -91,6 +67,51 @@ option_list <- list(
 # get command line options, if help option encountered print help and exit,
 # otherwise if options not found on command line then set defaults,
 opt <- parse_args(OptionParser(option_list=option_list))
+
+# check dependencies
+
+# first look in PATH
+progs = c("bedtools","macs2","bowtie")
+Paths = DefinePaths(progs = progs)
+bedtoolspath  = Paths[1]
+macs2path     = Paths[2]
+bowtiepath    = Paths[3]
+
+
+# next, look in arguments
+if (opt["bedtoolspath"] != "NULL")
+{
+  bedtoolspath = opt["bedtoolspath"]
+}
+if (opt["macs2path"] != "NULL")
+{
+  macs2path = opt["macs2path"]
+}
+if (opt["bowtiepath"] != "NULL")
+{
+  bowtiepath = opt["bowtiepath"]
+}
+
+# break if dependencies not found
+Paths = c(bedtoolspath,macs2path,bowtiepath)
+i = 0
+pathsOK = T
+for (p in Paths)
+{
+  i = i+ 1
+  if (p == "notfound")
+  {
+    pathsOK = F
+    print ("! Configuration Error !")
+    print (paste("     Path to ",progs[i]," not in PATH or arguments",sep=""))
+    print ("     Please add to PATH or arguments and try again")
+    print ("")
+  }
+}
+if (pathsOK == F)
+{
+  stop ("Exiting Mango.R pipeline.  Check system PATH")
+}
 
 # correct stages
 if (grepl( ":",opt$stages))

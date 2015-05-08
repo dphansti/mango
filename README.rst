@@ -98,6 +98,16 @@ ALL STAGES
 ``chromexclude``
  comma separated list of chromosomes to exclude (e.g. chrM,chrY).  If NULL all chromosomes with be processed. default = NULL
 
+``bedtoolspath``
+ full path to bedtools (only required if not found in system PATH). default = NULL
+
+``macs2path``
+ full path to macs2 (only required if not found in system PATH). default = NULL
+
+``bowtiepath``
+ full path to bowtie (only required if not found in system PATH). default = NULL
+
+
 STAGE 1 PARAMETERS
 ~~~~~~~~~~
 
