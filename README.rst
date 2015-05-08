@@ -188,3 +188,24 @@ STAGE 5 PARAMETERS
 
 ``reportallpairs``
  Should all pairs be reported or just significant pairs (TRUE or FALSE). default = FALSE
+
+
+Output Files
+============
+
+``...interactions.fdr.bedpe``
+
+This files contains all significant interactions.  The columns are (chromosome1, start1, end1, chromosome2, start2, end2, PETs supporting the interaction, the adjusted P-value of the interaction)*
+
+``...interactions.all.bedpe``
+
+This files contains all tested interactions and is only generated if 'reportallpairs' is TRUE.  The columns are the same as those for the file above.
+
+*More columns with column headers will be output if 'verboseoutput' is TRUE.
+
+
+
+
+
+
+

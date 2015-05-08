@@ -26,6 +26,7 @@ option_list <- list(
   make_option(c("--bedtoolspath"),  default="NULL",help="full path to bedtools"),
   make_option(c("--macs2path"),  default="NULL",help="full path to macs2path"),
   make_option(c("--bowtiepath"),  default="NULL",help="full path to bowtiepath"),
+  make_option(c("--verboseoutput"),  default="FALSE",help="if true output file will have more columns as well as a header row describing the columns"),
   
   #---------- STAGE 1 PARAMETERS ----------#
   
@@ -363,6 +364,7 @@ if (5 %in% opt$stages)
   corrMethod = as.character(opt["corrMethod"])
   MHT    = as.character(opt["MHT"])
   extendreads = as.numeric(opt["extendreads"])
+  verboseoutput = as.character(opt["verboseoutput"])
 
   # filenames
   tagAlignfile       = paste(outname,".tagAlign",sep="")
@@ -614,17 +616,26 @@ if (5 %in% opt$stages)
   #--------------- Write outputs ---------------#
   
   print ("writing output files")
-  
   # write results to output
-  if (reportallpairs == TRUE)
+  if (verboseoutput == TRUE)
   {
-    write.table(x=putpairs,file=allpairsfile,quote = FALSE, sep = "\t",row.names = FALSE)
+    if (reportallpairs == TRUE)
+    {
+      write.table(x=putpairs,file=allpairsfile,quote = FALSE, sep = "\t",row.names = FALSE)
+    }
+    write.table(x=sig,file=fdrpairsfile,quote = FALSE, sep = "\t",row.names = FALSE)
   }
-  write.table(x=sig,file=fdrpairsfile,quote = FALSE, sep = "\t",row.names = FALSE)
-  
+  if (verboseoutput == FALSE)
+  {
+    if (reportallpairs == TRUE)
+    {
+      write.table(x=putpairs[,c("chrom1","start1","end1","chrom2","start2","end2","PETs","Q")],file=allpairsfile,quote = FALSE, sep = "\t",row.names = FALSE,col.names = FALSE)
+    }
+    write.table(x=sig[,c("chrom1","start1","end1","chrom2","start2","end2","PETs","Q")],file=fdrpairsfile,quote = FALSE, sep = "\t",row.names = FALSE,col.names = FALSE)
+  } 
   resultshash[["putative interactions"]]    = nrow(putpairs)
   resultshash[["significant interactions"]] = nrow(sig)
-  
+
   #--------------- Make plots ---------------#
   
   print ("plotting results")
