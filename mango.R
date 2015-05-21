@@ -377,8 +377,8 @@ if (5 %in% opt$stages)
   distancefile       = paste(outname ,".distance",sep="")
   distancecutpdf     = paste(outname ,".distance.pdf",sep="")
   modelspdf          = paste(outname ,".models.pdf",sep="")
-  allpairsfile       = paste(outname ,".interactions.all.bedpe",sep="")
-  fdrpairsfile       = paste(outname ,".interactions.fdr.bedpe",sep="")
+  allpairsfile       = paste(outname ,".interactions.all.mango",sep="")
+  fdrpairsfile       = paste(outname ,".interactions.fdr.mango",sep="")
   
   # counting reads per peak
   print ("counting reads per peak")
