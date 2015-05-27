@@ -99,12 +99,9 @@ if (opt["bowtiepath"] != "NULL")
 }
 
 # get software versions
-bedtoolspath = "/Users/dphansti/Tools/bedtools-2.17.0/bin/bedtools"
-bedtoolspath = "/Users/dphansti/Tools/samtools-1.1/samtools"
 bedtoolsversion = system(paste(bedtoolspath,"--version"),intern=TRUE)[1]
 macs2version = system(paste(macs2path,"--version"),intern=TRUE)[1]
 bowtieversion = system(paste(bowtiepath,"--version"),intern=TRUE)[1]
-
 
 # break if dependencies not found
 Paths = c(bedtoolspath,macs2path,bowtiepath)
