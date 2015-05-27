@@ -1,4 +1,9 @@
 # runs mango chia pet analysis pipeline
+
+# Version info
+Mangoversion = "1.0.2"
+
+# Load Packages
 suppressPackageStartupMessages(library("Rcpp"))
 suppressPackageStartupMessages(library("hash"))
 suppressPackageStartupMessages(library("mango"))
@@ -92,6 +97,14 @@ if (opt["bowtiepath"] != "NULL")
 {
   bowtiepath = opt["bowtiepath"]
 }
+
+# get software versions
+bedtoolspath = "/Users/dphansti/Tools/bedtools-2.17.0/bin/bedtools"
+bedtoolspath = "/Users/dphansti/Tools/samtools-1.1/samtools"
+bedtoolsversion = system(paste(bedtoolspath,"--version"),intern=TRUE)[1]
+macs2version = system(paste(macs2path,"--version"),intern=TRUE)[1]
+bowtieversion = system(paste(bowtiepath,"--version"),intern=TRUE)[1]
+
 
 # break if dependencies not found
 Paths = c(bedtoolspath,macs2path,bowtiepath)
@@ -683,6 +696,14 @@ print ("writing to log file")
 
 stoptime = paste("Analysis end time:" , as.character(Sys.time()))
 write(stoptime,file=logfile,append=TRUE)
+write("",file=logfile,append=TRUE)
+
+write("Software Versions:",file=logfile,append=TRUE)
+write(paste("mango version",":",Mangoversion),file=logfile,append=TRUE)
+write(paste("bedtools version",":",bedtoolsversion),file=logfile,append=TRUE)
+write(paste("macs2 version",":",macs2version),file=logfile,append=TRUE)
+write(paste("bowtie version",":",bowtieversion),file=logfile,append=TRUE)
+
 write("",file=logfile,append=TRUE)
 write("Analyzed by Mango using the following parameters:",file=logfile,append=TRUE)
 
