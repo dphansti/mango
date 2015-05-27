@@ -8,7 +8,7 @@ Citation
 ========
 
 Mango: A bias correcting ChIA-PET analysis pipeline.
-Phanstiel DH, Boyle AP,  Heidari N, Snyder MP.  Submitted. 
+Phanstiel DH, Boyle AP,  Heidari N, Snyder MP.  Accepted. 
 
 
 Mango Installation
