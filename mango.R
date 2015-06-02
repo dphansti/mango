@@ -100,8 +100,8 @@ if (opt["bowtiepath"] != "NULL")
 
 # get software versions
 bedtoolsversion = system(paste(bedtoolspath,"--version"),intern=TRUE)[1]
-macs2version = system(paste(macs2path,"--version"),intern=TRUE)[1]
-bowtieversion = system(paste(bowtiepath,"--version"),intern=TRUE)[1]
+macs2version    = system(paste(macs2path,"--version 2>&1"),intern=TRUE)[1]
+bowtieversion   = system(paste(bowtiepath,"--version"),intern=TRUE)[1]
 
 # break if dependencies not found
 Paths = c(bedtoolspath,macs2path,bowtiepath)
