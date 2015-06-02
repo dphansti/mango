@@ -16,7 +16,7 @@ alignBowtie <- function(fastq,output,bowtiepath,bowtieref,
   
   # choose alignment parameters
   # note- "-m 1" ensures that only uniquely mapped reads are reported.
-  bowtievar="-S -v 0 -k 1 --chunkmbs 500--sam-nohead --mapq 40 -m 1"
+  bowtievar="-S -v 0 -k 1 --chunkmbs 500 --sam-nohead --mapq 40 -m 1"
   if (shortreads == FALSE)
   {
     #bowtievar="-S -v 2 -k 1 --sam-nohead --mapq 40 -m 1 --best"

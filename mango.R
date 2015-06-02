@@ -338,7 +338,7 @@ if (4 %in% opt$stages)
     
     # call peaks 
     print ("calling peaks")
-   callpeaks(macs2path=macs2path,tagAlignfile,outname,qvalue=MACS_qvalue,
+    callpeaks(macs2path=macs2path,tagAlignfile,outname,qvalue=MACS_qvalue,
              bedtoolspath=bedtoolspath,bedtoolsgenome=bedtoolsgenome,
              peakslop=peakslop,MACS_shiftsize)
   }
