@@ -190,6 +190,34 @@ STAGE 5 PARAMETERS
  Should all pairs be reported or just significant pairs (TRUE or FALSE). default = FALSE
 
 
+Intermediate Files
+============
+
+``...same.fastq``
+
+These files contain fastq formated sequences after linkers have been detected and removed.  Only pairs of reads with the same linker sequences on both ends of the PET are reported in these files.  These are the only reads used for subsequent steps.
+
+``...chim.fastq``
+
+These files contain fastq formated sequences after linkers have been detected and removed.  Only pairs of reads with the different linker sequences on both ends of the PET are reported in these files.  These reads are NOT used for subsequent steps.
+
+``...bedpe``
+
+This file desribes all aligned PETs.  The columns are (chromosome1, start1, end1, chromosome2, start2, end2, readname, score, strand1, strand2)
+
+``...rmdup.bedpe``
+
+This file desribes all aligned PETs after removal of duplicate PETs.  The columns are (chromosome1, start1, end1, chromosome2, start2, end2, readname, score, strand1, strand2)
+
+``...tagAlign``
+
+This file desribes all reads (PETs are split into two lines in this file) in standard tagAlign format.  The columns are (chromosome, start, end, readname, score, strand)
+
+``...slopPeak``
+
+This file desribes peaks after peak calling, addition of a user defined number of basepairs (peakslop), and merging of overlapping peaks. The columns are (chromosome, start, end, peakname).
+
+
 Output Files
 ============
 
