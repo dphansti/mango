@@ -7,9 +7,9 @@ ChIA-PET Analysis Software
 Citation
 ========
 
-Mango: A bias correcting ChIA-PET analysis pipeline.
-Phanstiel DH, Boyle AP,  Heidari N, Snyder MP.  Accepted. 
-
+Phanstiel DH, Boyle AP, Heidari N, Snyder MP. Mango: a bias-correcting
+ChIA-PET analysis pipeline. Bioinformatics. 2015 Jun 1. pii: btv336. [Epub ahead 
+of print] PubMed PMID: 26034063.
 
 Mango Installation
 ==================
