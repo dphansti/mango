@@ -7,6 +7,8 @@ Author: Douglas H Phanstiel <dphansti@stanford.edu>
 Maintainer: Douglas H Phanstiel <dphansti@stanford.edu>
 Description: ChIA-PET data analysis software
 License: GPL (>= 2)
-Depends: hash,Rcpp,optparse,R (>= 3.1.0)
+Depends:
+    hash,Rcpp,optparse,R (>= 3.1.0)
 LinkingTo: Rcpp
 Packaged: 2014-07-09 19:41:18 UTC; dougphanstiel
+RoxygenNote: 5.0.1
