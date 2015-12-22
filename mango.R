@@ -54,6 +54,7 @@ option_list <- list(
   make_option(c("--peakslop"),  default="500",help="Number of basespairs to extend peaks on both sides"),
   make_option(c("--peakinput"),  default="NULL",help="user supplied peaks file"),
   make_option(c("--blacklist"),  default="NULL",help="BED file of regions to remove from MACS peaks"),
+  make_option(c("--gsize"),  default="hs",help="mappable genome size or effective genome size for MACS2"),
   
   #---------- STAGE 5 PARAMETERS ----------#
   
@@ -340,7 +341,7 @@ if (4 %in% opt$stages)
     print ("calling peaks")
     callpeaks(macs2path=macs2path,tagAlignfile,outname,qvalue=MACS_qvalue,
              bedtoolspath=bedtoolspath,bedtoolsgenome=bedtoolsgenome,
-             peakslop=peakslop,MACS_shiftsize)
+             peakslop=peakslop,MACS_shiftsize,gsize=gsize)
   }
   
   # extend and merge peaks according to peakslop
