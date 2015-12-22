@@ -152,7 +152,9 @@ STAGE 4 PARAMETERS
 ``blacklist``
  BED file of regions to remove from MACS peaks
 
-
+``gzize``
+mappable genome size or effective genome size for MACS2.default = 'hs'
+ 
 STAGE 5 PARAMETERS
 ~~~~~~~~~~
 
