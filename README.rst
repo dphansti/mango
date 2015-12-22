@@ -153,7 +153,7 @@ STAGE 4 PARAMETERS
  BED file of regions to remove from MACS peaks
 
 ``gzize``
-mappable genome size or effective genome size for MACS2.default = 'hs'
+ mappable genome size or effective genome size for MACS2.default = 'hs'
  
 STAGE 5 PARAMETERS
 ~~~~~~~~~~
