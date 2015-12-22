@@ -13,7 +13,7 @@ extendpeaks <- function(peaksfile=peaksfile,peaksfileslop=peaksfileslop,
   
   if (blacklist != "NULL")
   {
-    command = paste(bedtoolspath, " intersect -v -a ",peaksfileslop, " -b ",blacklist," -b ",peakslop,
+    command = paste(bedtoolspath, " intersect -v -a ",peaksfileslop, " -b ",blacklist,
                     " > tmp.bed ; mv tmp.bed ",peaksfileslop,sep="")
     if (verbose == TRUE){ print (command) }
     system(command)
