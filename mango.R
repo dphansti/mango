@@ -318,6 +318,7 @@ if (4 %in% opt$stages)
   peakinput       = as.character(opt["peakinput"])
   MACS_shiftsize  = as.character(opt["MACS_shiftsize"])
   blacklist       = as.character(opt["blacklist"])
+  gsize           = ascharacter(opt["gsize"])
   
   # filenames
   bedpefilesortrmdup = paste(outname ,".rmdup.bedpe",sep="")
