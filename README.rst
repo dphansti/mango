@@ -58,11 +58,11 @@ Usage of Mango
 Example for regular interactions calling
 :: 
 
- Rscript Mango.R --fastq1 samplename_1.fastq --fastq2 samplename_1.fastq --prefix samplename --argfile argfile.txt
+ Rscript Mango.R --fastq1 samplename_1.fastq --fastq2 samplename_1.fastq --prefix samplename --argsfile argsfile.txt
     --chromexclude chrM,chrY --stages 1:5
 
 
-Example of a argfile
+Example of a argsfile
 :: 
 
  bowtieref         = /path/to/hg19
@@ -76,6 +76,8 @@ Parameters
 ALL STAGES
 ~~~~~~~~~~
 
+``argsfile``
+ The full path to a file containing any of the following parameters.  See above for example.
 
 ``stages``
  stages of the pipeline to execute.  stage can be either a single stage (e.g 1 or a range of stagnes e.g 1:5). default = 1:5
