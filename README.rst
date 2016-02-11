@@ -70,6 +70,7 @@ Example of a argsfile
 
 
 !! Note if using tagmentation-generated libraries !!
+==============
 If the libraries were generated using tagmentation instead of MmeI digestions and adapter ligation we recommend the following settings:
 :: 
 
