@@ -76,6 +76,7 @@ If the libraries were generated using tagmentation instead of MmeI digestions an
 
  --keepempty TRUE
  --shortreads FALSE
+ --maxlength 1000
 
 Parameters
 ----------
