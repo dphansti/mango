@@ -727,12 +727,3 @@ for (key in keys(resultshash))
 
 print("done")
 
-
-
-
-
-
-
-
-
-

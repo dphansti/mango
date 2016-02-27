@@ -7,7 +7,7 @@ extendpeaks <- function(peaksfile=peaksfile,peaksfileslop=peaksfileslop,
   
   # make peakfile with slop
   command = paste(bedtoolspath, " slop -i ",peaksfile, " -g ",bedtoolsgenome," -b ",peakslop,
-                  " | ", bedtoolspath, " merge -nms > ",peaksfileslop,sep="")
+                  " | ", bedtoolspath, " merge -c 4 -o collapse > ",peaksfileslop,sep="")
   if (verbose == TRUE){ print (command) }
   system(command)
   
