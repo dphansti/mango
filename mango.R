@@ -1,7 +1,7 @@
 # runs mango chia pet analysis pipeline
 
 # Version info
-Mangoversion = "1.0.5"
+Mangoversion = "1.1.1"
 
 # Load Packages
 suppressPackageStartupMessages(library("Rcpp"))
@@ -46,7 +46,8 @@ option_list <- list(
   #---------- STAGE 2 PARAMETERS ----------#
   
   make_option(c("--shortreads"),  default="TRUE",help="should bowtie alignments be done using paramter for very short reads (~20 bp)"),
-
+  make_option(c("--threads"),  default="1",help="number of threads to be used for bowtie alignment. default = 1"),
+  
   #---------- STAGE 4 PARAMETERS ----------#
   
   make_option(c("--MACS_qvalue"),  default="0.05",help="MACS values"),
@@ -103,6 +104,11 @@ if (opt["bowtiepath"] != "NULL")
 bedtoolsversion = system(paste(bedtoolspath,"--version"),intern=TRUE)[1]
 macs2version    = system(paste(macs2path,"--version 2>&1"),intern=TRUE)[1]
 bowtieversion   = system(paste(bowtiepath,"--version"),intern=TRUE)[1]
+
+# print out software versions
+print (paste("bedtools version:",bedtoolsversion))
+print (paste("macs2 version:",macs2version))
+print (paste("bowtie version:",bowtieversion))
 
 # break if dependencies not found
 Paths = c(bedtoolspath,macs2path,bowtiepath)
@@ -234,6 +240,7 @@ if (2 %in% opt$stages)
   outname         = as.character(opt["outname"])
   bowtieref       = as.character(opt["bowtieref"])
   shortreads      = as.character(opt["shortreads"])
+  threads         = as.character(opt["threads"])
   
   print ("aligning reads")
   # filenames
@@ -243,8 +250,8 @@ if (2 %in% opt$stages)
   sam2   = paste(outname ,"_2.same.sam",sep="")
   
   # align both ends of each PET
-  alignBowtie(fastq=fastq1,output=sam1,bowtiepath=bowtiepath,bowtieref=bowtieref,shortreads)
-  alignBowtie(fastq=fastq2,output=sam2,bowtiepath=bowtiepath,bowtieref=bowtieref,shortreads)
+  alignBowtie(fastq=fastq1,output=sam1,bowtiepath=bowtiepath,bowtieref=bowtieref,shortreads,threads)
+  alignBowtie(fastq=fastq2,output=sam2,bowtiepath=bowtiepath,bowtieref=bowtieref,shortreads,threads)
 }
 
 ##################################### filter reads #####################################
