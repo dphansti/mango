@@ -31,7 +31,7 @@ They can be installed throug CRAN. For example to install the package 'hash' ope
 2. Mango depends on the following software pacakges which should be installed and included in the system PATH prior to using Mango.
 
  a) Bowtie             (http://bowtie-bio.sourceforge.net) 
- b) Bedtools >= 2.2.0  (https://github.com/arq5x/bedtools2)
+ b) Bedtools >= 2.20.0 (https://github.com/arq5x/bedtools2)
  c) MACS2              (https://github.com/taoliu/MACS)
 
 
