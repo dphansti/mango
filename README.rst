@@ -144,7 +144,7 @@ STAGE 2 PARAMETERS
 ``shortreads``
  should bowtie alignments be done using paramter for very short reads (~20 bp). default = TRUE
  
- ``threads``
+``threads``
  number of threads to be used for bowtie alignment. default = 1
  
 
