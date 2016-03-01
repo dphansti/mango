@@ -27,7 +27,7 @@ option_list <- list(
   make_option(c("--bowtieref"),   default="NULL",help="genome reference file for bowtie"),
   make_option(c("--bedtoolsgenome"),  default="NULL",help="bedtools genome file"),
   make_option(c("--chrominclude"),  default="NULL",help="comma separated list of chromosomes to use (e.g. chr1,chr2,chr3,...).  Only these chromosomes will be processed"),
-  make_option(c("--chromexclude"),  default="NULL",help="comma separated list of chromosomes to exclude (e.g. chrM,chrY)"),
+  make_option(c("--chromexclude"),  default="NULL",help="comma separated list of chromosomes to exclude (e.g. chrM,chrY). !!chrM should always be excluded due to its extremely short length!!"),
   make_option(c("--bedtoolspath"),  default="NULL",help="full path to bedtools"),
   make_option(c("--macs2path"),  default="NULL",help="full path to macs2path"),
   make_option(c("--bowtiepath"),  default="NULL",help="full path to bowtiepath"),

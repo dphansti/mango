@@ -107,7 +107,7 @@ ALL STAGES
  comma separated list of chromosomes to use (e.g. chr1,chr2,chr3,...).  Only these chromosomes will be processed.  If NULL all chromosomes with be processed. default = NULL
  
 ``chromexclude``
- comma separated list of chromosomes to exclude (e.g. chrM,chrY).  If NULL all chromosomes with be processed. default = NULL
+ comma separated list of chromosomes to exclude (e.g. chrM,chrY).  If NULL all chromosomes with be processed. !!chrM should always be excluded due to its extremely short length!! default = NULL
 
 ``bedtoolspath``
  full path to bedtools (only required if not found in system PATH). default = NULL
