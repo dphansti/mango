@@ -132,17 +132,17 @@ STAGE 1 PARAMETERS
  min length of reads after linker trimming. default = 15
 
 ``maxlength``
- max length of reads after linker trimming. default = 25
+ max length of reads after linker trimming.  If libraries were generated via tagmentation this should be set to a value greater than the read length (i.e. 1000).  default = 25
 
 ``keepempty``
- Should reads with no linker be kept (TRUE or FALSE). default = FALSE
+ Should reads with no linker be kept (TRUE or FALSE). If libraries were generated via tagmentation this should be set to TRUE. default = FALSE
 
 
 STAGE 2 PARAMETERS
 ~~~~~~~~~~
 
 ``shortreads``
- should bowtie alignments be done using paramter for very short reads (~20 bp). default = TRUE
+ should bowtie alignments be done using paramter for very short reads (~20 bp).  If libraries were generated via tagmentation this should be set to FALSE. default = TRUE
  
 ``threads``
  number of threads to be used for bowtie alignment. default = 1
@@ -174,10 +174,10 @@ STAGE 5 PARAMETERS
 ~~~~~~~~~~
 
 ``distcutrangemin``
- When Mango determines the self-ligation cutoff this is the minimum distance it will consider. default = 1000
+ When Mango determines the self-ligation cutoff this is the minimum distance it will consider. Changing this setting is not recommended. default = 1000
 
 ``distcutrangemax``
- When Mango determines the self-ligation cutoff this is the maximum distance it will consider. default = 100000
+ When Mango determines the self-ligation cutoff this is the maximum distance it will consider. Changing this setting is not recommended. default = 100000
 
 ``biascut``
  Mango exlcudes very short distance PETS since they tend to arise from self-ligation of a single DNA framgent as opposed to interligation of two interacting fragments. To determine this distnce cutoff Mango determines the fraction of PETs at each distance that come from self-ligation and sets the cutoff at the point where the fraction is less than or equal to BIASCUT. default = 0.05
@@ -192,7 +192,7 @@ STAGE 5 PARAMETERS
  Method to use for correction of mulitply hypothesis testing.  See (http://stat.ethz.ch/R-manual/R-devel/library/stats/html/p.adjust.html) for more details. default = BH
     
 ``maxinteractingdist``
- The maximum disance (in basepairs) considered for interaction. default = 1000000
+ The maximum disance (in basepairs) considered for interaction. Optimum sensitivity is generally acheived at values of 1000000-2000000. default = 1000000
     
 ``extendreads``
  how many bp to extend reads towards peak. default = 120
