@@ -15,6 +15,9 @@ alignBowtie <- function(fastq,output,bowtiepath,bowtieref,
                         shortreads,threads,verbose=TRUE,nlines=10000)
 {
   
+  # threads
+  threads = 1
+  
   # choose alignment parameters
   # note- "-m 1" ensures that only uniquely mapped reads are reported.
   bowtievar=paste("-S -v 0 -k 1 --chunkmbs 500 --sam-nohead --mapq 40 -m 1","--threads",threads)

@@ -46,7 +46,7 @@ option_list <- list(
   #---------- STAGE 2 PARAMETERS ----------#
   
   make_option(c("--shortreads"),  default="TRUE",help="should bowtie alignments be done using paramter for very short reads (~20 bp)"),
-  make_option(c("--threads"),  default="1",help="number of threads to be used for bowtie alignment. default = 1"),
+  make_option(c("--threads"),  default="1",help="(!! This option is currently disabled to due to errors.  We are working on a solution !!) number of threads to be used for bowtie alignment. default = 1"),
   
   #---------- STAGE 4 PARAMETERS ----------#
   
