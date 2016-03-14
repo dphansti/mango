@@ -145,7 +145,7 @@ STAGE 2 PARAMETERS
  should bowtie alignments be done using paramter for very short reads (~20 bp).  If libraries were generated via tagmentation this should be set to FALSE. default = TRUE
  
 ``threads``
- number of threads to be used for bowtie alignment. default = 1
+ number of threads to be used for bowtie alignment. default = 1 (!! This option is currently disabled to due to errors.  We are working on a solution !!)
  
 
 
