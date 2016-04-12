@@ -7,7 +7,7 @@ callpeaks <- function(macs2path,tagAlignfile,peaksfile,qvalue=0.05,
   shiftsize = ""
   if (MACS_shiftsize != "NULL")
   {
-    shiftsize =  paste("--nomodel --shiftsize",MACS_shiftsize,sep=" ")
+    shiftsize =  paste("--nomodel --extsize",MACS_shiftsize,sep=" ")
   }
   if (MACS_shiftsize == "NULL")
   {
