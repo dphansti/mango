@@ -1,14 +1,14 @@
 Package: mango
 Type: Package
 Title: ChIA-PET data analysis software
-Version: 1.1.5
+Version: 1.1.6
 Date: 2016-04-12
 Author: Douglas H Phanstiel <dphansti@stanford.edu>
 Maintainer: Douglas H Phanstiel <dphansti@stanford.edu>
 Description: ChIA-PET data analysis software
 License: GPL (>= 2)
 Depends:
-    hash,Rcpp,optparse,R (>= 3.1.0)
+    hash,Rcpp,optparse,readr,R (>= 3.1.0)
 LinkingTo: Rcpp
 Packaged: 2014-07-09 19:41:18 UTC; dougphanstiel
 RoxygenNote: 5.0.1

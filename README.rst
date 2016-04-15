@@ -19,6 +19,7 @@ Mango Installation
  a) hash
  b) Rcpp
  c) optparse
+ d) readr
 
 They can be installed throug CRAN. For example to install the package 'hash' open R and type the following
 
@@ -27,6 +28,7 @@ They can be installed throug CRAN. For example to install the package 'hash' ope
   install.packages('hash')
   install.packages('Rcpp')
   install.packages('optparse')
+  install.packages('readr')
 
 2. Mango depends on the following software pacakges which should be installed and included in the system PATH prior to using Mango.
 
@@ -148,6 +150,12 @@ STAGE 2 PARAMETERS
  number of threads to be used for bowtie alignment. default = 1 (!! This option is currently disabled to due to errors.  We are working on a solution !!)
  
 
+STAGE 2 PARAMETERS
+~~~~~~~~~~
+
+``npets4dist``
+ the number of PETS to use to plot PET distance distribution. default = 1000000 (use -1 for all PETS).  
+ 
 
 STAGE 4 PARAMETERS
 ~~~~~~~~~~

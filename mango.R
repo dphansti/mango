@@ -8,6 +8,7 @@ suppressPackageStartupMessages(library("Rcpp"))
 suppressPackageStartupMessages(library("hash"))
 suppressPackageStartupMessages(library("mango"))
 suppressPackageStartupMessages(library("optparse"))
+suppressPackageStartupMessages(library("readr"))
 
 print ("Starting mango ChIA PET analysis tool")
 Sys.time()
@@ -47,6 +48,10 @@ option_list <- list(
   
   make_option(c("--shortreads"),  default="TRUE",help="should bowtie alignments be done using paramter for very short reads (~20 bp)"),
   make_option(c("--threads"),  default="1",help="(!! This option is currently disabled to due to errors.  We are working on a solution !!) number of threads to be used for bowtie alignment. default = 1"),
+  
+  #---------- STAGE 4 PARAMETERS ----------#
+  
+  make_option(c("--npets4dist"),  default="1000000",help="the number of PETS to use to plot PET distance distribution (default = 1000000, use -1 for all PETS)"),
   
   #---------- STAGE 4 PARAMETERS ----------#
   
@@ -267,8 +272,11 @@ if (3 %in% opt$stages)
   bedpefile          = paste(outname ,".bedpe",sep="")
   bedpefilesort      = paste(outname ,".sort.bedpe",sep="")
   bedpefilesortrmdup = paste(outname ,".sort.rmdup.bedpe",sep="")
-  sam1 = paste(outname ,"_1.same.sam",sep="")
-  sam2 = paste(outname ,"_2.same.sam",sep="")
+  sam1               = paste(outname ,"_1.same.sam",sep="")
+  sam2               = paste(outname ,"_2.same.sam",sep="")
+  bedpermdupfile     = paste(outname ,".rmdup.bedpe",sep="")
+  pdffile            = paste(outname ,".PET.distances.pdf",sep="")
+  npets4dist         = as.numeric(as.character(opt["npets4dist"]))
   
   # build bedpe
   print ("building bedpe")
@@ -292,6 +300,10 @@ if (3 %in% opt$stages)
   {
     if (file.exists(rmdupresults[f])==TRUE){file.remove(rmdupresults[f])} 
   }
+  
+  # plot distance distribution
+  plotdistancedistribution(bedpefile=bedpermdupfile,pdffile=pdffile,npets=npets4dist)
+  
   
 #   # split by chrom and sort bedpe
 #   print ("sorting bedpe")
