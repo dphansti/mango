@@ -43,11 +43,11 @@
 <p>Mango processes ChIA-PET sequencing data (in fastq format) and determines statistically significant DNA-DNA interactions (loops) between pairs of genomic loci bound by the target protein.  Mango performs the following five steps which can run all at once or one at a time:</p>
 
 <ul>
-<li> <strong>Linker parsing:</strong> finds and removes linker sequences </li>
-<li> <strong>Read alignment:</strong> aligns reads to the genome using <a href="http://bowtie-bio.sourceforge.net/index.shtml">bowtie </a></li>
-<li> <strong>PET filtering:</strong> removes reads potential due to PCR duplication and organizes reads into bedpe format </li>
-<li> <strong>Peak calling:</strong> calls DNA binding peaks using <a href="https://github.com/taoliu/MACS">MACS2</a></li>
-<li> <strong>Interaction calling:</strong>  </li>
+<li> <strong>Linker parsing:</strong> finds and removes linker sequences. </li>
+<li> <strong>Read alignment:</strong> aligns reads to the genome using <a href="http://bowtie-bio.sourceforge.net/index.shtml">bowtie </a>.</li>
+<li> <strong>PET filtering:</strong> removes reads potential due to PCR duplication and organizes reads into bedpe format. </li>
+<li> <strong>Peak calling:</strong> calls DNA binding peaks using <a href="https://github.com/taoliu/MACS">MACS2</a>.</li>
+<li> <strong>Interaction calling:</strong> expceted interaction frequecnies are modeled based-on both peak depths and distances between peaks and statistically significant deviations are reported as interactions. </li>
 </ul>
 
 
