@@ -430,7 +430,7 @@ if (5 %in% opt$stages)
   distancecutoff = calcDistBias(distancefile,distancecutpdf=distancecutpdf,
                                 range=c(distcutrangemin,distcutrangemax),
                                 biascut= biascut)
-  #distancecutoff = 20236
+  # print distancecutoff
   print (paste("self-ligation cutoff =",distancecutoff))
     
   # group PETs into interactions
