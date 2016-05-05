@@ -1,7 +1,7 @@
 # runs mango chia pet analysis pipeline
 
 # Version info
-Mangoversion = "1.1.4"
+Mangoversion = "1.1.7"
 
 # Load Packages
 suppressPackageStartupMessages(library("Rcpp"))
@@ -40,6 +40,7 @@ option_list <- list(
   make_option(c("--fastq2"),  default="NULL",help="fastq read 2 file"),
   make_option(c("--linkerA"),  default="GTTGGATAAG",help="linker sequence A to look for"),
   make_option(c("--linkerB"),  default="GTTGGAATGT",help="linker sequence B to look for"),
+  make_option(c("--singlelinker"),  default="FALSE",help="If this is true Mango will only look for linkerA"),
   make_option(c("--minlength"),  default="15",help="min length of reads after linker trimming"),
   make_option(c("--maxlength"),  default="25",help="max length of reads after linker trimming"),
   make_option(c("--keepempty"),  default="FALSE",help="Should reads with no linker be kept"),
@@ -217,6 +218,13 @@ if (1 %in% opt$stages)
   keepempty=eval(parse(text=as.character(opt["keepempty"])))
   linker1=as.character(opt["linkerA"])
   linker2=as.character(opt["linkerB"])
+  singlelinker = as.character(opt["singlelinker"])
+  numberlinkers = 2
+  if (singlelinker == "TRUE")
+  {
+    numberlinkers = 1
+    print ("singlelinker set to TRUE.  Only looking for one linker sequence")
+  }
   
   print ("finding linkers")
   
@@ -227,7 +235,8 @@ if (1 %in% opt$stages)
               maxlength = maxlength, 
               keepempty = keepempty,
               linker1=linker1,
-              linker2=linker2)
+              linker2=linker2,
+              numberlinkers=numberlinkers)
   
   resultshash[["total PETs"]] = sum(parsingresults)
   resultshash[["same PETs"]] = parsingresults[1]

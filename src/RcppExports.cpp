@@ -30,8 +30,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // parseFastq
-std::vector< int > parseFastq(std::string fastq1, std::string fastq2, std::string basename, int minlength, int maxlength, bool keepempty, bool verbose, std::string linker1, std::string linker2);
-RcppExport SEXP mango_parseFastq(SEXP fastq1SEXP, SEXP fastq2SEXP, SEXP basenameSEXP, SEXP minlengthSEXP, SEXP maxlengthSEXP, SEXP keepemptySEXP, SEXP verboseSEXP, SEXP linker1SEXP, SEXP linker2SEXP) {
+std::vector< int > parseFastq(std::string fastq1, std::string fastq2, std::string basename, int minlength, int maxlength, bool keepempty, bool verbose, std::string linker1, std::string linker2, int numberlinkers);
+RcppExport SEXP mango_parseFastq(SEXP fastq1SEXP, SEXP fastq2SEXP, SEXP basenameSEXP, SEXP minlengthSEXP, SEXP maxlengthSEXP, SEXP keepemptySEXP, SEXP verboseSEXP, SEXP linker1SEXP, SEXP linker2SEXP, SEXP numberlinkersSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -44,7 +44,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
     Rcpp::traits::input_parameter< std::string >::type linker1(linker1SEXP);
     Rcpp::traits::input_parameter< std::string >::type linker2(linker2SEXP);
-    __result = Rcpp::wrap(parseFastq(fastq1, fastq2, basename, minlength, maxlength, keepempty, verbose, linker1, linker2));
+    Rcpp::traits::input_parameter< int >::type numberlinkers(numberlinkersSEXP);
+    __result = Rcpp::wrap(parseFastq(fastq1, fastq2, basename, minlength, maxlength, keepempty, verbose, linker1, linker2, numberlinkers));
     return __result;
 END_RCPP
 }

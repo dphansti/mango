@@ -1,8 +1,8 @@
 Package: mango
 Type: Package
 Title: ChIA-PET data analysis software
-Version: 1.1.6
-Date: 2016-04-12
+Version: 1.1.7
+Date: 2016-05-05
 Author: Douglas H Phanstiel <dphansti@stanford.edu>
 Maintainer: Douglas H Phanstiel <dphansti@stanford.edu>
 Description: ChIA-PET data analysis software

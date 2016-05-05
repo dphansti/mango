@@ -9,8 +9,8 @@ string_split <- function(s, delimiter) {
     .Call('mango_string_split', PACKAGE = 'mango', s, delimiter)
 }
 
-parseFastq <- function(fastq1, fastq2, basename, minlength = 15L, maxlength = 25L, keepempty = FALSE, verbose = TRUE, linker1 = "GTTGGATAAG", linker2 = "GTTGGAATGT") {
-    .Call('mango_parseFastq', PACKAGE = 'mango', fastq1, fastq2, basename, minlength, maxlength, keepempty, verbose, linker1, linker2)
+parseFastq <- function(fastq1, fastq2, basename, minlength = 15L, maxlength = 25L, keepempty = FALSE, verbose = TRUE, linker1 = "GTTGGATAAG", linker2 = "GTTGGAATGT", numberlinkers = 2L) {
+    .Call('mango_parseFastq', PACKAGE = 'mango', fastq1, fastq2, basename, minlength, maxlength, keepempty, verbose, linker1, linker2, numberlinkers)
 }
 
 buildBedpe <- function(sam1, sam2, bedpefile) {

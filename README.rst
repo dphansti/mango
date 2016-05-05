@@ -130,6 +130,9 @@ STAGE 1 PARAMETERS
 ``linkerB``
  linker sequence to look for. default = GTTGGAATGT
 
+``singlelinker``
+ Was only a single linker used? If TRUE Mango will only look for linkerA.  LinkerB will be ignored. default = FALSE
+
 ``minlength``
  min length of reads after linker trimming. default = 15
 

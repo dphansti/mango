@@ -50,7 +50,7 @@ std::vector<std::string> string_split( const std::string& s, const std::string& 
 std::vector< int > parseFastq(std::string fastq1, std::string fastq2,std::string basename,
               int minlength = 15,int maxlength = 25,
               bool keepempty = false, bool verbose = true,
-              std::string linker1 = "GTTGGATAAG" , std::string linker2 = "GTTGGAATGT")
+              std::string linker1 = "GTTGGATAAG" , std::string linker2 = "GTTGGAATGT",int numberlinkers = 2)
 {
 
    // arguments
@@ -88,12 +88,28 @@ std::vector< int > parseFastq(std::string fastq1, std::string fastq2,std::string
         // if list length is 4 perform operations, print, and clear lists
         if ( i == 4 )
         {
+            size_t r1l1found = -1;
+            size_t r1l2found = -1;
+            size_t r2l1found = -1;
+            size_t r2l2found = -1;
             
             // find the position of the linkers
-            size_t r1l1found = lines1[1].find(linker1);
-            size_t r1l2found = lines1[1].find(linker2);
-            size_t r2l1found = lines2[1].find(linker1);
-            size_t r2l2found = lines2[1].find(linker2);
+            if ( numberlinkers == 1 )
+            {
+               r1l1found = lines1[1].find(linker1);
+               //r1l2found = -1;
+               r2l1found = lines2[1].find(linker1);
+               //r2l2found = -1;
+            }
+            
+            if ( numberlinkers != 1 )
+            {
+               r1l1found = lines1[1].find(linker1);
+               r1l2found = lines1[1].find(linker2);
+               r2l1found = lines2[1].find(linker1);
+               r2l2found = lines2[1].find(linker2);
+            }
+            
             
             // determine the linker type (0 = none, 3 = both)
             // read 1
