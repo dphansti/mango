@@ -7,9 +7,7 @@ ChIA-PET Analysis Software
 Citation
 ========
 
-Phanstiel DH, Boyle AP, Heidari N, Snyder MP. Mango: a bias-correcting
-ChIA-PET analysis pipeline. Bioinformatics. 2015 Jun 1. pii: btv336. [Epub ahead 
-of print] PubMed PMID: 26034063.
+Phanstiel DH, Boyle AP, Heidari N, Snyder MP. Mango: a bias-correcting ChIA-PET analysis pipeline. Bioinformatics. 2015 Oct 1;31(19):3092-8. doi:10.1093/bioinformatics/btv336. Epub 2015 Jun 1. PubMed PMID: 26034063; PubMed Central PMCID: PMC4592333.
 
 Mango Installation
 ==================
@@ -194,7 +192,7 @@ STAGE 5 PARAMETERS
  Mango exlcudes very short distance PETS since they tend to arise from self-ligation of a single DNA framgent as opposed to interligation of two interacting fragments. To determine this distnce cutoff Mango determines the fraction of PETs at each distance that come from self-ligation and sets the cutoff at the point where the fraction is less than or equal to BIASCUT. default = 0.05
     
 ``FDR``
- FDR cutoff for significant interactions. default = 0.01
+ FDR cutoff for significant interactions. default = 0.05
 
 ``numofbins``
  number of bins to use for binomial p-value calculations. default = 50
@@ -207,9 +205,6 @@ STAGE 5 PARAMETERS
     
 ``extendreads``
  how many bp to extend reads towards peak. default = 120
-
-``FDR``
- FDR cutoff for interactions. default = 0.01
     
 ``minPETS``
  The minimum number of PETs required for an interaction (applied after FDR filtering). default = 2
