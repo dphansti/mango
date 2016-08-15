@@ -5,7 +5,7 @@ plotdistancedistribution <- function(bedpefile,pdffile,npets=1000000)
 {
 
   bedpe = read_tsv(bedpefile,col_names = F,n_max=npets)
-  distances = bedpe[,5]-bedpe[,2]
+  distances = (bedpe[,5]-bedpe[,2])[,1]
   log10distances = log10(distances[which(distances>0)])
   
   pdf(pdffile)
