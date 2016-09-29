@@ -118,7 +118,7 @@ if (identical(macs2path, "notfound"))
 
 if (identical(bowtiepath, "notfound"))
 {
-  stop("bowtie2 not found in path.")
+  stop("bowtie not found in path.")
 } 
 
 # get software versions
