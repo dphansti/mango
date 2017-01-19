@@ -1,7 +1,7 @@
 # runs mango chia pet analysis pipeline
 
 # Version info
-Mangoversion = "1.1.9"
+Mangoversion = "1.2.0"
 
 # Load Packages
 suppressPackageStartupMessages(library("Rcpp"))

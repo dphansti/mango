@@ -41,6 +41,13 @@ They can be installed throug CRAN. For example to install the package 'hash' ope
 
   git clone https://github.com/dphansti/mango.git
   R CMD INSTALL --no-multiarch --with-keep.source mango
+  
+If installing on cluster where you have limited permissions you may need to setup a local library.  An example is shown below.
+
+  git clone https://github.com/dphansti/mango.git
+  mkdir ~/R/library
+  export R_LIBS=$R_LIBS:~/R/library
+  R CMD INSTALL --no-multiarch --with-keep.source mango --library=~/R/library
 
 Features
 ========
