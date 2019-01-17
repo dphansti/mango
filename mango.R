@@ -106,6 +106,21 @@ if (opt["bowtiepath"] != "NULL")
   bowtiepath = opt["bowtiepath"]
 }
 
+if (identical(bedtoolspath, "notfound"))
+{
+  stop("bedtools not found in path.")
+}  
+
+if (identical(macs2path, "notfound"))
+{
+  stop("macs2 not found in path.")
+} 
+
+if (identical(bowtiepath, "notfound"))
+{
+  stop("bowtie not found in path.")
+} 
+
 # get software versions
 bedtoolsversion = system(paste(bedtoolspath,"--version"),intern=TRUE)[1]
 macs2version    = system(paste(macs2path,"--version 2>&1"),intern=TRUE)[1]
